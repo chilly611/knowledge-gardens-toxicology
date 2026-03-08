@@ -1,0 +1,23 @@
+# The Knowledge Gardens — Toxicology Database
+# AI crawlers welcome — structured data available on all pages
+
+User-agent: *
+Allow: /
+
+# AI Crawlers — explicitly allowed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://theknowledgegardens.com/toxicology/sitemap.xml

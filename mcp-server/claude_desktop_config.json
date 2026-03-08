@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "toxicology": {
+      "command": "node",
+      "args": ["C:\\Users\\kmacn\\Desktop\\TheKnowledgeGardens\\toxicology-db\\mcp-server\\build\\index.js"],
+      "env": {
+        "SUPABASE_URL": "https://vlezoyalutexenbnzzui.supabase.co",
+        "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsZXpveWFsdXRleGVuYm56enVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzU5MDEsImV4cCI6MjA4Nzc1MTkwMX0.KjkBFe2s6JH9tFrfoQR0nD-H8MUYC6CKYWwVmLhMMgY"
+      }
+    }
+  }
+}

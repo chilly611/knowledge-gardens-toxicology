@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+mcp-server/node_modules/
+
+# Environment secrets
+.env
+mcp-server/.env
+
+# Build artifacts
+mcp-server/build/
+
+# Generated site (329 pages, regenerate with node seo/generate-site.js)
+seo/pages/
+
+# Large case files (not part of the DB project)
+sky valley case/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

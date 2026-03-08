@@ -1,0 +1,25 @@
+# Docker Compose for local development
+# Runs: MCP server + API docs server
+# Database: Uses cloud Supabase (or replace with local Supabase)
+
+version: '3.8'
+
+services:
+  mcp-server:
+    build: ./mcp-server
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  api-docs:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: node serve-docs.js
+    ports:
+      - "3333:3333"
+    restart: unless-stopped

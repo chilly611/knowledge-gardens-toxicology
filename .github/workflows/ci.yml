@@ -1,0 +1,55 @@
+name: CI — Toxicology Knowledge Garden
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-mcp:
+    name: Build MCP Server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: mcp-server/package-lock.json
+      - run: cd mcp-server && npm ci
+      - run: cd mcp-server && npx tsc --noEmit
+        name: Type check
+
+  validate-openapi:
+    name: Validate OpenAPI Spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npx @redocly/cli lint api/openapi.yaml || true
+        name: Lint OpenAPI spec
+
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd mcp-server && docker build -t toxicology-mcp .
+        name: Build MCP Docker image
+
+  generate-seo:
+    name: Generate SEO Pages (dry run)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install @supabase/supabase-js dotenv
+        working-directory: seo
+      - run: echo "SEO generation requires SUPABASE credentials — run manually"
+        name: Skip (needs secrets)

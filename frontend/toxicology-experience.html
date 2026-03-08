@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Knowledge Gardens — Toxicology Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#f5f0e8;font-family:'Cormorant Garamond',Georgia,serif;color:#2C2C2C}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 6px rgba(26,92,92,.15)}50%{box-shadow:0 0 16px rgba(26,92,92,.4)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+const SB_URL = 'https://vlezoyalutexenbnzzui.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsZXpveWFsdXRleGVuYm56enVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzU5MDEsImV4cCI6MjA4Nzc1MTkwMX0.KjkBFe2s6JH9tFrfoQR0nD-H8MUYC6CKYWwVmLhMMgY';
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+const TEAL='#1A5C5C', GOLD='#C9A84C', CREAM='#FBF8F3', INK='#2C2C2C', COPPER='#B87333', STEEL='#71797E', PARCHMENT='#f5f0e8';
+const TABS = ['Overview','Chemistry','Health Effects','Regulations'];
+const HAZARD_COLORS = {Cancer:'#c0392b',known:'#c0392b',probable:'#e67e22',possible:'#f39c12',inadequate:'#95a5a6',not_classified:'#bdc3c7'};
+
+// Gear SVG ornament
+const Gear = ({size=24,color=COPPER,style={}}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" style={{animation:'spin 12s linear infinite',...style}}>
+    <path d="M12 1l1.5 3.2a7.5 7.5 0 012.8 1.6L19.5 4l1 2.6-3 1.7a7.5 7.5 0 01.5 3.2h3.5v2.8H18a7.5 7.5 0 01-.5 3.2l3 1.7-1 2.6-3.2-1.8a7.5 7.5 0 01-2.8 1.6L12 23l-1.5-3.2a7.5 7.5 0 01-2.8-1.6L4.5 20l-1-2.6 3-1.7A7.5 7.5 0 016 12.5H2.5V9.7H6a7.5 7.5 0 01.5-3.2l-3-1.7 1-2.6 3.2 1.8a7.5 7.5 0 012.8-1.6L12 1z" fill="none" stroke={color} strokeWidth="0.8"/>
+    <circle cx="12" cy="12" r="3.5" fill="none" stroke={color} strokeWidth="0.8"/>
+  </svg>
+);
+
+// Molecular formula renderer
+const FormulaDisplay = ({formula}) => {
+  if (!formula) return null;
+  const parts = formula.split(/(\d+)/);
+  return <span style={{fontFamily:'Space Mono',fontSize:'.9rem'}}>{parts.map((p,i) => /^\d+$/.test(p) ? <sub key={i}>{p}</sub> : p)}</span>;
+};
+
+// Hazard evidence badge
+const EvidenceBadge = ({level}) => (
+  <span style={{display:'inline-block',padding:'2px 8px',borderRadius:3,fontSize:'.7rem',fontFamily:'Space Mono',color:'#fff',background:HAZARD_COLORS[level]||STEEL,marginLeft:6,letterSpacing:'.03em',textTransform:'uppercase'}}>{level}</span>
+);
+
+// Classification chip
+const ClassChip = ({name}) => (
+  <span style={{display:'inline-block',padding:'3px 10px',borderRadius:12,fontSize:'.75rem',fontFamily:'Space Mono',background:GOLD,color:'#fff',margin:'2px 3px'}}>{name}</span>
+);
+
+// Water gauge visualization
+const WaterGauge = ({value,max,label}) => {
+  const pct = Math.min(100, (value/max)*100);
+  return (
+    <div style={{textAlign:'center',margin:'8px 12px'}}>
+      <div style={{width:80,height:80,borderRadius:'50%',border:`3px solid ${TEAL}`,position:'relative',overflow:'hidden',margin:'0 auto',background:CREAM}}>
+        <div style={{position:'absolute',bottom:0,width:'100%',height:`${pct}%`,background:`linear-gradient(to top, ${TEAL}dd, ${TEAL}55)`,transition:'height 1s ease'}}/>
+        <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'Space Mono',fontSize:'.7rem',fontWeight:700,color:INK}}>{typeof value==='number'?(value>=1e6?`${(value/1e6).toFixed(0)}M`:value.toLocaleString()):value}</div>
+      </div>
+      <div style={{fontFamily:'Space Mono',fontSize:'.65rem',color:STEEL,marginTop:4}}>{label}</div>
+    </div>
+  );
+};
+
+// ── TAB: Overview ──
+const OverviewTab = ({sub, health, classes, water, aliases}) => (
+  <div style={{animation:'fadeIn .5s ease',padding:'1.2rem'}}>
+    {sub.description && <p style={{fontSize:'1.15rem',lineHeight:1.7,marginBottom:'1.2rem',maxWidth:700}}>{sub.description}</p>}
+    {water && (
+      <div style={{display:'flex',flexWrap:'wrap',justifyContent:'center',margin:'1rem 0',padding:'1rem',background:CREAM,borderRadius:8,border:`1px solid ${GOLD}33`}}>
+        {water.people_affected && <WaterGauge value={water.people_affected} max={330000000} label="People Affected"/>}
+        {water.systems_detected && <WaterGauge value={water.systems_detected} max={200000} label="Water Systems"/>}
+        {water.states_detected && <WaterGauge value={water.states_detected} max={50} label="States"/>}
+      </div>
+    )}
+    {classes?.length > 0 && <div style={{margin:'1rem 0'}}><span style={{fontFamily:'Space Mono',fontSize:'.75rem',color:STEEL,marginRight:8}}>CLASSIFICATIONS</span>{classes.map((c,i) => <ClassChip key={i} name={c.name}/>)}</div>}
+    {aliases?.length > 0 && <div style={{margin:'1rem 0'}}><span style={{fontFamily:'Space Mono',fontSize:'.75rem',color:STEEL}}>ALSO KNOWN AS</span><p style={{fontSize:'.85rem',color:STEEL,lineHeight:1.8,marginTop:4}}>{aliases.slice(0,15).join(' · ')}</p></div>}
+    {sub.pubchem_cid && <div style={{marginTop:'1rem'}}><a href={`https://pubchem.ncbi.nlm.nih.gov/compound/${sub.pubchem_cid}`} target="_blank" rel="noopener" style={{fontFamily:'Space Mono',fontSize:'.8rem',color:TEAL,textDecoration:'none',borderBottom:`1px dashed ${TEAL}`}}>View on PubChem →</a></div>}
+  </div>
+);
+
+// ── TAB: Chemistry (Blueprint) ──
+const ChemistryTab = ({sub}) => {
+  const items = [
+    sub.molecular_formula && ['FORMULA', <FormulaDisplay formula={sub.molecular_formula}/>],
+    sub.molecular_weight && ['MOLECULAR WEIGHT', `${sub.molecular_weight} g/mol`],
+    sub.cas_number && ['CAS NUMBER', sub.cas_number],
+    sub.smiles && ['SMILES', sub.smiles],
+    sub.inchi_key && ['InChI KEY', sub.inchi_key],
+    sub.pubchem_cid && ['PUBCHEM CID', sub.pubchem_cid],
+  ].filter(Boolean);
+  if (!items.length) return <div style={{padding:'2rem',textAlign:'center',color:STEEL,fontFamily:'Space Mono'}}>No chemical data available yet</div>;
+  return (
+    <div style={{animation:'fadeIn .5s ease',padding:'1.2rem'}}>
+      <div style={{position:'relative',background:`repeating-linear-gradient(0deg,transparent,transparent 19px,${TEAL}0a 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,${TEAL}0a 20px)`,border:`1px solid ${TEAL}22`,borderRadius:8,padding:'1.5rem',minHeight:280}}>
+        <Gear size={20} color={COPPER} style={{position:'absolute',top:8,right:8,opacity:.4}}/>
+        <Gear size={16} color={STEEL} style={{position:'absolute',bottom:8,left:8,opacity:.3,animationDuration:'18s'}}/>
+        <div style={{fontFamily:'Space Mono',fontSize:'.65rem',color:STEEL,letterSpacing:'.1em',marginBottom:'1rem'}}>CHEMICAL BLUEPRINT — {sub.name.toUpperCase()}</div>
+        {sub.molecular_formula && (
+          <div style={{textAlign:'center',margin:'1.5rem 0',fontSize:'2.5rem',fontWeight:700,color:TEAL,letterSpacing:2}}>
+            <FormulaDisplay formula={sub.molecular_formula}/>
+            <div style={{fontSize:'.7rem',fontFamily:'Space Mono',color:STEEL,marginTop:4}}>MOLECULAR FORMULA</div>
+          </div>
+        )}
+        <div style={{display:'grid',gridTemplateColumns:'auto 1fr',gap:'6px 20px',marginTop:'1rem'}}>
+          {items.map(([label, val],i) => (
+            <React.Fragment key={i}>
+              <div style={{fontFamily:'Space Mono',fontSize:'.7rem',color:STEEL,letterSpacing:'.05em',paddingTop:3}}>{label}</div>
+              <div style={{fontFamily:'Space Mono',fontSize:'.82rem',color:INK,wordBreak:'break-all'}}>{val}</div>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── TAB: Health Effects ──
+const HealthTab = ({health}) => {
+  if (!health?.length) return <div style={{padding:'2rem',textAlign:'center',color:STEEL,fontFamily:'Space Mono'}}>No health effect data available</div>;
+  const r=90, cx=110, cy=110;
+  const angleStep = (2*Math.PI)/Math.max(health.length,1);
+  return (
+    <div style={{animation:'fadeIn .5s ease',padding:'1.2rem'}}>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'1.5rem',alignItems:'flex-start'}}>
+        <svg width={220} height={220} style={{flexShrink:0}}>
+          <circle cx={cx} cy={cy} r={r+5} fill="none" stroke={TEAL} strokeWidth=".5" opacity=".2"/>
+          <circle cx={cx} cy={cy} r={r*0.6} fill="none" stroke={TEAL} strokeWidth=".3" opacity=".15"/>
+          <circle cx={cx} cy={cy} r={r*0.3} fill="none" stroke={TEAL} strokeWidth=".3" opacity=".1"/>
+          {health.map((h,i) => {
+            const angle = i*angleStep - Math.PI/2;
+            const lvl = h.evidence_level==='known'?1:h.evidence_level==='probable'?.75:h.evidence_level==='possible'?.5:.3;
+            const x1=cx+r*0.15*Math.cos(angle), y1=cy+r*0.15*Math.sin(angle);
+            const x2=cx+r*lvl*Math.cos(angle), y2=cy+r*lvl*Math.sin(angle);
+            const lx=cx+(r+14)*Math.cos(angle), ly=cy+(r+14)*Math.sin(angle);
+            return <g key={i}>
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={HAZARD_COLORS[h.evidence_level]||TEAL} strokeWidth="3" strokeLinecap="round" opacity=".8"/>
+              <circle cx={x2} cy={y2} r="4" fill={HAZARD_COLORS[h.evidence_level]||TEAL}/>
+              <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="6.5" fontFamily="Space Mono" fill={INK}>{h.name.length>12?h.name.slice(0,11)+'…':h.name}</text>
+            </g>;
+          })}
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle" fontSize="7" fontFamily="Space Mono" fill={STEEL}>HEALTH RING</text>
+        </svg>
+        <div style={{flex:1,minWidth:200}}>
+          {health.map((h,i) => (
+            <div key={i} style={{display:'flex',alignItems:'center',padding:'6px 0',borderBottom:`1px solid ${GOLD}22`,animation:`slideIn .4s ease ${i*.08}s both`}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:HAZARD_COLORS[h.evidence_level]||STEEL,marginRight:10,flexShrink:0}}/>
+              <div style={{flex:1,fontSize:'.95rem',fontWeight:600}}>{h.name}</div>
+              <EvidenceBadge level={h.evidence_level}/>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── TAB: Regulations ──
+const RegulationsTab = ({limits}) => {
+  if (!limits?.length) return <div style={{padding:'2rem',textAlign:'center',color:STEEL,fontFamily:'Space Mono'}}>No regulatory limits on record</div>;
+  return (
+    <div style={{animation:'fadeIn .5s ease',padding:'1.2rem'}}>
+      <div style={{fontFamily:'Space Mono',fontSize:'.65rem',color:STEEL,letterSpacing:'.1em',marginBottom:'.8rem'}}>REGULATORY LIMITS</div>
+      <table style={{width:'100%',borderCollapse:'collapse'}}>
+        <thead><tr style={{background:TEAL,color:'#fff'}}>
+          {['Agency','Type','Limit','Unit'].map(h => <th key={h} style={{padding:'8px 12px',textAlign:'left',fontFamily:'Space Mono',fontSize:'.72rem',letterSpacing:'.05em'}}>{h}</th>)}
+        </tr></thead>
+        <tbody>{limits.map((r,i) => (
+          <tr key={i} style={{borderBottom:`1px solid ${GOLD}22`,animation:`slideIn .3s ease ${i*.06}s both`}}>
+            <td style={{padding:'8px 12px',fontWeight:700}}>{r.agency}</td>
+            <td style={{padding:'8px 12px',fontFamily:'Space Mono',fontSize:'.8rem'}}>{r.limit_type}</td>
+            <td style={{padding:'8px 12px',fontFamily:'Space Mono',fontSize:'.85rem',color:TEAL,fontWeight:700}}>{r.limit_value}</td>
+            <td style={{padding:'8px 12px',fontFamily:'Space Mono',fontSize:'.8rem',color:STEEL}}>{r.limit_unit}</td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+};
+
+// ── Conveyor Belt Substance Browser ──
+const ConveyorBelt = ({substances, activeId, onSelect, filter, onFilterChange}) => {
+  const ref = useRef(null);
+  const onWheel = useCallback(e => { if(ref.current){ref.current.scrollLeft += e.deltaY; e.preventDefault();}}, []);
+  const filters = ['All','PFAS','Heavy Metal','Pesticide','VOC','Disinfection Byproduct','Industrial Solvent','Radiological'];
+  const filtered = filter==='All' ? substances : substances.filter(s => s.classification_names?.includes(filter));
+  return (
+    <div style={{background:`linear-gradient(to right,${TEAL}08,${TEAL}15,${TEAL}08)`,borderTop:`1px solid ${GOLD}33`,borderBottom:`1px solid ${GOLD}33`,padding:'8px 0'}}>
+      <div style={{display:'flex',gap:6,padding:'0 12px 8px',overflowX:'auto'}}>
+        {filters.map(f => (
+          <button key={f} onClick={()=>onFilterChange(f)} style={{padding:'3px 10px',border:`1px solid ${f===filter?TEAL:GOLD+'55'}`,borderRadius:12,background:f===filter?TEAL:'transparent',color:f===filter?'#fff':STEEL,fontFamily:'Space Mono',fontSize:'.65rem',cursor:'pointer',whiteSpace:'nowrap',transition:'all .2s'}}>{f}</button>
+        ))}
+      </div>
+      <div ref={ref} onWheel={onWheel} style={{display:'flex',gap:8,overflowX:'auto',padding:'0 12px 4px',scrollBehavior:'smooth',cursor:'grab'}}>
+        {filtered.map(s => (
+          <div key={s.id} onClick={()=>onSelect(s)} style={{
+            minWidth:140,maxWidth:140,padding:'8px 10px',background:s.id===activeId?TEAL:CREAM,color:s.id===activeId?'#fff':INK,
+            border:`1px solid ${s.id===activeId?TEAL:GOLD+'44'}`,borderRadius:6,cursor:'pointer',transition:'all .25s',flexShrink:0,
+          }}>
+            <div style={{fontSize:'.82rem',fontWeight:600,lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.name}</div>
+            <div style={{fontFamily:'Space Mono',fontSize:'.6rem',color:s.id===activeId?'#fff9':STEEL,marginTop:3}}>{s.cas_number||'—'}</div>
+          </div>
+        ))}
+        {filtered.length===0 && <div style={{padding:'12px',fontFamily:'Space Mono',fontSize:'.75rem',color:STEEL}}>No substances in this category</div>}
+      </div>
+    </div>
+  );
+};
+
+// ── MAIN APP ──
+const App = () => {
+  const [substances, setSubstances] = useState([]);
+  const [active, setActive] = useState(null);
+  const [details, setDetails] = useState(null);
+  const [tab, setTab] = useState(0);
+  const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  // Load substance list
+  useEffect(() => {
+    (async () => {
+      const {data} = await sb.from('substances').select('id,name,cas_number,description,molecular_formula,molecular_weight').order('name');
+      if (data) {
+        // Load classifications for conveyor filter
+        const {data:scData} = await sb.from('substance_classifications').select('substance_id,classifications(name)');
+        const classMap = {};
+        (scData||[]).forEach(sc => { if(!classMap[sc.substance_id]) classMap[sc.substance_id]=[]; if(sc.classifications?.name) classMap[sc.substance_id].push(sc.classifications.name); });
+        const enriched = data.map(s => ({...s, classification_names: classMap[s.id]||[]}));
+        setSubstances(enriched);
+        if(enriched.length) loadDetails(enriched[0]);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  // Load full details for selected substance
+  const loadDetails = async (sub) => {
+    setActive(sub); setTab(0); setDetails(null);
+    const [heR, clR, rlR, wdR, alR] = await Promise.all([
+      sb.from('substance_health_effects').select('health_effects(name),evidence_level').eq('substance_id',sub.id),
+      sb.from('substance_classifications').select('classifications(name)').eq('substance_id',sub.id),
+      sb.from('regulatory_limits').select('agency,limit_type,limit_value,limit_unit').eq('substance_id',sub.id),
+      sb.from('water_data').select('*').eq('substance_id',sub.id).limit(1),
+      sb.from('substance_aliases').select('alias').eq('substance_id',sub.id).limit(20),
+    ]);
+    const fullSub = (await sb.from('substances').select('*').eq('id',sub.id).single()).data || sub;
+    setDetails({
+      sub: fullSub,
+      health: heR.data?.map(h=>({name:h.health_effects?.name,evidence_level:h.evidence_level})).filter(h=>h.name)||[],
+      classes: clR.data?.map(c=>({name:c.classifications?.name})).filter(c=>c.name)||[],
+      limits: rlR.data||[],
+      water: wdR.data?.[0]||null,
+      aliases: alR.data?.map(a=>a.alias)||[],
+    });
+  };
+
+  // Search handler
+  const doSearch = async () => {
+    if(!search.trim()) return;
+    const {data} = await sb.rpc('search_substances_hybrid',{query_text:search,max_results:20});
+    if(data?.length){
+      const found = substances.find(s=>s.name===data[0].name);
+      if(found) loadDetails(found);
+    }
+  };
+
+  if (loading) return (
+    <div style={{height:'100vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column'}}>
+      <Gear size={48} color={TEAL}/><div style={{fontFamily:'Space Mono',fontSize:'.85rem',color:STEEL,marginTop:16}}>Loading substances...</div>
+    </div>
+  );
+
+  return (
+    <div style={{height:'100vh',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      {/* ── HEADER ── */}
+      <div style={{display:'flex',alignItems:'center',padding:'10px 16px',borderBottom:`1px solid ${GOLD}44`,background:`linear-gradient(135deg,${PARCHMENT},${CREAM})`}}>
+        <Gear size={22} color={COPPER} style={{marginRight:10}}/>
+        <div style={{flex:1}}>
+          <div style={{fontSize:'1.3rem',fontWeight:700,color:TEAL,lineHeight:1.2}}>The Knowledge Gardens</div>
+          <div style={{fontFamily:'Space Mono',fontSize:'.6rem',color:STEEL,letterSpacing:'.12em'}}>TOXICOLOGY REGISTRY — {substances.length} SUBSTANCES</div>
+        </div>
+        <div style={{display:'flex',gap:6}}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doSearch()}
+            placeholder="Search substances, CAS, trade names..." style={{width:260,padding:'6px 10px',border:`1px solid ${GOLD}88`,borderRadius:4,fontFamily:'Space Mono',fontSize:'.72rem',background:CREAM,outline:'none'}}/>
+          <button onClick={doSearch} style={{padding:'6px 14px',background:TEAL,color:'#fff',border:'none',borderRadius:4,fontFamily:'Space Mono',fontSize:'.7rem',cursor:'pointer'}}>Search</button>
+        </div>
+      </div>
+
+      {/* ── CONVEYOR BELT ── */}
+      <ConveyorBelt substances={substances} activeId={active?.id} onSelect={loadDetails} filter={filter} onFilterChange={setFilter}/>
+
+      {/* ── MAIN CONTENT ── */}
+      {active && (
+        <div style={{flex:1,overflow:'auto',display:'flex',flexDirection:'column'}}>
+          {/* Substance header */}
+          <div style={{padding:'1rem 1.2rem .6rem',borderBottom:`1px solid ${GOLD}22`}}>
+            <div style={{display:'flex',alignItems:'baseline',gap:12}}>
+              <h1 style={{fontSize:'1.8rem',fontWeight:700,color:TEAL,lineHeight:1.2}}>{active.name}</h1>
+              {details?.sub?.cas_number && <span style={{fontFamily:'Space Mono',fontSize:'.8rem',color:STEEL}}>CAS {details.sub.cas_number}</span>}
+            </div>
+            {details?.sub?.molecular_formula && (
+              <div style={{marginTop:4,display:'flex',alignItems:'center',gap:12}}>
+                <FormulaDisplay formula={details.sub.molecular_formula}/>
+                {details.sub.molecular_weight && <span style={{fontFamily:'Space Mono',fontSize:'.75rem',color:STEEL}}>MW {details.sub.molecular_weight}</span>}
+              </div>
+            )}
+          </div>
+
+          {/* Tab bar */}
+          <div style={{display:'flex',borderBottom:`2px solid ${GOLD}33`,padding:'0 1rem'}}>
+            {TABS.map((t,i) => (
+              <button key={t} onClick={()=>setTab(i)} style={{
+                padding:'10px 18px',border:'none',borderBottom:tab===i?`3px solid ${TEAL}`:'3px solid transparent',
+                background:'transparent',fontFamily:'Cormorant Garamond',fontSize:'1rem',fontWeight:tab===i?700:400,
+                color:tab===i?TEAL:STEEL,cursor:'pointer',transition:'all .2s',marginBottom:-2
+              }}>{t}</button>
+            ))}
+            <div style={{flex:1}}/>
+            <Gear size={16} color={COPPER} style={{alignSelf:'center',opacity:.3}}/>
+          </div>
+
+          {/* Tab content */}
+          <div style={{flex:1,overflow:'auto'}}>
+            {!details ? (
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:200}}><Gear size={32} color={TEAL}/></div>
+            ) : (
+              <>
+                {tab===0 && <OverviewTab sub={details.sub} health={details.health} classes={details.classes} water={details.water} aliases={details.aliases}/>}
+                {tab===1 && <ChemistryTab sub={details.sub}/>}
+                {tab===2 && <HealthTab health={details.health}/>}
+                {tab===3 && <RegulationsTab limits={details.limits}/>}
+              </>
+            )}
+          </div>
+
+          {/* Footer bar */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 14px',borderTop:`1px solid ${GOLD}33`,background:`linear-gradient(to right,${CREAM},${PARCHMENT})`}}>
+            <div style={{fontFamily:'Space Mono',fontSize:'.6rem',color:STEEL}}>
+              DATA: EWG · PUBCHEM · EPA | {details?.health?.length||0} HEALTH EFFECTS | {details?.limits?.length||0} REGULATORY LIMITS
+            </div>
+            <div style={{fontFamily:'Space Mono',fontSize:'.55rem',color:COPPER}}>THE KNOWLEDGE GARDENS © 2026</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

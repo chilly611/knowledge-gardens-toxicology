@@ -1,0 +1,389 @@
+openapi: 3.0.3
+info:
+  title: Toxicology Knowledge Garden API
+  description: |
+    A comprehensive toxicology database API providing access to 329 drinking water contaminants
+    with chemical identifiers, health effects, regulatory limits, and water detection data.
+    
+    Built as part of The Knowledge Gardens project (theknowledgegardens.com) by XR Workers.
+    
+    **Data Sources:** EWG Tap Water Database, PubChem, EPA
+    
+    **Authentication:** Include `apikey` header with your Supabase anon key.
+    All endpoints are read-only and publicly accessible.
+  version: 1.0.0
+  contact:
+    name: XR Workers
+    url: https://theknowledgegardens.com
+  license:
+    name: MIT
+
+servers:
+  - url: https://vlezoyalutexenbnzzui.supabase.co/rest/v1
+    description: Production (Supabase PostgREST)
+
+security:
+  - apiKey: []
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: apikey
+      description: Supabase anon key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token (same as apikey value)
+
+  schemas:
+    SubstanceSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, example: "Arsenic" }
+        cas_number: { type: string, example: "7440-38-2", nullable: true }
+        description: { type: string, nullable: true }
+        molecular_formula: { type: string, example: "As", nullable: true }
+        pubchem_cid: { type: integer, example: 5359596, nullable: true }
+
+    SearchResult:
+      allOf:
+        - $ref: '#/components/schemas/SubstanceSummary'
+        - type: object
+          properties:
+            match_type: { type: string, enum: [fts, fuzzy, cas, alias] }
+            score: { type: number, format: float }
+
+    SubstanceDetail:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        cas_number: { type: string, nullable: true }
+        iupac_name: { type: string, nullable: true }
+        molecular_formula: { type: string, nullable: true }
+        molecular_weight: { type: number, nullable: true }
+        smiles: { type: string, nullable: true }
+        inchi_key: { type: string, nullable: true }
+        pubchem_cid: { type: integer, nullable: true }
+        description: { type: string, nullable: true }
+        health_effects:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              evidence: { type: string, enum: [known, probable, possible, inadequate] }
+        classifications:
+          type: array
+          items: { type: string }
+        regulatory_limits:
+          type: array
+          items:
+            type: object
+            properties:
+              agency: { type: string }
+              limit_type: { type: string }
+              limit_value: { type: number }
+              limit_unit: { type: string }
+        water_data:
+          type: object
+          properties:
+            states_detected: { type: integer, nullable: true }
+            states_tested: { type: integer, nullable: true }
+            systems_detected: { type: integer, nullable: true }
+            people_affected: { type: integer, nullable: true }
+        aliases:
+          type: array
+          items: { type: string }
+
+    WaterStat:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        cas_number: { type: string, nullable: true }
+        people_affected: { type: integer }
+        systems_detected: { type: integer, nullable: true }
+        states_detected: { type: integer, nullable: true }
+
+    HealthEffectResult:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        cas_number: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        effect: { type: string }
+        evidence_level: { type: string }
+
+paths:
+  /rpc/search_substances_hybrid:
+    post:
+      summary: Hybrid Search (recommended)
+      description: |
+        Multi-strategy search across substances. Cascades through:
+        1. Full-text search (keyword matching)
+        2. CAS number exact match
+        3. Fuzzy name matching (handles typos)
+        4. Alias/synonym matching (trade names)
+        
+        Examples: "arsenic", "7440-38-2", "benzeen" (typo), "Roundup" (trade name), "PFOA"
+      operationId: searchSubstancesHybrid
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query_text]
+              properties:
+                query_text: { type: string, example: "arsenic" }
+                max_results: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Array of matching substances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResult'
+
+  /rpc/search_substances_fts:
+    post:
+      summary: Full-Text Search
+      description: Keyword-based search using PostgreSQL tsvector. Best for known substance names.
+      operationId: searchSubstancesFts
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query_text]
+              properties:
+                query_text: { type: string }
+                max_results: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Array of matching substances with rank scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubstanceSummary'
+
+  /rpc/search_substances_fuzzy:
+    post:
+      summary: Fuzzy Name Search
+      description: Trigram similarity search. Handles misspellings and partial names.
+      operationId: searchSubstancesFuzzy
+      tags: [Search]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query_text]
+              properties:
+                query_text: { type: string }
+                max_results: { type: integer, default: 20 }
+                min_similarity: { type: number, default: 0.15 }
+      responses:
+        '200':
+          description: Array of fuzzy-matched substances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubstanceSummary'
+
+  /rpc/get_substance_details:
+    post:
+      summary: Get Substance Details
+      description: |
+        Returns comprehensive details for a single substance including health effects,
+        classifications, regulatory limits, water detection data, and all known aliases.
+      operationId: getSubstanceDetails
+      tags: [Substances]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [substance_id_param]
+              properties:
+                substance_id_param: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Full substance detail as JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubstanceDetail'
+
+  /rpc/find_by_health_effect:
+    post:
+      summary: Find Substances by Health Effect
+      description: Returns all substances linked to a specific health effect (Cancer, Liver Damage, etc.)
+      operationId: findByHealthEffect
+      tags: [Health Effects]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [effect_name]
+              properties:
+                effect_name: { type: string, example: "Cancer" }
+                max_results: { type: integer, default: 50 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthEffectResult'
+
+  /rpc/compare_substances:
+    post:
+      summary: Compare Two Substances
+      description: Side-by-side comparison of two substances with all their details.
+      operationId: compareSubstances
+      tags: [Substances]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id_a, id_b]
+              properties:
+                id_a: { type: string, format: uuid }
+                id_b: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  substance_a: { $ref: '#/components/schemas/SubstanceDetail' }
+                  substance_b: { $ref: '#/components/schemas/SubstanceDetail' }
+
+  /rpc/get_water_stats:
+    post:
+      summary: Water Contamination Statistics
+      description: |
+        Returns substances detected in drinking water, sorted by number of people affected.
+        Filter by minimum population threshold.
+      operationId: getWaterStats
+      tags: [Water Data]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                min_people_affected: { type: integer, default: 0 }
+                max_results: { type: integer, default: 50 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaterStat'
+
+  /substances:
+    get:
+      summary: List Substances (Direct Table)
+      description: |
+        Direct PostgREST access to the substances table. Supports filtering, ordering,
+        pagination via query parameters. See PostgREST docs for full query syntax.
+      operationId: listSubstances
+      tags: [Direct Tables]
+      parameters:
+        - name: select
+          in: query
+          schema: { type: string, default: "name,cas_number,molecular_formula,pubchem_cid" }
+          description: Columns to return (comma-separated)
+        - name: name
+          in: query
+          schema: { type: string }
+          description: Filter by name (use eq., ilike., etc.)
+        - name: cas_number
+          in: query
+          schema: { type: string }
+          description: Filter by CAS number
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: order
+          in: query
+          schema: { type: string, example: "name.asc" }
+      responses:
+        '200':
+          description: Array of substances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubstanceSummary'
+
+  /health_effects:
+    get:
+      summary: List Health Effects
+      description: Returns all health effect categories in the database.
+      operationId: listHealthEffects
+      tags: [Direct Tables]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    name: { type: string }
+                    description: { type: string }
+
+  /classifications:
+    get:
+      summary: List Classifications
+      description: Returns all substance classification categories (PFAS, VOC, Heavy Metal, etc.)
+      operationId: listClassifications
+      tags: [Direct Tables]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    name: { type: string }
+                    classification_type: { type: string }
+                    description: { type: string }

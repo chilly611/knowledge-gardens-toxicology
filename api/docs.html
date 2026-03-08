@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Toxicology Knowledge Garden API</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Cormorant Garamond', Georgia, serif; }
+    .kg-header {
+      background: #f5f0e8; border-bottom: 2px solid #B87333;
+      padding: 20px 32px; display: flex; align-items: center; gap: 16px;
+    }
+    .kg-header h1 { margin: 0; color: #1A5C5C; font-size: 24px; font-weight: 600; }
+    .kg-header .subtitle { color: #71797E; font-family: 'Space Mono', monospace; font-size: 13px; }
+    .kg-header .badge {
+      background: #1A5C5C; color: #FBF8F3; padding: 4px 10px;
+      border-radius: 3px; font-family: 'Space Mono', monospace; font-size: 11px;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Space+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="kg-header">
+    <h1>Toxicology Knowledge Garden</h1>
+    <span class="badge">API v1.0</span>
+    <span class="subtitle">329 substances · 297 CAS numbers · 5,947 aliases · 8 search functions</span>
+  </div>
+  <redoc spec-url='openapi.yaml'
+    hide-download-button
+    theme='{
+      "colors": { "primary": { "main": "#1A5C5C" } },
+      "typography": {
+        "fontSize": "15px",
+        "fontFamily": "Cormorant Garamond, Georgia, serif",
+        "headings": { "fontFamily": "Cormorant Garamond, Georgia, serif" },
+        "code": { "fontFamily": "Space Mono, monospace", "fontSize": "13px" }
+      },
+      "sidebar": { "backgroundColor": "#f5f0e8", "textColor": "#2C2C2C" },
+      "rightPanel": { "backgroundColor": "#2C2C2C" }
+    }'
+  ></redoc>
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+</body>
+</html>
