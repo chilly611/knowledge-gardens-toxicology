@@ -1,0 +1,28 @@
+-- Batch 3: folders 41-65
+
+INSERT INTO case_documents (case_id, name, category, file_type, drive_folder_path) VALUES
+('55021415-8769-4abe-93ba-5b0887110b74', 'Latest data', 'testing_data'::document_category, 'folder', 'Sky Valley PCB Case/Latest data'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Light ballasts', 'exposure_data'::document_category, 'folder', 'Sky Valley PCB Case/Light ballasts'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Mahoney case', 'other'::document_category, 'folder', 'Sky Valley PCB Case/Mahoney case'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Map of FLB leaks', 'graphic'::document_category, 'folder', 'Sky Valley PCB Case/Map of FLB leaks'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Meetings', 'meeting_notes'::document_category, 'folder', 'Sky Valley PCB Case/Meetings'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Monsanto Fraud', 'defense_material'::document_category, 'folder', 'Sky Valley PCB Case/Monsanto Fraud'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Monsanto motions', 'motion'::document_category, 'folder', 'Sky Valley PCB Case/Monsanto motions'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'MOnsnato admits danger', 'defense_material'::document_category, 'folder', 'Sky Valley PCB Case/MOnsnato admits danger'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Motion responses', 'motion'::document_category, 'folder', 'Sky Valley PCB Case/Motion responses'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'New med files', 'medical_record'::document_category, 'folder', 'Sky Valley PCB Case/New med files'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Notes of meetings on SVEC', 'meeting_notes'::document_category, 'folder', 'Sky Valley PCB Case/Notes of meetings on SVEC'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Other expert generic causation reports', 'expert_report'::document_category, 'folder', 'Sky Valley PCB Case/Other expert generic causation reports'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Other schools PCB problem', 'article'::document_category, 'folder', 'Sky Valley PCB Case/Other schools PCB problem'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Paper', 'article'::document_category, 'folder', 'Sky Valley PCB Case/Paper'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Parents findings 2016', 'other'::document_category, 'folder', 'Sky Valley PCB Case/Parents findings 2016'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Patient Notes', 'medical_record'::document_category, 'folder', 'Sky Valley PCB Case/Patient Notes'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'PCB presentation', 'presentation'::document_category, 'folder', 'Sky Valley PCB Case/PCB presentation'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Plaintiff and Plaintiff Experts depositions', 'deposition'::document_category, 'folder', 'Sky Valley PCB Case/Plaintiff and Plaintiff Experts depositions'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Pretrial motions', 'motion'::document_category, 'folder', 'Sky Valley PCB Case/Pretrial motions'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Rebuttal to physicians hired by defense', 'rebuttal'::document_category, 'folder', 'Sky Valley PCB Case/Rebuttal to physicians hired by defense'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Received 1:13:2020', 'other'::document_category, 'folder', 'Sky Valley PCB Case/Received 1:13:2020'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Received 12:24:2019', 'other'::document_category, 'folder', 'Sky Valley PCB Case/Received 12:24:2019'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Referrals', 'correspondence'::document_category, 'folder', 'Sky Valley PCB Case/Referrals'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'Regulation', 'regulation'::document_category, 'folder', 'Sky Valley PCB Case/Regulation'),
+('55021415-8769-4abe-93ba-5b0887110b74', 'replacement experts', 'expert_report'::document_category, 'folder', 'Sky Valley PCB Case/replacement experts');

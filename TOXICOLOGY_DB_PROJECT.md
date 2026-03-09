@@ -1,5 +1,5 @@
-# TOXICOLOGY KNOWLEDGE GARDEN — DATABASE PROJECT
-# Last Updated: 2026-03-08 Session 10 — ALL 8 CHUNKS COMPLETE, CI GREEN ✅
+# TOXICOLOGY KNOWLEDGE GARDEN — DATABASE + WEBSITE PROJECT
+# Last Updated: 2026-03-09 Session 12 — WEBSITE LIVE AT toxicology.theknowledgegardens.com ✅
 # ⚠️ EVERY NEW CLAUDE SESSION: READ THIS FILE FIRST ⚠️
 
 ---
@@ -27,9 +27,28 @@ Build a foundational toxicology database that is:
 
 ---
 
-## CURRENT STATE (2026-03-07)
+## CURRENT STATE (2026-03-09) — PRODUCTION WEBSITE LIVE
 
-### What Exists
+### 🌐 LIVE WEBSITE
+- **URL:** https://toxicology.theknowledgegardens.com
+- **Platform:** Next.js 16.1.6 on Vercel (SSG)
+- **Pages:** 354 statically generated (329 substances + 18 health effects + home + browse + about + error pages)
+- **Backend:** Supabase PostgreSQL (live queries for search, static generation for detail pages)
+- **Domain:** CNAME `toxicology.theknowledgegardens.com` → `cname.vercel-dns.com` (GoDaddy DNS)
+- **Vercel Project:** chillyd-2693s-projects/website
+- **Source:** `toxicology-db/website/` (Next.js app)
+
+#### Website Routes
+| Route | Type | Description |
+|-------|------|-------------|
+| `/` | Static | Hero, search bar, stats (329/297/18/3), featured contaminants, category chips |
+| `/substances` | Dynamic (SSR) | Browse all 329 + hybrid search (name/CAS/trade name/fuzzy) + classification filter chips |
+| `/substances/[slug]` | SSG (×329) | 4-tab detail: Overview (water gauges, aliases, PubChem link) · Chemistry (formula, SMILES, InChI) · Health Effects (Health Ring SVG, evidence badges) · Regulations (agency table) |
+| `/health-effects` | Static | 18 health effects ranked by linked substance count |
+| `/health-effects/[slug]` | SSG (×18) | Substances grouped by evidence level (known/probable/possible) |
+| `/about` | Static | Data sources (EWG, PubChem, EPA), methodology, disclaimers |
+
+### What Exists (Infrastructure)
 | Asset | Location | Status |
 |-------|----------|--------|
 | EWG scraper (contaminant list) | `ewg-data/scrape-contaminants.js` | ✅ Working |
@@ -53,6 +72,9 @@ Build a foundational toxicology database that is:
 | Frontend Experience | `toxicology-db/frontend/toxicology-experience.html` | ✅ 361 lines, 4 tabs, live Supabase |
 | GitHub Repo | `github.com/chilly611/knowledge-gardens-toxicology` | ✅ Public, 32 files, 6,501 lines |
 | Supabase credentials | `ewg-data/.env` | SUPABASE_URL, ANON_KEY, SERVICE_ROLE_KEY |
+| **Next.js Website** | `toxicology-db/website/` | ✅ LIVE at toxicology.theknowledgegardens.com |
+| Website env vars | `toxicology-db/website/.env.local` | NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY |
+| Vercel deployment | chillyd-2693s-projects/website | ✅ 354 pages, SSG + dynamic search |
 
 ### What's Wrong with Current Schema
 The current `ewg_contaminants` table is a **flat dump** — one big table with everything. Problems:
@@ -364,8 +386,11 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
 ### Paths
 - Project root: `C:\Users\kmacn\Desktop\TheKnowledgeGardens\`
 - Toxicology sub-project: `toxicology-db\`
+- **Next.js website: `toxicology-db\website\`**
+- Website source: `toxicology-db\website\src\app\` (pages), `src\components\` (components), `src\lib\` (Supabase client)
 - EWG data + scrapers: `ewg-data\`
 - Supabase creds: `ewg-data\.env`
+- Website creds: `toxicology-db\website\.env.local`
 - Orchid demo fleet: `index.html`, `entrance.html`, `orrery.html`, `species-experience.html`
 
 ### Supabase
@@ -390,6 +415,7 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
 | NTP (NIEHS) | ntp.niehs.nih.gov | Report on Carcinogens | Web scrape |
 
 ### Tech Stack
+- **Website: Next.js 16.1.6 + Tailwind CSS v4 + TypeScript on Vercel (SSG)**
 - Database: Supabase (Postgres 15+, pgvector, PostgREST)
 - API: Supabase Edge Functions (Deno), PostgREST auto-API
 - MCP Server: Node.js (TypeScript), @modelcontextprotocol/sdk
@@ -562,12 +588,14 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
 - **Frontend:** `npx http-server frontend -p 3456` → http://localhost:3456
 - **MCP Server:** Registered in Claude Desktop config, auto-starts
 
-### What's Next (Post-MVP)
-1. Deploy frontend to theknowledgegardens.com/toxicology
+### What's Next (Post-Deploy)
+1. **UI/UX iteration** — growth-edge, innovative interface design (next chat session)
 2. Generate vector embeddings when OpenAI/Anthropic API key is available
 3. Add EPA IRIS, ATSDR, WHO IARC data sources
-4. Connect to orchid Knowledge Garden for cross-domain navigation
-5. Build toxicology "entrance" animation (molecular structure bloom)
+4. Build toxicology "entrance" animation (molecular structure bloom)
+5. Connect Git repo to Vercel for auto-deploy on push
+6. Add JSON-LD structured data to Next.js pages (substance pages)
+7. Rename Vercel project from "website" to "toxicology-kg" or similar
 
 
 ### 2026-03-08 — Sessions 9.1-9.3 (Chunk 8: GitHub + CI fixes — interrupted 3 times)
@@ -578,3 +606,63 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
   - Updated to: `COPY src/ ./src/` + `RUN npm ci && npx tsc && npm prune --omit=dev`
 - CI run #4 ("Fix Dockerfile: compile TypeScript") → ✅ ALL GREEN (25s)
 - **ALL 8 CHUNKS COMPLETE. CI PASSING. PROJECT SHIPPED.**
+
+
+### 2026-03-09 — Session 11 (Next.js Website — Chunk 3 Complete)
+- Previous sessions scaffolded Next.js, installed Supabase, wrote globals.css, supabase.ts, GearOrnament, layout.tsx, page.tsx (home), substances/page.tsx (browse)
+- Build was passing with 5 pages
+- This session completed the `substances/[slug]/page.tsx` server component (data fetching, metadata, static params)
+- Built `SubstanceDetail.tsx` client component — the crown jewel 4-tab experience:
+  - **Overview tab**: description, water contamination gauges (people affected, water systems, states), health effects summary badges, aliases list, PubChem link
+  - **Chemistry tab**: CAS, IUPAC, molecular formula (with subscript rendering), molecular weight, SMILES, InChI key, PubChem CID — all in a striped data table
+  - **Health Effects tab**: Health Ring SVG visualization (like orchid Care Ring), evidence-level color-coded effect list, legend
+  - **Regulations tab**: Agency/Type/Limit/Unit/Notes table with striped rows
+- Build passes: 334 static pages generated (329 substances + home + browse + 404 + not-found)
+- Brand compliant: parchment bg, Cormorant Garamond + Space Mono, teal/gold/copper, tab-based interface
+- **CHUNK 3 COMPLETE. Next: Polish, health-effects page, about page, deploy to Vercel**
+
+
+### 2026-03-09 — Session 11 continued (Next.js Website — All Pages Complete)
+- Completed health-effects/page.tsx: lists all 18 health effects with substance counts, sorted by most-linked
+- Completed health-effects/[slug]/page.tsx: detail view per effect, substances grouped by evidence level (known/probable/possible), cards link to substance pages
+- Completed about/page.tsx: project description, 3 data source cards (EWG, PubChem, EPA), disclaimers, Knowledge Gardens branding
+- Build: 354 static pages generated, 0 errors, Next.js 16.1.6 + Turbopack
+- **ALL PAGES COMPLETE. Site is feature-complete for first deploy.**
+- Next steps: Start dev server for visual QA, then deploy to Vercel
+
+
+### 2026-03-09 — Session 12 (Next.js Website — DEPLOYED TO PRODUCTION)
+- Completed 3 remaining pages: health-effects/page.tsx, health-effects/[slug]/page.tsx, about/page.tsx
+- Build passes: 354 static pages (329 substances + 18 health effects + home + browse + about + 404 + not-found)
+- Installed Vercel CLI globally, authenticated via device flow
+- Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY as Vercel env vars
+- First deploy failed (missing env vars), second deploy succeeded — 354 pages, 48s build
+- Added custom domain: `vercel domains add toxicology.theknowledgegardens.com`
+- Configured DNS on GoDaddy: CNAME `toxicology` → `cname.vercel-dns.com` (1 Hour TTL)
+- SSL certificate auto-provisioned by Vercel
+- **SITE IS LIVE: https://toxicology.theknowledgegardens.com**
+- Vercel project: chillyd-2693s-projects/website
+- All pages verified working: home, substances browse, substance detail (4 tabs), health effects, about
+
+
+### 2026-03-09 — Session 13 (Case Management Schema + Sky Valley Data Seeding)
+- **NEW: Case Management Layer** — 6 new tables added to Supabase for litigation case tracking
+- Tables created: `experts`, `cases`, `case_parties`, `case_documents`, `case_substances`, `case_events`
+- Enum types: `case_type` (toxic_tort, environmental, product_liability, occupational, class_action, mdi, other)
+- Enum types: `case_status` (intake, active, discovery, trial_prep, trial, settlement, closed, appeal)
+- Enum types: `party_role` (plaintiff, defendant, expert_plaintiff, expert_defense, counsel_plaintiff, counsel_defense, judge, mediator)
+- Enum types: `document_category` (medical_records, expert_reports, depositions, motions, correspondence, evidence, trial_docs, administrative, research, other)
+- All tables have: RLS enabled, auto-updated timestamps via triggers, proper indexes
+- Convenience view: `case_full` joins case + expert + party/document/substance/event counts
+- **Sky Valley PCB Case (Erickson v. Monsanto) fully seeded:**
+  - Expert: Dr. James Dahlgren M.D. (Envirotoxicology / James Dahlgren Medical)
+  - Case: toxic_tort, active, King County Superior Court WA, PCB contamination at SVEC
+  - 5 parties: Erickson (plaintiff), Monsanto (defendant), Dr. Dahlgren (expert_plaintiff), plus counsel
+  - 84 documents: 82 folders + 2 files cataloged from Google Drive (JDM Toxicology Data 2026/Sky Valley PCB Case)
+  - 2 substances linked: PCBs (primary), Dioxin/Furans (related)
+  - 12 timeline events: EPA inspection (2016), school closure, filing (2017), expert retention (2019), depositions (2021), trial (2022), neuroimaging (2024)
+- Drive folder: `My Drive > JDM Toxicology Data 2026 > Sky Valley PCB Case`
+- Drive folder ID: `1I0iDhmvltPKeA52LaQI6YO8BZEP1XbYK`
+- Case UUID: `55021415-8769-4abe-93ba-5b0887110b74`
+- Expert UUID: `3e5b00a1-0756-4065-9738-407444514106`
+- **CHUNK 2 COMPLETE. Next: Interface design and functionality for case management UI**
