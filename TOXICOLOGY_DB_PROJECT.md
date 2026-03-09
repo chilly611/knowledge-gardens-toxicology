@@ -1,5 +1,5 @@
 # TOXICOLOGY KNOWLEDGE GARDEN — DATABASE PROJECT
-# Last Updated: 2026-03-08 Session 9 — ALL 8 CHUNKS COMPLETE ✅
+# Last Updated: 2026-03-08 Session 10 — ALL 8 CHUNKS COMPLETE, CI GREEN ✅
 # ⚠️ EVERY NEW CLAUDE SESSION: READ THIS FILE FIRST ⚠️
 
 ---
@@ -564,8 +564,17 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
 
 ### What's Next (Post-MVP)
 1. Deploy frontend to theknowledgegardens.com/toxicology
-2. Add Supabase secrets to GitHub Actions for CI
-3. Generate vector embeddings when OpenAI/Anthropic API key is available
-4. Add EPA IRIS, ATSDR, WHO IARC data sources
-5. Connect to orchid Knowledge Garden for cross-domain navigation
-6. Build toxicology "entrance" animation (molecular structure bloom)
+2. Generate vector embeddings when OpenAI/Anthropic API key is available
+3. Add EPA IRIS, ATSDR, WHO IARC data sources
+4. Connect to orchid Knowledge Garden for cross-domain navigation
+5. Build toxicology "entrance" animation (molecular structure bloom)
+
+
+### 2026-03-08 — Sessions 9.1-9.3 (Chunk 8: GitHub + CI fixes — interrupted 3 times)
+- Session 9.1: Created GitHub repo via browser, pushed 32 files to chilly611/knowledge-gardens-toxicology
+- Session 9.2: Added SUPABASE_URL and SUPABASE_ANON_KEY as GitHub Actions secrets
+- Session 9.2: Fixed Dockerfile — removed `COPY .env` (secrets shouldn't be committed, pass at runtime)
+- Session 9.3: Fixed Dockerfile again — `build/` was gitignored so Docker needed to compile TypeScript itself
+  - Updated to: `COPY src/ ./src/` + `RUN npm ci && npx tsc && npm prune --omit=dev`
+- CI run #4 ("Fix Dockerfile: compile TypeScript") → ✅ ALL GREEN (25s)
+- **ALL 8 CHUNKS COMPLETE. CI PASSING. PROJECT SHIPPED.**
