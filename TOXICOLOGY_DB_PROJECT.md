@@ -75,6 +75,14 @@ Build a foundational toxicology database that is:
 | **Next.js Website** | `toxicology-db/website/` | ✅ LIVE at toxicology.theknowledgegardens.com |
 | Website env vars | `toxicology-db/website/.env.local` | NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY |
 | Vercel deployment | chillyd-2693s-projects/website | ✅ 354 pages, SSG + dynamic search |
+| **Case Management Schema** | `toxicology-db/migrations/002_case_management.sql` | ✅ 6 tables, 4 enum types, RLS, triggers |
+| **Case: Sky Valley PCB** | Supabase `cases` table | ✅ Erickson v. Monsanto, UUID: 55021415-... |
+| **Expert: Dr. Dahlgren** | Supabase `experts` table | ✅ UUID: 3e5b00a1-..., Envirotoxicology/JDM |
+| Case parties | Supabase `case_parties` | ✅ 5 parties (plaintiff, defendant, expert, counsel) |
+| Case documents | Supabase `case_documents` | ✅ 84 entries (82 folders + 2 files from Drive) |
+| Case substances | Supabase `case_substances` | ✅ 2 linked (PCBs primary, Dioxin related) |
+| Case events | Supabase `case_events` | ✅ 12 timeline events (2016–2024) |
+| Drive source | Google Drive: JDM Toxicology Data 2026 > Sky Valley PCB Case | Folder ID: 1I0iDhmvltPKeA52LaQI6YO8BZEP1XbYK |
 
 ### What's Wrong with Current Schema
 The current `ewg_contaminants` table is a **flat dump** — one big table with everything. Problems:
@@ -666,3 +674,43 @@ architecture diagram, create Docker Compose for local dev. Update the project ma
 - Case UUID: `55021415-8769-4abe-93ba-5b0887110b74`
 - Expert UUID: `3e5b00a1-0756-4065-9738-407444514106`
 - **CHUNK 2 COMPLETE. Next: Interface design and functionality for case management UI**
+
+
+---
+
+## CASE MANAGEMENT SCHEMA REFERENCE (Session 13)
+
+### Tables & Columns
+
+**experts** — Toxicology professionals
+- id (uuid PK), name, title, organization, specialization, email, phone, notes, created_at, updated_at
+
+**cases** — Litigation case records
+- id (uuid PK), name, case_number, case_type (enum: toxic_tort|environmental|product_liability|occupational|class_action|mdi|other)
+- status (enum: intake|active|discovery|trial_prep|trial|settlement|closed|appeal)
+- jurisdiction, court, judge_name, filing_date, description
+- primary_expert_id (FK → experts), drive_folder_id, drive_folder_url
+- tags (text[]), notes, created_at, updated_at
+
+**case_parties** — Plaintiffs, defendants, experts, counsel
+- id (uuid PK), case_id (FK → cases), name, role (enum: plaintiff|defendant|expert_plaintiff|expert_defense|counsel_plaintiff|counsel_defense|judge|mediator)
+- organization, contact_info, notes, created_at
+
+**case_documents** — File/folder catalog from Google Drive
+- id (uuid PK), case_id (FK → cases), name, category (enum: medical_records|expert_reports|depositions|motions|correspondence|evidence|trial_docs|administrative|research|other)
+- file_type, file_size_bytes, drive_file_id, drive_url, parent_folder, description, tags (text[]), uploaded_at, created_at
+
+**case_substances** — Links cases to substances table
+- id (uuid PK), case_id (FK → cases), substance_id (FK → substances), relevance (text: primary|secondary|related), notes, created_at
+
+**case_events** — Case timeline
+- id (uuid PK), case_id (FK → cases), event_type (text: filing|discovery|deposition|motion|hearing|trial|settlement|inspection|report|other)
+- event_date, description, participants (text[]), outcome, document_ids (uuid[]), notes, created_at
+
+### Convenience View: case_full
+Joins case + expert name + counts of parties, documents, substances, events
+
+### Current Data (Sky Valley PCB Case)
+- 1 expert, 1 case, 5 parties, 84 documents, 2 substances, 12 events
+- Case UUID: 55021415-8769-4abe-93ba-5b0887110b74
+- Expert UUID: 3e5b00a1-0756-4065-9738-407444514106
