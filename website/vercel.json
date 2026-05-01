@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/health-effects", "destination": "/legacy/health-effects" },
+    { "source": "/health-effects/:slug", "destination": "/legacy/health-effects/:slug" },
+    { "source": "/substances", "destination": "/legacy/substances" },
+    { "source": "/substances/:slug", "destination": "/legacy/substances/:slug" }
+  ]
+}
