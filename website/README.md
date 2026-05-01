@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Toxicology Knowledge Garden — website
 
-## Getting Started
+The application layer over a live, claim-centric evidence graph. Three audiences
+(Consumer, Clinician, Counsel), each with a five-stage workflow producing a
+real downloadable PDF deliverable.
 
-First, run the development server:
+## Reading order
+1. `02_COWORK_MASTER_PROMPT.md` (in workspace) — vision + brand v2
+2. `01_AGENT_BRIEFS.md` (in workspace) — per-track briefs
+3. `MIGRATION_NOTES.md` — actual stack, what each agent owns, naming conventions
+4. `tasks.todo.md` — wave-by-wave progress (live)
+5. `tasks.lessons.md` — corrections, deviations, rules-for-self
+6. `/_brand` (after A1) — brand QA
+7. `/demo` (after F3) — autoplay tour with 7 stages + presenter script in `docs/DEMO_SCRIPT.md`
+8. Vercel preview URL on `feature/sprint-april30` (after G1)
 
+## Stack
+Next.js 16.1.6 · React 19 · Tailwind v4 (`@theme inline`, no JS config) · TypeScript 5.9.3 · Supabase JS 2.98 · two Supabase projects:
+- **PROD** (`vlezoyalutexenbnzzui`) — legacy EWG 329-substance surface, behind `/legacy/*`
+- **TOX** (`tkhlxbdviiqivenpkhmc`) — new evidence graph, every TKG route reads from this
+
+## Local dev
 ```bash
+npm install
+npx vercel env pull .env.local   # only Chilly can run this; others use .env.local.example
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Branches
+- `main` — protected; nothing merges here automatically
+- `feature/sprint-april30` — sprint integration branch; preview deploys land here
+- `feature/{agent-id}-{slug}` — per-agent work branches, PR back to sprint
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy (Chilly runs these by hand)
+```bash
+git push origin feature/sprint-april30
+npx vercel --prod=false           # preview deploy on the sprint branch
+# walk the build, then merge to main when satisfied:
+git checkout main && git merge feature/sprint-april30 && git push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## What lives where
+See `MIGRATION_NOTES.md`. Short version:
+- Brand tokens: `src/app/globals.css` (`@theme inline` block)
+- Supabase clients: `src/lib/supabase-{prod,tox}.ts`
+- Queries: `src/lib/queries-{prod,tox}.ts`
+- Route components: `src/app/<route>/page.tsx`
+- Shared decorative: `src/components/shared/`
+- Surface-specific: `src/components/{loom,substance,tidepool,case,flow,search}/`
+- PDF templates: `src/lib/pdf/`
+- Legacy routes (do not touch): `src/app/legacy/`

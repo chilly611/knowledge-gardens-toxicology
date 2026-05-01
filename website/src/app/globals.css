@@ -1,7 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
-/* ── Knowledge Gardens Design Tokens ── */
+/* =============================================================================
+   LEGACY palette — DO NOT RENAME. /legacy/* routes consume these by name.
+   ============================================================================= */
 @theme inline {
   --color-parchment: #f5f0e8;
   --color-cream: #FBF8F3;
@@ -22,21 +24,108 @@
 
   --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-mono: 'Space Mono', 'Courier New', monospace;
-  --font-body: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
 }
 
-/* ── Base Styles ── */
+/* =============================================================================
+   TKG Brand v2 — paper + jewel tones.
+   Short, non-`--color-*` names so they don't collide with the legacy palette.
+   New TKG components consume these via var() or `bg-[var(--teal)]` arbitrary
+   value syntax. See tasks.lessons.md L-007.
+   ============================================================================= */
+:root {
+  /* Paper */
+  --paper:        #f5f1e8;
+  --paper-warm:   #ede6d6;
+  --paper-deep:   #e6dec8;
+  --paper-line:   #d8cdb1;
+
+  /* Ink (TKG v2 — note this overrides --color-ink only inside elements that
+     opt in via class/var consumption; legacy var(--color-ink) still resolves
+     because Tailwind's @theme block defines its own --color-ink at :root) */
+  --ink:          #1a2433;
+  --ink-soft:     #3a4458;
+  --ink-mute:     #6b7388;
+
+  /* Jewel-tone accents */
+  --teal:         #2ea4a3;
+  --teal-deep:    #1f7e7d;
+  --indigo:       #553278;
+  --indigo-deep:  #3d2456;
+  --crimson:      #e83759;
+  --crimson-deep: #b8243f;
+  --peach:        #ffb166;
+  --peach-deep:   #d68843;
+  --copper-orn:   #b87333;
+  --copper-orn-deep: #8a5524;
+
+  /* Status semantics */
+  --certified:    var(--teal);
+  --provisional:  var(--peach-deep);
+  --contested:    var(--crimson);
+
+  /* Audience accents */
+  --audience-consumer:  var(--teal);
+  --audience-clinician: var(--indigo);
+  --audience-counsel:   var(--crimson);
+
+  /* ─────────────────────────────────────────────────────────────────
+     LOCKED: Toxicology garden accent — slate blue (per brief §2.4)
+     This is the per-garden accent that distinguishes TKG from BKG/
+     Orchid/Health/NatureMark. Use for active-state pills, current-stage
+     outline, primary CTA fills.
+     ───────────────────────────────────────────────────────────────── */
+  --tox:        #3B4F6B;
+  --tox-deep:   #2C3D54;
+  --tox-soft:   #6B7E9A;
+  --tox-pale:   #DEE3EB;
+}
+
+/* Tidepool dark theme — only legitimate dark surface in TKG v2 */
+[data-theme="dark"] {
+  --paper:        #1a2826;
+  --paper-warm:   #243532;
+  --paper-deep:   #0f1c1a;
+  --paper-line:   #2e4541;
+  --ink:          #e8eae8;
+  --ink-soft:     #b9c1bf;
+  --ink-mute:     #788583;
+}
+
+/* =============================================================================
+   Base
+   ============================================================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
-
 body {
-  background: var(--color-parchment);
-  color: var(--color-ink);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-body);
-  font-size: 18px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Force the html/body to fill the viewport horizontally so flex/centering
+   anchors work as expected on ultra-wide displays. */
+html, body { width: 100%; min-width: 0; }
+
+/* New TKG-routed pages opt into the paper background by setting
+   `data-surface="tkg"` on a wrapper. Legacy pages keep parchment by default. */
+[data-surface="tkg"] {
+  background: var(--paper);
+  color: var(--ink);
+  background-image:
+    radial-gradient(circle, rgba(26, 36, 51, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+[data-surface="tkg"][data-theme="dark"] {
+  background: var(--paper);
+  color: var(--ink);
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -45,8 +134,345 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.3;
   color: var(--color-ink);
 }
+/* =============================================================================
+   PAGE RAILS — single source of truth for content widths.
+   Use one of these on every section's inner container so the whole site
+   reads centered and stays consistent.
+     .rail-tight   — 640px  · long-form prose
+     .rail-default — 1024px · most homepage sections
+     .rail-wide    — 1280px · 3-column card grids
+     .rail-canvas  — 1536px · the substance × endpoint matrix only
+   ============================================================================= */
+:root {
+  --rail-tight:   40rem;   /* 640px */
+  --rail-default: 64rem;   /* 1024px */
+  --rail-wide:    80rem;   /* 1280px */
+  --rail-canvas:  96rem;   /* 1536px */
+}
+.rail-tight,
+.rail-default,
+.rail-wide,
+.rail-canvas {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .rail-tight, .rail-default, .rail-wide, .rail-canvas {
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .rail-tight, .rail-default, .rail-wide, .rail-canvas {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+@media (min-width: 1536px) {
+  .rail-tight, .rail-default, .rail-wide, .rail-canvas {
+    padding-left: 6.5rem;
+    padding-right: 6.5rem;
+  }
+}
+.rail-tight   { max-width: calc(var(--rail-tight)   + 6rem); }
+.rail-default { max-width: calc(var(--rail-default) + 6rem); }
+.rail-wide    { max-width: calc(var(--rail-wide)    + 6rem); }
+.rail-canvas  { max-width: calc(var(--rail-canvas)  + 6rem); }
 
-/* ── Animations ── */
+/* Default constraint for prose paragraphs inside dark and light sections.
+   Wrap any narrative <p> in `.prose-rail` to clamp to a readable measure. */
+.prose-rail {
+  max-width: 38rem; /* ~65ch at body size */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =============================================================================
+   COMPOSITION TOKENS — Single source of truth for spacing, padding, and
+   readability. Every card/tile/grid surface in TKG MUST use these. See
+   tasks.lessons.md L-017.
+
+   Why: Hand-tuning padding per component caused text to keep "kissing the
+   edges" of cards, columns to stay too tight, and body copy to read poorly.
+   These tokens guarantee generous breathing room everywhere.
+   ============================================================================= */
+:root {
+  /* Card / tile interior padding */
+  --tile-pad-x:        2.75rem;  /* 44px */
+  --tile-pad-y:        3rem;     /* 48px */
+  --tile-pad-x-lg:     3.25rem;  /* 52px — feature tiles */
+  --tile-pad-y-lg:     3.5rem;   /* 56px */
+  --tile-pad-x-sm:     1.75rem;  /* 28px — source/inner cards */
+  --tile-pad-y-sm:     1.75rem;
+
+  /* Grid gaps between sibling cards */
+  --grid-gap:          2.5rem;   /* 40px — base */
+  --grid-gap-lg:       4rem;     /* 64px — feature grids on lg+ */
+  --grid-gap-xl:       5rem;     /* 80px — TrustStrip 3-up demo */
+
+  /* Body copy readability */
+  --body-size:         1.05rem;  /* 16.8px — slightly larger than default */
+  --body-line:         1.7;      /* generous leading */
+  --body-measure:      32ch;     /* per-tile body max-width */
+  --body-measure-wide: 56ch;     /* hero/feature paragraph max-width */
+
+  /* Section vertical rhythm */
+  --section-pad-y:     6rem;     /* 96px — most sections */
+  --section-pad-y-lg:  8rem;     /* 128px — feature sections */
+}
+
+/* Tile — the canonical card surface for tiles, feature cards, grid items.
+   Use as: <div class="tile"> or .tile-feature for the larger variant. */
+.tile {
+  padding: var(--tile-pad-y) var(--tile-pad-x);
+  border-radius: 1rem;
+  border: 1px solid var(--paper-line);
+  background: rgba(255, 255, 255, 0.55);
+  display: flex;
+  flex-direction: column;
+}
+.tile-feature {
+  padding: var(--tile-pad-y-lg) var(--tile-pad-x-lg);
+  border-radius: 1.25rem;
+}
+.tile-inner {
+  padding: var(--tile-pad-y-sm) var(--tile-pad-x-sm);
+  border-radius: 0.625rem;
+  border: 1px solid var(--paper-line);
+  background: var(--paper);
+}
+
+/* Grid utilities — generous gaps that scale with viewport */
+.tile-grid-3 {
+  display: grid;
+  gap: var(--grid-gap);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .tile-grid-3 { grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap); }
+}
+@media (min-width: 1024px) {
+  .tile-grid-3 { gap: var(--grid-gap-lg); }
+}
+.tile-grid-feature {
+  display: grid;
+  gap: var(--grid-gap-lg);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .tile-grid-feature { grid-template-columns: repeat(3, 1fr); gap: var(--grid-gap-xl); }
+}
+
+/* Body copy — readable paragraph block for tiles and prose */
+.body-readable {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  line-height: var(--body-line);
+  font-weight: 400;
+  color: var(--ink-soft);
+  max-width: var(--body-measure);
+}
+.body-readable-wide {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  line-height: var(--body-line);
+  font-weight: 400;
+  color: var(--ink-soft);
+  max-width: var(--body-measure-wide);
+}
+
+/* Section vertical padding — drop on every <section> for consistent rhythm */
+.section-pad      { padding-top: var(--section-pad-y);    padding-bottom: var(--section-pad-y);    }
+.section-pad-lg   { padding-top: var(--section-pad-y-lg); padding-bottom: var(--section-pad-y-lg); }
+
+/* =============================================================================
+   TYPOGRAPHY UTILITIES — italics sparingly, bold sans-serif as default voice
+   See L-019 in tasks.lessons.md
+   ============================================================================= */
+.headline-bold {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-style: normal;
+}
+.title-bold {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  font-style: normal;
+}
+.subtitle-bold {
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  font-style: normal;
+}
+/* Reserved emphasis — italics only when explicitly applied via this class */
+.emphasis-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* CTA pill — canonical button style. Bigger, bolder, more breathing room */
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+}
+.cta-pill:hover { transform: translateY(-2px); }
+.cta-pill-lg {
+  padding: 1.15rem 2.5rem;
+  font-size: 1.15rem;
+}
+.cta-pill-primary {
+  background: var(--tox-deep);
+  color: white !important;
+  box-shadow: 0 12px 32px rgba(59, 79, 107, 0.25);
+}
+.cta-pill-primary:hover {
+  background: var(--tox);
+  box-shadow: 0 16px 40px rgba(59, 79, 107, 0.35);
+}
+.cta-pill-secondary {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  border: 1.5px solid var(--paper-line);
+}
+.cta-pill-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink-mute);
+}
+
+/* =============================================================================
+   ANIMATION LIBRARY — motion is the brand
+   ============================================================================= */
+
+/* Stratigraph layered cards — staggered reveal from below */
+@keyframes layer-rise {
+  from { opacity: 0; transform: translateY(40px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+/* Soft breathing for active stage indicators */
+@keyframes stage-breathe {
+  0%, 100% { transform: scale(1);     box-shadow: 0 0 0 0 rgba(59, 79, 107, 0.4); }
+  50%      { transform: scale(1.04);  box-shadow: 0 0 0 12px rgba(59, 79, 107, 0); }
+}
+
+/* Slide in from bottom — for badges, pills, accents */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Slow horizontal sweep — for accent stripes */
+@keyframes accent-sweep {
+  0%, 100% { transform: translateX(0)   scaleX(1); }
+  50%      { transform: translateX(8px) scaleX(1.05); }
+}
+
+/* Depth marker pulse — vertical line markers on Stratigraph */
+@keyframes depth-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1;    }
+}
+
+/* Stratigraph core-sample shimmer — subtle glow trace down the page */
+@keyframes core-shimmer {
+  0%   { background-position: 0 -200px;  opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { background-position: 0 calc(100% + 200px); opacity: 0; }
+}
+
+/* Tidepool — node-blip for individual graph dots */
+@keyframes node-blip {
+  0%, 100% { transform: scale(1);   opacity: 0.7; }
+  50%      { transform: scale(1.4); opacity: 1;   }
+}
+
+/* Tidepool — connection line shimmer */
+@keyframes line-flow {
+  0%   { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0;   }
+}
+
+/* Number counter wobble — when a stat counts up */
+@keyframes count-pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+/* Headline letter-by-letter cascade reveal */
+@keyframes letter-rise {
+  from { opacity: 0; transform: translateY(0.5em); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0);     filter: blur(0); }
+}
+
+/* Auto-applied animation utilities */
+.anim-layer-rise   { animation: layer-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.anim-slide-up     { animation: slide-up-fade 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.anim-stage-breathe{ animation: stage-breathe 2.4s ease-in-out infinite; }
+.anim-depth-pulse  { animation: depth-pulse 2s ease-in-out infinite; }
+.anim-count-pop    { animation: count-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+
+/* Stagger helpers — drop on a parent and children get cascading delays */
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.15s; }
+.stagger > *:nth-child(3) { animation-delay: 0.25s; }
+.stagger > *:nth-child(4) { animation-delay: 0.35s; }
+.stagger > *:nth-child(5) { animation-delay: 0.45s; }
+.stagger > *:nth-child(6) { animation-delay: 0.55s; }
+.stagger > *:nth-child(7) { animation-delay: 0.65s; }
+.stagger > *:nth-child(8) { animation-delay: 0.75s; }
+.stagger > *:nth-child(9) { animation-delay: 0.85s; }
+.stagger > *:nth-child(10) { animation-delay: 0.95s; }
+
+/* Headline color cascades from --heading-color so sections can override it
+   without fighting CSS specificity. By default, paper sections inherit
+   var(--ink). Sections that mark themselves data-mode="dark" flip the var
+   to white, so every h1-h6 underneath reads correctly without per-element
+   inline color overrides. */
+[data-surface="tkg"] {
+  --heading-color: var(--ink);
+}
+[data-surface="tkg"] [data-mode="dark"],
+[data-surface="tkg"][data-mode="dark"] {
+  --heading-color: #ffffff;
+}
+[data-surface="tkg"] h1,
+[data-surface="tkg"] h2,
+[data-surface="tkg"] h3,
+[data-surface="tkg"] h4,
+[data-surface="tkg"] h5,
+[data-surface="tkg"] h6 {
+  color: var(--heading-color);
+  letter-spacing: -0.01em;
+}
+
+/* =============================================================================
+   Animations
+   ============================================================================= */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -57,25 +483,86 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: translateX(0); }
 }
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 6px rgba(26,92,92,.15); }
-  50% { box-shadow: 0 0 16px rgba(26,92,92,.4); }
+  0%, 100% { box-shadow: 0 0 6px rgba(46, 164, 163, 0.15); }
+  50% { box-shadow: 0 0 16px rgba(46, 164, 163, 0.4); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  25%     { transform: translate(8px, -6px); }
+  50%     { transform: translate(-4px, 4px); }
+  75%     { transform: translate(6px, 8px); }
 }
 
-.animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+/* Tidepool caduceus showcase — slow breathing rotation + drift */
+@keyframes caduceus-drift {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25%      { transform: rotate(0.6deg)  translateY(-6px); }
+  50%      { transform: rotate(0deg)    translateY(0); }
+  75%      { transform: rotate(-0.6deg) translateY(6px); }
+}
+
+/* Halo pulse for luminous emblem — soft breathing glow ring */
+@keyframes halo-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.55; }
+  50%      { transform: scale(1.08); opacity: 0.85; }
+}
+
+/* Slow orbit for annotation labels around the showcase emblem */
+@keyframes orbit-slow {
+  from { transform: rotate(0deg)   translateX(var(--orbit-radius, 320px)) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(var(--orbit-radius, 320px)) rotate(-360deg); }
+}
+
+/* Counter-orbit for the inner ring (opposite direction) */
+@keyframes orbit-slow-reverse {
+  from { transform: rotate(360deg) translateX(var(--orbit-radius, 220px)) rotate(-360deg); }
+  to   { transform: rotate(0deg)   translateX(var(--orbit-radius, 220px)) rotate(0deg); }
+}
+
+/* Caret blink for the typewriter pitch */
+@keyframes caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.animate-fade-in  { animation: fadeIn 0.5s ease forwards; }
 .animate-slide-in { animation: slideIn 0.4s ease forwards; }
 
-/* ── Scrollbar Styling ── */
+/* Motion is the brand. Reduced-motion is intentionally NOT honored — Chilly's
+   directive: attention spans are short, motion everywhere. If a future
+   accessibility audit forces this back on, swap in the standard block here. */
+
+/* =============================================================================
+   Misc
+   ============================================================================= */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--color-cream); }
 ::-webkit-scrollbar-thumb { background: var(--color-steel); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-teal); }
 
-/* ── Selection ── */
 ::selection { background: var(--color-gold-light); color: var(--color-ink); }
+[data-surface="tkg"] ::selection { background: var(--peach); color: var(--ink); }
 
-/* ── Links ── */
 a { color: var(--color-teal); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--color-teal-light); }
+[data-surface="tkg"] a { color: var(--teal-deep); }
+[data-surface="tkg"] a:hover { color: var(--teal); }
 
-/* ── Monospace data ── */
 .font-data { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.02em; }
+.font-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* Section accent bar — drop above any TKG section */
+.section-accent::before {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--peach) 50%, var(--crimson) 100%);
+  margin-bottom: 1.5rem;
+}
