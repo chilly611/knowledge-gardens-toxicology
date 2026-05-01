@@ -1,8 +1,5 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 /**
  * /flow/counsel — Counsel flow main page
  * UPDATED 2026-05-01: Added pt-16/pt-20 to first section for TopFrame spacing.
@@ -10,7 +7,7 @@ export const dynamic = 'force-dynamic';
  */
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import CounselFlow from '@/components/flow/CounselFlow';
 import { audienceColor } from '@/styles/tokens';
@@ -18,6 +15,14 @@ import { audienceColor } from '@/styles/tokens';
 const STAGES = ['frame', 'assemble', 'argue', 'witness', 'file'];
 
 export default function CounselFlowPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading counsel lane...</div>}>
+      <CounselFlowPageInner />
+    </Suspense>
+  );
+}
+
+function CounselFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 

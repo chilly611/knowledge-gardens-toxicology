@@ -1,10 +1,7 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import ConsumerFlow from '@/components/flow/ConsumerFlow';
 import { audienceColor } from '@/styles/tokens';
@@ -12,6 +9,14 @@ import { audienceColor } from '@/styles/tokens';
 const STAGES = ['identify', 'discover', 'trace', 'decide', 'carry'];
 
 export default function ConsumerFlowPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading consumer lane...</div>}>
+      <ConsumerFlowPageInner />
+    </Suspense>
+  );
+}
+
+function ConsumerFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 

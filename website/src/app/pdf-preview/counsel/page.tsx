@@ -1,16 +1,21 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';
 import { getCase, getCertifiedClaims, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import { statusColor } from '@/styles/tokens';
 import type { CaseDetail, CertifiedClaimRow } from '@/lib/types-tox';
 
 export default function CounselPDFPreviewPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading PDF preview...</div>}>
+      <CounselPDFPreviewPageInner />
+    </Suspense>
+  );
+}
+
+function CounselPDFPreviewPageInner() {
   const searchParams = useSearchParams();
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
   const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);

@@ -1,10 +1,7 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import ClinicianFlow from '@/components/flow/ClinicianFlow';
 import { audienceColor } from '@/styles/tokens';
@@ -12,6 +9,14 @@ import { audienceColor } from '@/styles/tokens';
 const STAGES = ['triage', 'differential', 'test', 'interpret', 'brief'];
 
 export default function ClinicianFlowPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading clinician lane...</div>}>
+      <ClinicianFlowPageInner />
+    </Suspense>
+  );
+}
+
+function ClinicianFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 

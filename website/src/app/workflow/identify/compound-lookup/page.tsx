@@ -1,8 +1,5 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 /**
  * Compound Lookup Workflow — REDESIGNED 2026-05-01
  *
@@ -22,7 +19,7 @@ export const dynamic = 'force-dynamic';
  * 6. Footer with return link
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSubstance } from '@/lib/queries-tox';
@@ -80,6 +77,14 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function CompoundLookupPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading compound lookup...</div>}>
+      <CompoundLookupPageInner />
+    </Suspense>
+  );
+}
+
+function CompoundLookupPageInner() {
   const searchParams = useSearchParams();
   const queryParam = searchParams?.get('q') || 'glyphosate';
 

@@ -1,10 +1,7 @@
 'use client';
 
-// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
-export const dynamic = 'force-dynamic';
-
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';
 import { getCertifiedClaims, getCrossGardenLinks, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import { statusColor } from '@/styles/tokens';
@@ -18,6 +15,14 @@ const TIER_NAMES: Record<number, string> = {
 };
 
 export default function ClinicianPDFPage() {
+  return (
+    <Suspense fallback={<div className="p-12 text-center" style={{ color: 'var(--ink-mute)' }}>Loading PDF preview...</div>}>
+      <ClinicianPDFPageInner />
+    </Suspense>
+  );
+}
+
+function ClinicianPDFPageInner() {
   const searchParams = useSearchParams();
   const [allClaims, setAllClaims] = useState<CertifiedClaimRow[]>([]);
   const [biomarkers, setBiomarkers] = useState<Record<string, CrossGardenLink[]>>({});
