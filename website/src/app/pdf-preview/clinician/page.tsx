@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
+export const dynamic = 'force-dynamic';
+
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';

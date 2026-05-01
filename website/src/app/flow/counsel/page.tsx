@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
+export const dynamic = 'force-dynamic';
+
 /**
  * /flow/counsel — Counsel flow main page
  * UPDATED 2026-05-01: Added pt-16/pt-20 to first section for TopFrame spacing.

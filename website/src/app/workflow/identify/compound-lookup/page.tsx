@@ -1,5 +1,8 @@
 'use client';
 
+// Force dynamic rendering (uses useSearchParams) — bails out of static prerender
+export const dynamic = 'force-dynamic';
+
 /**
  * Compound Lookup Workflow — REDESIGNED 2026-05-01
  *
