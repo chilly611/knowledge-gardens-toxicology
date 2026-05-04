@@ -24,6 +24,7 @@ import AudienceInvitationsSection from '@/components/home/AudienceInvitationsSec
 import BrowsePanel from '@/components/home/BrowsePanel';
 import SevenStages from '@/components/home/SevenStages';
 import TrustStrip from '@/components/home/TrustStrip';
+import WhyItPersists from '@/components/home/WhyItPersists';
 import FeaturedCase from '@/components/home/FeaturedCase';
 import TidepoolEntry from '@/components/home/TidepoolEntry';
 import ScrollReveal from '@/components/home/ScrollReveal';
@@ -47,6 +48,7 @@ function Home() {
       <BrowsePanel />
       <SevenStages />
       <TrustStrip />
+      <WhyItPersists />
       <FeaturedCase />
       <LoomMatrixSection />
       <TidepoolEntry />

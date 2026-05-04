@@ -59,19 +59,33 @@ export async function getSubstance(slug: string): Promise<{
   claims: CertifiedClaimRow[];
   cross_garden_links: CrossGardenLink[];
 } | null> {
-  const name = slug.replace(/-/g, ' ');
+  const term = slug.replace(/-/g, ' ').trim();
 
-  const { data: s, error: sErr } = await supabaseTox
+  // 1) Try a fuzzy name match first.
+  let { data: s } = await supabaseTox
     .from('substances')
-    .select('id, name, cas_number, molecular_formula, description')
-    .ilike('name', name)
+    .select('id, name, cas_number, molecular_formula, description, aliases')
+    .ilike('name', `%${term}%`)
+    .limit(1)
     .maybeSingle();
-  if (sErr) throw sErr;
+
+  // 2) Fallback: scan the aliases text[] array for a case-insensitive match.
+  if (!s) {
+    const cap = term.charAt(0).toUpperCase() + term.slice(1).toLowerCase();
+    const { data: byAlias } = await supabaseTox
+      .from('substances')
+      .select('id, name, cas_number, molecular_formula, description, aliases')
+      .or(`aliases.cs.{${term}},aliases.cs.{${term.toUpperCase()}},aliases.cs.{${cap}}`)
+      .limit(1)
+      .maybeSingle();
+    s = byAlias;
+  }
+
   if (!s) return null;
   const substance = s as Substance;
+  const aliasArray: string[] = ((s as { aliases?: string[] }).aliases) ?? [];
 
-  const [aliasesRes, claimsRes, linksRes] = await Promise.all([
-    supabaseTox.from('substance_aliases').select('alias, alias_type').eq('substance_id', substance.id),
+  const [claimsRes, linksRes] = await Promise.all([
     supabaseTox.from('certified_claims_with_evidence').select('*').eq('substance_id', substance.id),
     supabaseTox
       .from('cross_garden_links')
@@ -82,8 +96,8 @@ export async function getSubstance(slug: string): Promise<{
 
   return {
     substance,
-    aliases:    (aliasesRes.data ?? []) as SubstanceAlias[],
-    claims:     (claimsRes.data ?? []) as CertifiedClaimRow[],
+    aliases: aliasArray.map((a) => ({ alias: a, alias_type: 'common' })) as SubstanceAlias[],
+    claims:  (claimsRes.data ?? []) as CertifiedClaimRow[],
     cross_garden_links: (linksRes.data ?? []) as CrossGardenLink[],
   };
 }
