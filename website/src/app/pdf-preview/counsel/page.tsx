@@ -350,7 +350,7 @@ function CounselPDFPreviewPageInner() {
               }}
             >
               <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--ink)', marginBottom: '0.25rem' }}>
-                {expert.full_name}
+                {expert.name}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--ink-mute)', marginBottom: '0.5rem' }}>
                 {expert.specialty}

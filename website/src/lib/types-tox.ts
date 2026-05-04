@@ -111,7 +111,8 @@ export type CaseEvent = {
 
 export type Expert = {
   id: string;
-  full_name: string;
+  name: string;
+  affiliation: string | null;
   specialty: string | null;
   bio: string | null;
 };
