@@ -634,11 +634,11 @@ function LayerCard({
                 marginBottom: '1rem',
               }}
             >
-              {substance.name === 'Glyphosate'
+              {substance.name.toLowerCase().includes('glyphosate')
                 ? 'Detected in >80% of US urine samples — found in oats, wheat, and many tap-water systems.'
-                : substance.name === 'Microplastics'
+                : substance.name.toLowerCase() === 'microplastics'
                 ? 'Ubiquitous in modern food chains — from bottled water to seafood to the air we breathe.'
-                : substance.name === 'PCBs'
+                : substance.name.toLowerCase().includes('pcb')
                 ? 'Persistent legacy pollutant found in sediment, wildlife, and human adipose tissue decades after production ceased.'
                 : 'Widely used in food packaging — emerging evidence on thermal leaching into beverages and fatty foods.'}
             </h2>
@@ -672,11 +672,11 @@ function LayerCard({
             {/* Quick-take chips / pills */}
             <div className="mt-6 flex flex-wrap gap-3">
               {tier === 'hazard' &&
-                (substance.name === 'Glyphosate'
+                (substance.name.toLowerCase().includes('glyphosate')
                   ? ['🥣 Found in oats', '💧 Detected in tap water', '👶 Trace in most people']
-                  : substance.name === 'Microplastics'
+                  : substance.name.toLowerCase() === 'microplastics'
                   ? ['🦪 In seafood', '🌊 In drinking water', '💨 Airborne particles']
-                  : substance.name === 'PCBs'
+                  : substance.name.toLowerCase().includes('pcb')
                   ? ['🪨 Sediment bound', '🐟 Bioaccumulative', '🔬 Ubiquitous legacy']
                   : ['🍼 In PET bottles', '☕ Thermal leaching', '🔬 Emerging concern']
                 ).map((chip, idx) => (
@@ -852,11 +852,11 @@ function LayerCard({
                 marginBottom: '1rem',
               }}
             >
-              {substance.name === 'Glyphosate'
+              {substance.name.toLowerCase().includes('glyphosate')
                 ? 'EPSP synthase inhibitor; gut microbiome disruption under study.'
-                : substance.name === 'Microplastics'
+                : substance.name.toLowerCase() === 'microplastics'
                 ? 'Particulate translocation across epithelial barriers; inflammatory response markers elevated in some populations.'
-                : substance.name === 'PCBs'
+                : substance.name.toLowerCase().includes('pcb')
                 ? 'Persistent organochlorine; binds to fatty tissues; multiple mechanism pathways (AhR, nuclear receptor).'
                 : 'Thermal hydrolysis releases monomer; endocrine-active at low doses; accumulates in adipose.'}
             </h2>
@@ -870,11 +870,11 @@ function LayerCard({
                 marginBottom: '1.5rem',
               }}
             >
-              {substance.name === 'Glyphosate'
+              {substance.name.toLowerCase().includes('glyphosate')
                 ? 'Mechanism: herbicide blocks aromatic amino acid synthesis via inhibition of EPSP synthase. Human relevance through altered gut microbiota composition and potential immunological shifts.'
-                : substance.name === 'Microplastics'
+                : substance.name.toLowerCase() === 'microplastics'
                 ? 'Mechanism: small particle size allows crossing of mucous membranes; can reach systemic circulation; inflammatory cascade activation observed in vitro and in animal models.'
-                : substance.name === 'PCBs'
+                : substance.name.toLowerCase().includes('pcb')
                 ? 'Mechanism: Cl substitution pattern determines biological activity (Cl at 2,2\',4,4\' positions most toxic). AhR activation triggers CYP450 induction and altered estrogen metabolism.'
                 : 'Mechanism: BPA leaching increases with temperature, pH, and fatty food contact. Binds estrogen receptors at low nanomolar concentrations in cell culture.'}
             </p>
@@ -894,7 +894,7 @@ function LayerCard({
                 Biomarkers
               </div>
               <div className="flex flex-wrap gap-2">
-                {substance.name === 'Glyphosate'
+                {substance.name.toLowerCase().includes('glyphosate')
                   ? ['urinary_glyphosate', 'urinary_AMPA', 'serum_GLP-1'].map((b, idx) => (
                       <span
                         key={b}
@@ -914,7 +914,7 @@ function LayerCard({
                         {b}
                       </span>
                     ))
-                  : substance.name === 'Microplastics'
+                  : substance.name.toLowerCase() === 'microplastics'
                   ? ['plastic_particles_serum', 'inflammatory_markers', 'oxidative_stress'].map((b, idx) => (
                       <span
                         key={b}
@@ -934,7 +934,7 @@ function LayerCard({
                         {b}
                       </span>
                     ))
-                  : substance.name === 'PCBs'
+                  : substance.name.toLowerCase().includes('pcb')
                   ? ['serum_PCB_congeners', 'liver_enzymes', 'thyroid_hormone'].map((b, idx) => (
                       <span
                         key={b}
@@ -1111,11 +1111,11 @@ function LayerCard({
                 marginBottom: '1rem',
               }}
             >
-              {substance.name === 'Glyphosate'
+              {substance.name.toLowerCase().includes('glyphosate')
                 ? 'IARC 2A vs EPA "not likely" — active disagreement.'
-                : substance.name === 'Microplastics'
+                : substance.name.toLowerCase() === 'microplastics'
                 ? 'Regulatory absent; evidence accelerating; precautionary principle applied.'
-                : substance.name === 'PCBs'
+                : substance.name.toLowerCase().includes('pcb')
                 ? 'Banned globally; persistent in environment; legacy liability cases ongoing.'
                 : 'FDA approval maintained; industry studies vs independent research divergence.'}
             </h2>
@@ -1129,11 +1129,11 @@ function LayerCard({
                 marginBottom: '1.5rem',
               }}
             >
-              {substance.name === 'Glyphosate'
+              {substance.name.toLowerCase().includes('glyphosate')
                 ? 'Contested classification between IARC (carcinogenic 2A) and EPA (not likely carcinogenic). Primary disagreement on epidemiological weight and mechanistic pathway specificity.'
-                : substance.name === 'Microplastics'
+                : substance.name.toLowerCase() === 'microplastics'
                 ? 'No binding regulatory classification; scientific evidence outpacing policy. Most countries applying precaution in specific use categories (single-use plastic, microbeads).'
-                : substance.name === 'PCBs'
+                : substance.name.toLowerCase().includes('pcb')
                 ? 'Banned under Stockholm Convention; U.S. TSCA ban 2006. Persistent in global food chains and human tissue.'
                 : 'EPA and FDA maintain safety margin for BPA. European Union classifies as of high concern; restricted use in certain applications.'}
             </p>
@@ -1270,10 +1270,10 @@ function LayerCard({
                     lineHeight: 1.6,
                   }}
                 >
-                  {substance.name === 'Glyphosate' && 'IARC Monograph 112 (2015) · Zhang et al. 2019 (meta-analysis)'}
-                  {substance.name === 'Microplastics' && 'Marfella et al. 2024 · Ragusa et al. 2021'}
-                  {substance.name === 'PCBs' && 'Grimm et al. 2016 · Hansen 2001'}
-                  {substance.name === 'PET' && 'Rochester et al. 2018 · Vandenberg et al. 2010'}
+                  {substance.name.toLowerCase().includes('glyphosate') && 'IARC Monograph 112 (2015) · Zhang et al. 2019 (meta-analysis)'}
+                  {substance.name.toLowerCase() === 'microplastics' && 'Marfella et al. 2024 · Ragusa et al. 2021'}
+                  {substance.name.toLowerCase().includes('pcb') && 'Grimm et al. 2016 · Hansen 2001'}
+                  {substance.name.toLowerCase().includes('polyethylene terephthalate') && 'Rochester et al. 2018 · Vandenberg et al. 2010'}
                 </div>
               </div>
             </CornerBrackets>
