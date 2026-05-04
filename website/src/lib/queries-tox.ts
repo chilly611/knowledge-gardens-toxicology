@@ -311,3 +311,31 @@ export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 
   }
   return out;
 }
+
+export type Lane = 'consumer' | 'clinician' | 'counsel' | 'hygienist' | 'inspector';
+
+/** Filter the substance\'s claims for a given audience lane.
+ * Consumer  -> certified only.
+ * Clinician -> certified + provisional (drop retracted).
+ * Counsel   -> certified + provisional + contested (drop retracted).
+ * Hygienist -> falls through to clinician.
+ * Inspector -> falls through to clinician. */
+export function filterClaimsForLane(claims: CertifiedClaimRow[], lane: Lane): CertifiedClaimRow[] {
+  const status = (s: CertifiedClaimRow['status']) => s !== 'retracted';
+  if (lane === 'consumer') return claims.filter((c) => c.status === 'certified');
+  // clinician | counsel | hygienist | inspector
+  return claims.filter((c) => status(c.status));
+}
+
+/** Returns the visible tier order for a lane.
+ * Consumer  -> [\'hazard\', \'profile\']                 (hide regulatory + citations as a tier -- replace citations with a "Where this came from" link)
+ * Clinician -> [\'profile\', \'hazard\', \'response\', \'citations\']    (mechanism-first)
+ * Counsel   -> [\'response\', \'citations\', \'profile\', \'hazard\']    (Daubert posture first, evidence next)
+ * Hygienist -> falls through to clinician
+ * Inspector -> falls through to clinician */
+export type LaneTier = 'hazard' | 'profile' | 'response' | 'citations';
+export function prioritizeTiersForLane(lane: Lane): LaneTier[] {
+  if (lane === 'consumer') return ['hazard', 'profile'];
+  if (lane === 'counsel')  return ['response', 'citations', 'profile', 'hazard'];
+  return ['profile', 'hazard', 'response', 'citations']; // clinician + fallthrough
+}

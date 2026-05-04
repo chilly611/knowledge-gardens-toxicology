@@ -12,8 +12,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getSubstance, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
+import { getSubstance, quoteOrPending, groupSourcesByTier, filterClaimsForLane, prioritizeTiersForLane } from '@/lib/queries-tox';
 import type { Substance, CertifiedClaimRow, EvidenceSource } from '@/lib/types-tox';
+import type { Lane, LaneTier } from '@/lib/queries-tox';
 import ScrollReveal from '@/components/home/ScrollReveal';
 import SegmentedPills from '@/components/shared/SegmentedPills';
 import DimensionLine from '@/components/shared/DimensionLine';
@@ -27,7 +28,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
   const [substance, setSubstance] = useState<Substance | null>(null);
   const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lane, setLane] = useState<'consumer' | 'clinician' | 'counsel' | 'hygienist' | 'inspector'>('consumer');
+  const [lane, setLane] = useState<Lane>('consumer');
 
   useEffect(() => {
     (async () => {
@@ -112,10 +113,55 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 { value: 'inspector', label: 'Inspector' },
               ]}
               value={lane}
-              onChange={(v) => setLane(v as typeof lane)}
+              onChange={(v) => setLane(v as Lane)}
               variant="light"
               className="ml-auto"
             />
+          </div>
+
+          {/* Lane mode notice */}
+          <div className="mb-6 flex items-center justify-between gap-4 py-2 px-3 rounded-lg" style={{ background: 'var(--paper-warm)', borderLeft: '3px solid var(--copper-orn-deep)' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.65rem',
+                letterSpacing: '0.22em',
+                textTransform: 'uppercase',
+                color: 'var(--copper-orn-deep)',
+              }}
+            >
+              {lane === 'consumer' && 'Plain-language summary. Certified claims only. Switch to Clinician for mechanism, or Counsel for Daubert posture.'}
+              {lane === 'clinician' && 'Mechanism-first. Includes provisional + contested claims with peer-review tier flags.'}
+              {lane === 'counsel' && 'Daubert posture. Contested claims surfaced. Verbatim quotes wrapped via citation tier.'}
+              {(lane === 'hygienist' || lane === 'inspector') && 'Coming soon -- this lane is in development. Defaulting to clinician view.'}
+            </div>
+            {(lane === 'hygienist' || lane === 'inspector') && (
+              <button
+                onClick={() => setLane('clinician')}
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  padding: '0.5rem 1rem',
+                  background: 'var(--teal)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 200ms ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--teal-deep)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--teal)';
+                }}
+              >
+                View as clinician
+              </button>
+            )}
           </div>
 
           {/* Substance name + CAS */}
@@ -134,7 +180,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
             >
               {substance.name}
             </h1>
-            {substance.cas_number && (
+            {lane !== 'consumer' && substance.cas_number && (
               <div
                 style={{
                   fontFamily: 'var(--font-mono)',
@@ -181,65 +227,34 @@ function CompoundDetailContent({ slug }: { slug: string }) {
           ================================================================ */}
       <section className="py-20">
         <div className="rail-default stagger">
-          {/* HAZARD / SURFACE LAYER */}
-          <div className="anim-layer-rise">
-            <ScrollReveal>
-              <LayerCard
-                id="hazard"
-                tier="hazard"
-                eyebrow={tierNames.hazard}
-                color={tierColors.hazard}
-                depth="0mm"
-                substance={substance}
-                claims={claims.filter((c) => c.status === 'certified')}
-              />
-            </ScrollReveal>
-          </div>
+          {prioritizeTiersForLane(lane).map((tier, idx) => {
+            const filteredClaims = filterClaimsForLane(claims, lane);
+            const tierSpecificClaims =
+              tier === 'hazard' ? filteredClaims.filter((c) => c.status === 'certified') :
+              tier === 'profile' ? filteredClaims.filter((c) => c.endpoint_category === 'biomarker' || c.endpoint_category === 'mechanism') :
+              tier === 'response' ? filteredClaims.filter((c) => c.status === 'contested') :
+              filteredClaims;
 
-          {/* PROFILE / CLINICAL LAYER */}
-          <div className="anim-layer-rise">
-            <ScrollReveal delay={150}>
-              <LayerCard
-                id="profile"
-                tier="profile"
-                eyebrow={tierNames.profile}
-                color={tierColors.profile}
-                depth="120mm"
-                substance={substance}
-                claims={claims.filter((c) => c.endpoint_category === 'biomarker' || c.endpoint_category === 'mechanism')}
-              />
-            </ScrollReveal>
-          </div>
+            const depths = { hazard: '0mm', profile: '120mm', response: '240mm', citations: '360mm' };
 
-          {/* RESPONSE / REGULATORY LAYER */}
-          <div className="anim-layer-rise">
-            <ScrollReveal delay={300}>
-              <LayerCard
-                id="response"
-                tier="response"
-                eyebrow={tierNames.response}
-                color={tierColors.response}
-                depth="240mm"
-                substance={substance}
-                claims={claims.filter((c) => c.status === 'contested')}
-              />
-            </ScrollReveal>
-          </div>
-
-          {/* CITATIONS / PRIMARY EVIDENCE LAYER */}
-          <div className="anim-layer-rise">
-            <ScrollReveal delay={450}>
-              <LayerCard
-                id="citations"
-                tier="citations"
-                eyebrow={`${tierNames.citations} · ${claims.reduce((sum, c) => sum + c.source_count, 0)} SOURCES`}
-                color={tierColors.citations}
-                depth="360mm"
-                substance={substance}
-                claims={claims}
-              />
-            </ScrollReveal>
-          </div>
+            return (
+              <div key={tier} className="anim-layer-rise">
+                <ScrollReveal delay={idx * 150}>
+                  <LayerCard
+                    id={tier}
+                    tier={tier}
+                    eyebrow={tier === 'citations' ? `${tierNames.citations} · ${tierSpecificClaims.reduce((sum, c) => sum + c.source_count, 0)} SOURCES` : tierNames[tier]}
+                    color={tierColors[tier]}
+                    depth={depths[tier]}
+                    substance={substance}
+                    claims={tierSpecificClaims}
+                    lane={lane}
+                    allClaims={filteredClaims}
+                  />
+                </ScrollReveal>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -261,74 +276,220 @@ function CompoundDetailContent({ slug }: { slug: string }) {
             Continue exploring
           </div>
           <div className="tile-grid-3">
-            <CornerBrackets>
-              <a
-                href={`/flow/counsel?case=sky-valley`}
-                className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '1.2rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Open in Counsel lane
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  Sky Valley case with evidence dossier
-                </div>
-              </a>
-            </CornerBrackets>
+            {lane === 'consumer' ? (
+              <>
+                <CornerBrackets>
+                  <a
+                    href={`/compound/${substance.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}#tier-citations`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Where this came from
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Primary sources and citations
+                    </div>
+                  </a>
+                </CornerBrackets>
 
-            <CornerBrackets>
-              <a
-                href={`/flow/clinician`}
-                className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '1.2rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Open in Clinician lane
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  Biomarker, differential, decision-support
-                </div>
-              </a>
-            </CornerBrackets>
+                <CornerBrackets>
+                  <a
+                    href={`/flow/clinician`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Open in Clinician lane
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Biomarker, differential, decision-support
+                    </div>
+                  </a>
+                </CornerBrackets>
 
-            <CornerBrackets>
-              <a
-                href={`/`}
-                className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '1.2rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Back to Loom
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  View all substances & endpoints
-                </div>
-              </a>
-            </CornerBrackets>
+                <CornerBrackets>
+                  <a
+                    href={`/`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Back to Loom
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      View all substances & endpoints
+                    </div>
+                  </a>
+                </CornerBrackets>
+              </>
+            ) : lane === 'counsel' ? (
+              <>
+                <CornerBrackets>
+                  <a
+                    href={`/flow/counsel?case=sky-valley`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Open in Counsel lane
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Sky Valley case with evidence dossier
+                    </div>
+                  </a>
+                </CornerBrackets>
+
+                <CornerBrackets>
+                  <a
+                    href={`/flow/clinician`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Open in Clinician lane
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Biomarker, differential, decision-support
+                    </div>
+                  </a>
+                </CornerBrackets>
+
+                <CornerBrackets>
+                  <a
+                    href={`/`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Back to Loom
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      View all substances & endpoints
+                    </div>
+                  </a>
+                </CornerBrackets>
+              </>
+            ) : (
+              <>
+                <CornerBrackets>
+                  <a
+                    href={`/flow/counsel?case=sky-valley`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Open in Counsel lane
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Sky Valley case with evidence dossier
+                    </div>
+                  </a>
+                </CornerBrackets>
+
+                <CornerBrackets>
+                  <a
+                    href={`/flow/clinician`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Open in Clinician lane
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      Biomarker, differential, decision-support
+                    </div>
+                  </a>
+                </CornerBrackets>
+
+                <CornerBrackets>
+                  <a
+                    href={`/`}
+                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                  >
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '1.2rem',
+                        color: 'var(--ink)',
+                        marginBottom: '0.5rem',
+                      }}
+                    >
+                      Back to Loom
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
+                      View all substances & endpoints
+                    </div>
+                  </a>
+                </CornerBrackets>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -354,15 +515,24 @@ function LayerCard({
   depth,
   substance,
   claims,
+  lane,
+  allClaims,
 }: {
   id: string;
-  tier: 'hazard' | 'profile' | 'response' | 'citations';
+  tier: LaneTier;
   eyebrow: string;
   color: string;
   depth: string;
   substance: Substance;
   claims: CertifiedClaimRow[];
+  lane: Lane;
+  allClaims: CertifiedClaimRow[];
 }) {
+  // Hide profile, response, citations in consumer lane
+  if (lane === 'consumer' && (tier === 'profile' || tier === 'response' || tier === 'citations')) {
+    return null;
+  }
+
   const layerBackgrounds = {
     hazard: 'radial-gradient(circle, rgba(46, 164, 163, 0.02) 2px, transparent 2px)',
     profile: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 177, 102, 0.04) 10px, rgba(255, 177, 102, 0.04) 20px)',
@@ -484,6 +654,21 @@ function LayerCard({
               {substance.description || 'A complex environmental and health substance with multiple claim dimensions.'}
             </p>
 
+            {lane === 'consumer' && claims.length === 0 && (
+              <p
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontStyle: 'italic',
+                  fontSize: '0.95rem',
+                  lineHeight: 1.7,
+                  color: 'var(--ink-soft)',
+                  marginTop: '1rem',
+                }}
+              >
+                No certified claims yet for this lane. Switch to Clinician to see emerging evidence.
+              </p>
+            )}
+
             {/* Quick-take chips / pills */}
             <div className="mt-6 flex flex-wrap gap-3">
               {tier === 'hazard' &&
@@ -550,14 +735,28 @@ function LayerCard({
                     lineHeight: 1.6,
                   }}
                 >
-                  <div>{claims.filter((c) => c.status === 'certified').length} certified</div>
+                  <div>{allClaims.filter((c) => c.status === 'certified').length} certified</div>
                   <div style={{ color: 'var(--crimson)' }}>
-                    {claims.filter((c) => c.status === 'contested').length} contested
+                    {allClaims.filter((c) => c.status === 'contested').length} contested
                   </div>
                   <div style={{ color: 'var(--peach-deep)' }}>
-                    {claims.filter((c) => c.status === 'provisional').length} provisional
+                    {allClaims.filter((c) => c.status === 'provisional').length} provisional
                   </div>
                 </div>
+                {lane === 'counsel' && (
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.7rem',
+                      color: 'var(--ink-soft)',
+                      marginTop: '0.75rem',
+                      paddingTop: '0.75rem',
+                      borderTop: `1px solid ${color}20`,
+                    }}
+                  >
+                    <div>Daubert: {allClaims.filter((c) => c.status === 'certified').length} certified, {allClaims.filter((c) => c.status === 'contested').length} contested</div>
+                  </div>
+                )}
               </div>
             </CornerBrackets>
           </div>
@@ -989,6 +1188,54 @@ function LayerCard({
                 </div>
               </div>
             </div>
+
+            {lane === 'counsel' && contradictingClaims.length > 0 && (
+              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--paper-line)' }}>
+                <div
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'var(--ink-mute)',
+                    marginBottom: '0.75rem',
+                  }}
+                >
+                  Verbatim Evidence
+                </div>
+                {contradictingClaims.map((claim, idx) => {
+                  const contestedSource = claim.sources.find((s) => !s.supports);
+                  if (!contestedSource) return null;
+                  const qResult = quoteOrPending(contestedSource.quote);
+                  if (!qResult.verified || !qResult.text) return null;
+                  return (
+                    <div key={idx} style={{ marginBottom: '1rem' }}>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '0.85rem',
+                          fontStyle: 'italic',
+                          color: 'var(--ink-soft)',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        "{qResult.text}"
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.7rem',
+                          color: 'var(--ink-mute)',
+                          marginTop: '0.25rem',
+                        }}
+                      >
+                        — {contestedSource.title}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right-side info bubble */}
