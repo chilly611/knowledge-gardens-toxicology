@@ -165,7 +165,7 @@ export default function EvidenceGraph() {
           const pos = positions[nodeIndex++];
           nodeMap.set(caseId, {
             id: caseId,
-            label: legalCase.short_name || legalCase.caption.substring(0, 20),
+            label: legalCase.short_name || legalCase.name.substring(0, 20),
             type: 'case',
             x: pos.x,
             y: pos.y,

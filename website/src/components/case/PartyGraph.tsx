@@ -7,8 +7,19 @@ import { tokens } from '@/styles/tokens';
 export default function PartyGraph({ parties }: { parties: CaseParty[] }) {
   const [hoveredPartyId, setHoveredPartyId] = useState<string | null>(null);
 
-  // Party type colors
-  const partyColor = (type: string): string => {
+  // Derive party type from role and map to colors
+  const getPartyType = (role: string | null): string => {
+    if (!role) return 'other';
+    const r = role.toLowerCase();
+    if (r.includes('plaintiff')) return 'plaintiff';
+    if (r.includes('defendant')) return 'defendant';
+    if (r.includes('expert')) return 'expert';
+    if (r.includes('amicus')) return 'amicus';
+    return 'other';
+  };
+
+  const partyColor = (role: string | null): string => {
+    const type = getPartyType(role);
     if (type === 'plaintiff') return tokens.teal;
     if (type === 'defendant') return tokens.crimson;
     if (type === 'expert') return tokens.indigo;
@@ -51,7 +62,7 @@ export default function PartyGraph({ parties }: { parties: CaseParty[] }) {
             y1={centerY}
             x2={pos.x}
             y2={pos.y}
-            stroke={partyColor(pos.party.party_type)}
+            stroke={partyColor(pos.party.role)}
             strokeWidth="1"
             opacity="0.2"
             strokeDasharray="3 3"
@@ -70,7 +81,7 @@ export default function PartyGraph({ parties }: { parties: CaseParty[] }) {
         {/* Party nodes */}
         {positions.map((pos, idx) => {
           const isHovered = hoveredPartyId === pos.party.id;
-          const color = partyColor(pos.party.party_type);
+          const color = partyColor(pos.party.role);
           const fillOpacity = isHovered ? 0.9 : 0.7;
           const scale = isHovered ? 1.15 : 1;
 
@@ -116,8 +127,8 @@ export default function PartyGraph({ parties }: { parties: CaseParty[] }) {
                     fill={tokens.ink}
                     fontWeight="600"
                   >
-                    {pos.party.party_type.charAt(0).toUpperCase() +
-                      pos.party.party_type.slice(1)}
+                    {getPartyType(pos.party.role).charAt(0).toUpperCase() +
+                      getPartyType(pos.party.role).slice(1)}
                   </text>
                   {pos.party.role && (
                     <text
