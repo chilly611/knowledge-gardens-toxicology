@@ -25,14 +25,10 @@ export default function SkyValleyCasePage() {
     description: 'Multi-party litigation involving polychlorinated biphenyls (PCBs) contamination in groundwater and bioaccumulation claims across occupational and environmental exposure pathways.',
     experts: [
       {
-        full_name: 'Dr. Chilly Dahlgren',
-        specialty: 'Toxicology, PCB Bioaccumulation',
-        bio: 'Specializes in toxicological mechanisms and epidemiological analysis of persistent organic pollutants. Published extensively on PCB congener-specific effects and risk assessment methodologies.',
-      },
-      {
-        full_name: 'Dr. James Patterson',
-        specialty: 'Environmental Engineering',
-        bio: 'Expert in groundwater contamination pathways, aquifer modeling, and environmental remediation. Certified environmental engineer with 25+ years of field experience.',
+        full_name: 'James G. Dahlgren, M.D.',
+        affiliation: 'James Dahlgren Medical · Independent Toxicology Consultant',
+        specialty: 'Occupational and Environmental Toxicology · PCB & Dioxin Exposure Assessment',
+        bio: 'Board-certified internist and toxicologist with decades of expert-witness experience in chemical-exposure litigation, including PCBs, dioxin, and asbestos. Lead expert for the Sky Valley plaintiffs on toxicological mechanism and bioaccumulation in occupational and residential exposure pathways.',
       },
     ],
     substances: ['PCBs', 'Dioxin'],
@@ -185,12 +181,25 @@ export default function SkyValleyCasePage() {
                       fontSize: '0.7rem',
                       color: 'var(--ink-mute)',
                       letterSpacing: '0.08em',
-                      marginBottom: '1.25rem',
+                      marginBottom: '0.6rem',
                       textTransform: 'uppercase',
                     }}
                   >
                     {expert.specialty}
                   </p>
+                  {expert.affiliation && (
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontStyle: 'italic',
+                        fontSize: '0.95rem',
+                        color: 'var(--ink-soft)',
+                        marginBottom: '1.25rem',
+                      }}
+                    >
+                      {expert.affiliation}
+                    </p>
+                  )}
                   <p
                     className="body-readable"
                     style={{
