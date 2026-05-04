@@ -19,7 +19,7 @@
  * 6. Footer with return link
  */
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSubstance } from '@/lib/queries-tox';
@@ -76,7 +76,7 @@ const QUESTIONS: Question[] = [
   { number: 5, title: 'What regulatory limits apply in your jurisdiction?', xp: 10 },
 ];
 
-export default function CompoundLookupPage() {
+function CompoundLookupPageInner() {
   const searchParams = useSearchParams();
   const queryParam = searchParams?.get('q') || 'glyphosate';
 
@@ -567,5 +567,13 @@ export default function CompoundLookupPage() {
         </Link>
       </section>
     </main>
+  );
+}
+
+export default function CompoundLookupPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <CompoundLookupPageInner />
+    </Suspense>
   );
 }

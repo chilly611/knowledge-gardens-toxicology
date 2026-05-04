@@ -7,14 +7,14 @@
  */
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import CounselFlow from '@/components/flow/CounselFlow';
 import { audienceColor } from '@/styles/tokens';
 
 const STAGES = ['frame', 'assemble', 'argue', 'witness', 'file'];
 
-export default function CounselFlowPage() {
+function CounselFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -189,5 +189,13 @@ export default function CounselFlowPage() {
         />
       </section>
     </main>
+  );
+}
+
+export default function CounselFlowPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <CounselFlowPageInner />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';
 import { getCertifiedClaims, getCrossGardenLinks, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import { statusColor } from '@/styles/tokens';
@@ -14,7 +14,7 @@ const TIER_NAMES: Record<number, string> = {
   4: 'Industry/News',
 };
 
-export default function ClinicianPDFPage() {
+function ClinicianPDFPageInner() {
   const searchParams = useSearchParams();
   const [allClaims, setAllClaims] = useState<CertifiedClaimRow[]>([]);
   const [biomarkers, setBiomarkers] = useState<Record<string, CrossGardenLink[]>>({});
@@ -413,5 +413,13 @@ function SourceListPDF({ sources }: { sources: any[] }) {
         );
       })}
     </div>
+  );
+}
+
+export default function ClinicianPDFPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <ClinicianPDFPageInner />
+    </Suspense>
   );
 }

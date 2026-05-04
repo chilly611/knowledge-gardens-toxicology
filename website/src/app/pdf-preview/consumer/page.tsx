@@ -1,14 +1,14 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';
 import { getCertifiedClaims, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import { getTraceExamples } from '@/lib/data/trace-examples';
 import { statusColor } from '@/styles/tokens';
 import type { CertifiedClaimRow } from '@/lib/types-tox';
 
-export default function ConsumerPDFPreviewPage() {
+function ConsumerPDFPreviewPageInner() {
   const searchParams = useSearchParams();
   const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,5 +231,13 @@ export default function ConsumerPDFPreviewPage() {
         </div>
       </div>
     </PDFShell>
+  );
+}
+
+export default function ConsumerPDFPreviewPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <ConsumerPDFPreviewPageInner />
+    </Suspense>
   );
 }

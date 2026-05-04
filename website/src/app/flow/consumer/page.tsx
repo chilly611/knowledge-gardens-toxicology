@@ -1,14 +1,14 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import ConsumerFlow from '@/components/flow/ConsumerFlow';
 import { audienceColor } from '@/styles/tokens';
 
 const STAGES = ['identify', 'discover', 'trace', 'decide', 'carry'];
 
-export default function ConsumerFlowPage() {
+function ConsumerFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -102,5 +102,13 @@ export default function ConsumerFlowPage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function ConsumerFlowPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <ConsumerFlowPageInner />
+    </Suspense>
   );
 }

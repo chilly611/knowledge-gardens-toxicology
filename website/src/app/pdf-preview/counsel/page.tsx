@@ -1,13 +1,13 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import PDFShell from '@/lib/pdf/PDFShell';
 import { getCase, getCertifiedClaims, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import { statusColor } from '@/styles/tokens';
 import type { CaseDetail, CertifiedClaimRow } from '@/lib/types-tox';
 
-export default function CounselPDFPreviewPage() {
+function CounselPDFPreviewPageInner() {
   const searchParams = useSearchParams();
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
   const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);
@@ -430,5 +430,13 @@ export default function CounselPDFPreviewPage() {
         </div>
       </div>
     </PDFShell>
+  );
+}
+
+export default function CounselPDFPreviewPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <CounselPDFPreviewPageInner />
+    </Suspense>
   );
 }

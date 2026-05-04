@@ -1,14 +1,14 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import StageStepper from '@/components/flow/StageStepper';
 import ClinicianFlow from '@/components/flow/ClinicianFlow';
 import { audienceColor } from '@/styles/tokens';
 
 const STAGES = ['triage', 'differential', 'test', 'interpret', 'brief'];
 
-export default function ClinicianFlowPage() {
+function ClinicianFlowPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -132,5 +132,13 @@ export default function ClinicianFlowPage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function ClinicianFlowPage() {
+  return (
+    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
+      <ClinicianFlowPageInner />
+    </Suspense>
   );
 }
