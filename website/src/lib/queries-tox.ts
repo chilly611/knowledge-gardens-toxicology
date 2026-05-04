@@ -232,9 +232,11 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
   const [subs, alias, claims, sources, cases] = await Promise.all([
     supabaseTox.from('substances').select('id, name, description').ilike('name', like).limit(8),
     supabaseTox
-      .from('substance_aliases')
-      .select('substance_id, alias, substances(name)')
-      .ilike('alias', like)
+      .from('substances')
+      .select('id, name, aliases')
+      .or(
+        `aliases.cs.{${q}},aliases.cs.{${q.toUpperCase()}},aliases.cs.{${q.charAt(0).toUpperCase() + q.slice(1).toLowerCase()}}`
+      )
       .limit(8),
     supabaseTox
       .from('certified_claims_with_evidence')
@@ -255,13 +257,13 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
 
   const results: SearchResult[] = [];
   for (const s of subs.data ?? [])
-    results.push({ type: 'substance', id: (s as { id: string }).id, title: (s as { name: string }).name, snippet: (s as { description: string | null }).description, link: `/substance/${slug((s as { name: string }).name)}` });
+    results.push({ type: 'substance', id: (s as { id: string }).id, title: (s as { name: string }).name, snippet: (s as { description: string | null }).description, link: `/compound/${slug((s as { name: string }).name)}` });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const a of (alias.data ?? []) as any[])
-    results.push({ type: 'substance', id: a.substance_id, title: a.substances?.name ?? a.alias, snippet: `alias: ${a.alias}`, link: `/substance/${slug(a.substances?.name ?? a.alias)}` });
+    results.push({ type: 'substance', id: (a as { id: string }).id, title: (a as { name: string }).name, snippet: `alias: ${q}`, link: `/compound/${slug((a as { name: string }).name)}` });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const c of (claims.data ?? []) as any[])
-    results.push({ type: 'claim', id: c.claim_id, title: `${c.substance_name} × ${c.endpoint_name}`, snippet: c.effect_summary, link: `/substance/${slug(c.substance_name)}#claim-${c.claim_id}` });
+    results.push({ type: 'claim', id: c.claim_id, title: `${c.substance_name} × ${c.endpoint_name}`, snippet: c.effect_summary, link: `/compound/${slug(c.substance_name)}#claim-${c.claim_id}` });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const s of (sources.data ?? []) as any[])
     results.push({ type: 'source', id: s.id, title: s.title, snippet: s.doi ?? s.url, link: s.url });
