@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import TopFrame from "@/components/grammar/TopFrame";
 import LiabilityStrip from "@/components/grammar/LiabilityStrip";
+import AskTheGarden from "@/components/garden/AskTheGarden";
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </div>
           </div>
         </footer>
+        <AskTheGarden />
       </body>
     </html>
   );
