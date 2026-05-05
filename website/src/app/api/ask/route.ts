@@ -34,7 +34,7 @@ interface GroundingPayload {
   }>;
   experts: Array<{
     id: string;
-    full_name: string;
+    name: string;
     specialty: string | null;
     affiliation: string | null;
     link: string;
@@ -62,7 +62,7 @@ async function buildGrounding(question: string): Promise<GroundingPayload> {
   const substances = new Map<string, Substance>();
   const claims = new Map<string, CertifiedClaimRow>();
   const cases = new Map<string, LegalCase>();
-  const experts = new Map<string, { id: string; full_name: string; specialty: string | null }>();
+  const experts = new Map<string, { id: string; name: string; specialty: string | null }>();
 
   // Collect unique IDs from search results
   const substanceIds = new Set<string>();
@@ -97,53 +97,55 @@ async function buildGrounding(question: string): Promise<GroundingPayload> {
   if (caseIds.size > 0) {
     const { data } = await supabaseTox
       .from('legal_cases')
-      .select('id, short_name, caption, jurisdiction, filed_year, description, court, theory_of_harm');
-    (data ?? []).forEach((c: any) => cases.set(c.id, { id: c.id, short_name: c.short_name, caption: c.caption, jurisdiction: c.jurisdiction, filed_year: c.filed_year, description: c.description, court: c.court, theory_of_harm: c.theory_of_harm }));
+      .select('id, name, short_name, jurisdiction, filed_year, description, court, status, case_number, lead_expert_id');
+    (data ?? []).forEach((c: any) => cases.set(c.id, { id: c.id, name: c.name, short_name: c.short_name, jurisdiction: c.jurisdiction, filed_year: c.filed_year, description: c.description, court: c.court, status: c.status, case_number: c.case_number, lead_expert_id: c.lead_expert_id }));
   }
 
-  // Fetch experts mentioned in cases and claims
-  const { data: casePartiesData } = await supabaseTox
-    .from('case_parties')
-    .select('expert_id, experts(id, full_name, specialty)')
-    .eq('party_type', 'expert');
+  // Fetch lead experts directly via legal_cases.lead_expert_id (real schema; no expert_case_appearances table exists)
+  const leadExpertIds = Array.from(cases.values())
+    .map((c: any) => c.lead_expert_id)
+    .filter((id): id is string => Boolean(id));
+  if (leadExpertIds.length > 0) {
+    const { data: leadExperts } = await supabaseTox
+      .from('experts')
+      .select('id, name, specialty')
+      .in('id', leadExpertIds);
+    (leadExperts ?? []).forEach((e: any) => {
+      experts.set(e.id, { id: e.id, name: e.name, specialty: e.specialty });
+    });
+  }
 
-  (casePartiesData ?? []).forEach((row: any) => {
-    if (row.experts) {
-      experts.set(row.experts.id, {
-        id: row.experts.id,
-        full_name: row.experts.full_name,
-        specialty: row.experts.specialty,
+  // Also pull expert-tagged case_parties (role contains "expert"), then look up experts table by name match
+  if (caseIds.size > 0) {
+    const { data: partyExperts } = await supabaseTox
+      .from('case_parties')
+      .select('name, role, case_id')
+      .in('case_id', Array.from(caseIds))
+      .ilike('role', '%expert%');
+    const partyNames = Array.from(new Set((partyExperts ?? []).map((p: any) => p.name).filter(Boolean)));
+    if (partyNames.length > 0) {
+      const { data: matchedExperts } = await supabaseTox
+        .from('experts')
+        .select('id, name, specialty')
+        .in('name', partyNames);
+      (matchedExperts ?? []).forEach((e: any) => {
+        experts.set(e.id, { id: e.id, name: e.name, specialty: e.specialty });
       });
     }
-  });
-
-  // Also check expert_case_appearances
-  const { data: expertAppearances } = await supabaseTox
-    .from('expert_case_appearances')
-    .select('expert_id, experts(id, full_name, specialty)');
-
-  (expertAppearances ?? []).forEach((row: any) => {
-    if (row.experts) {
-      experts.set(row.experts.id, {
-        id: row.experts.id,
-        full_name: row.experts.full_name,
-        specialty: row.experts.specialty,
-      });
-    }
-  });
+  }
 
   // If question mentions "Dr. Dahlgren", fetch him specifically
   if (/dahlgren/i.test(question)) {
     const { data: dahlgrenData } = await supabaseTox
       .from('experts')
-      .select('id, full_name, specialty')
-      .ilike('full_name', '%Dahlgren%')
+      .select('id, name, specialty')
+      .ilike('name', '%Dahlgren%')
       .limit(1);
     if (dahlgrenData && dahlgrenData.length > 0) {
       const expert = dahlgrenData[0];
       experts.set(expert.id, {
         id: expert.id,
-        full_name: expert.full_name,
+        name: expert.name,
         specialty: expert.specialty,
       });
     }
@@ -168,22 +170,27 @@ async function buildGrounding(question: string): Promise<GroundingPayload> {
       sources: c.sources,
       link: `/compound/${slug(c.substance_name)}#claim-${c.claim_id}`,
     })),
-    cases: Array.from(cases.values()).map((c) => ({
+    cases: Array.from(cases.values()).map((c: any) => ({
       id: c.id,
-      name: c.caption,
+      name: c.name,
       short_name: c.short_name,
       jurisdiction: c.jurisdiction,
       filed_year: c.filed_year,
       description: c.description,
       link: `/case/${slug(c.short_name)}`,
     })),
-    experts: Array.from(experts.values()).map((e) => ({
-      id: e.id,
-      full_name: e.full_name,
-      specialty: e.specialty,
-      affiliation: null,
-      link: `/expert/${e.full_name.split(' ').pop()?.toLowerCase() || 'unknown'}`,
-    })),
+    experts: Array.from(experts.values()).map((e) => {
+      // Slug from last name in `name` (e.g. "James G. Dahlgren, M.D." -> "dahlgren")
+      const cleaned = (e.name || '').replace(/,?\s*(M\.?D\.?|Ph\.?D\.?|Esq\.?|Jr\.?|Sr\.?)\.?$/i, '').trim();
+      const lastName = cleaned.split(/\s+/).pop() || 'unknown';
+      return {
+        id: e.id,
+        name: e.name,
+        specialty: e.specialty,
+        affiliation: null,
+        link: `/expert/${lastName.toLowerCase()}`,
+      };
+    }),
   };
 
   return payload;
@@ -376,7 +383,7 @@ function extractCitations(text: string, grounding: GroundingPayload): Citation[]
       citations.push({
         entity_type: 'expert',
         entity_id: expert.id,
-        display_name: expert.full_name,
+        display_name: expert.name,
         link: expert.link,
       });
       used.add(`expert-${expert.id}`);
