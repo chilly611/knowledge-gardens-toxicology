@@ -24,9 +24,9 @@ export default function CounselBriefPage() {
     const fetchLiveData = async () => {
       try {
         // Fetch certified claims for PCBs (demo substance)
-        const claims = await getCertifiedClaims('PCBs', { limit: 5 });
+        const claims = await getCertifiedClaims({ substance_id: 'pcbs' });
         const caseData = await getCase('sky-valley');
-        setLiveData({ claims, caseData });
+        setLiveData({ claims: claims.slice(0, 5), caseData });
       } catch (err) {
         console.error('Failed to fetch live data:', err);
       } finally {
