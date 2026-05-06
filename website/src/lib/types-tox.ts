@@ -73,19 +73,20 @@ export type CrossGardenLink = {
 
 export type LegalCase = {
   id: string;
+  name: string;
   short_name: string;
-  caption: string;
   jurisdiction: string | null;
   court: string | null;
+  case_number: string | null;
+  status: string | null;
   filed_year: number | null;
   description: string | null;
-  theory_of_harm: string | null;
+  lead_expert_id: string | null;
 };
 
 export type CaseParty = {
   id: string;
   case_id: string;
-  party_type: 'plaintiff' | 'defendant' | 'expert' | 'amicus';
   name: string;
   role: string | null;
   notes: string | null;
@@ -96,15 +97,17 @@ export type CaseDocument = {
   case_id: string;
   doc_type: string;
   title: string;
-  filed_at: string | null;
-  url: string | null;
+  document_date: string | null;
+  source_url: string | null;
+  drive_path: string | null;
+  notes: string | null;
 };
 
 export type CaseEvent = {
   id: string;
   case_id: string;
   event_type: string;
-  occurred_at: string | null;
+  event_date: string | null;
   description: string;
   document_id: string | null;
 };
@@ -139,4 +142,18 @@ export type SearchResult = {
   title: string;
   snippet: string | null;
   link: string;
+};
+
+export type ReferenceTerm = {
+  id: string;
+  slug: string;
+  name: string;
+  category: 'regulatory_body' | 'classification' | 'legal_standard' | 'methodology' | 'concept' | 'metric';
+  short_definition: string;
+  deep_explanation_md: string;
+  lawyer_angle: string | null;
+  daubert_relevance: string | null;
+  citations: Array<{ title: string; authors?: string[]; year?: number; doi?: string; url?: string }>;
+  aliases: string[];
+  related_terms: string[];
 };

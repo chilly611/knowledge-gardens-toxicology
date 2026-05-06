@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Toxicology Knowledge Garden — Lawyer Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --paper:        #f5f0e8;
+  --paper-warm:   #ede5d6;
+  --paper-deep:   #e3d9c5;
+  --paper-line:   #d4c8b1;
+  --ink:          #1a2433;
+  --ink-soft:     #3a4658;
+  --ink-mute:     #6b7388;
+  --teal:         #2ea4a3;
+  --teal-deep:    #1a5c5c;
+  --copper:       #b87333;
+  --copper-deep:  #8a4f1f;
+  --crimson:      #e83759;
+  --crimson-deep: #b71d3a;
+  --peach:        #ffb166;
+  --peach-deep:   #c97a30;
+  --slate:        #3b4f6b;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif:   'Cormorant Garamond', 'Times New Roman', serif;
+  --font-mono:    'Space Mono', 'Menlo', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.rail { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+.rail-narrow { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--copper-deep);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+.headline {
+  font-family: var(--font-body);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.italic-emphasis {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--peach-deep);
+}
+.h2 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+.h3 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  margin-bottom: 0.6rem;
+}
+.body-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.body-text + .body-text { margin-top: 1rem; }
+
+/* ============= HERO ============= */
+.hero {
+  background:
+    radial-gradient(80% 60% at 50% 30%, rgba(184,115,51,0.06), transparent 70%),
+    var(--paper);
+  padding: 6rem 0 5rem;
+  border-bottom: 1px solid var(--paper-line);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(26,36,51,0.04) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+}
+.hero-inner { position: relative; text-align: center; }
+.caduceus-svg { width: 90px; height: 90px; margin: 0 auto 1.5rem; display: block; }
+.hero h1 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 5.5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  max-width: 22ch;
+  margin: 0 auto 1.5rem;
+}
+.hero h1 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--peach-deep);
+  letter-spacing: -0.01em;
+}
+.hero-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 52ch;
+  margin: 0 auto 2.5rem;
+}
+.tagline {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.tagline span { color: var(--teal-deep); font-weight: 700; }
+
+/* ============= SECTION FRAME ============= */
+section { padding: 5rem 0; border-bottom: 1px solid var(--paper-line); }
+section:nth-of-type(even) { background: var(--paper-warm); }
+section.dark { background: #1a2826; color: #e8eae8; border: 0; padding: 5rem 0; }
+section.dark .h2, section.dark .body-text { color: #e8eae8; }
+section.dark .body-text { color: #b8c4be; }
+section.dark .eyebrow { color: var(--peach); }
+.section-head { margin-bottom: 3rem; }
+
+/* ============= THREE PILLARS ============= */
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+@media (max-width: 880px) { .pillars { grid-template-columns: 1fr; } }
+.pillar {
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  padding: 2.25rem 2rem;
+  position: relative;
+}
+.pillar::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 10px 10px 0 0;
+}
+.pillar.p1 { --accent: var(--teal); }
+.pillar.p2 { --accent: var(--crimson); }
+.pillar.p3 { --accent: var(--copper); }
+.pillar-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.pillar h3 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+.pillar p { font-size: 1rem; line-height: 1.65; color: var(--ink-soft); }
+
+/* ============= DAHLGREN PROFILE ============= */
+.dahlgren-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; align-items: start; }
+@media (max-width: 880px) { .dahlgren-grid { grid-template-columns: 1fr; gap: 2rem; } }
+.dahlgren-card {
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-left: 4px solid var(--crimson);
+  border-radius: 10px;
+  padding: 2.5rem 2rem;
+}
+.dahlgren-name {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+.dahlgren-affil {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.25rem;
+}
+.dahlgren-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  color: var(--ink);
+  border-left: 3px solid var(--copper);
+  padding: 0.5rem 0 0.5rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.dahlgren-cite {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+}
+.timeline { list-style: none; padding: 0; margin-top: 1.5rem; }
+.timeline li {
+  position: relative;
+  padding: 0.85rem 0 0.85rem 1.5rem;
+  border-left: 2px dashed var(--paper-line);
+  margin-left: 0.5rem;
+}
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: -7px; top: 1.1rem;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--crimson);
+}
+.timeline-year {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--copper-deep);
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.timeline-event {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0.2rem 0;
+  color: var(--ink);
+}
+.timeline-detail {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* ============= DELIVERABLES GRID ============= */
+.deliverables { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.75rem; }
+@media (max-width: 740px) { .deliverables { grid-template-columns: 1fr; } }
+.deliverable {
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  padding: 1.75rem;
+  display: flex;
+  gap: 1.25rem;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.deliverable:hover { transform: translateY(-3px); box-shadow: 0 10px 30px -8px rgba(26,36,51,0.12); }
+.deliverable-icon {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--paper-deep), var(--paper-warm));
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--paper-line);
+}
+.deliverable-icon svg { width: 22px; height: 22px; stroke: var(--copper-deep); fill: none; stroke-width: 1.8; }
+.deliverable-title {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  margin-bottom: 0.4rem;
+  color: var(--ink);
+}
+.deliverable-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: rgba(46,164,163,0.12);
+  color: var(--teal-deep);
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  margin-bottom: 0.6rem;
+}
+.deliverable p { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.55; }
+
+/* ============= DEMO WALKTHROUGH ============= */
+.demo-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; justify-content: center; }
+.demo-tab {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--paper-line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.demo-tab:hover { border-color: var(--copper); color: var(--copper-deep); }
+.demo-tab.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.demo-step { display: none; }
+.demo-step.active { display: block; }
+.demo-card {
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px -12px rgba(26,36,51,0.15);
+}
+.demo-card-header {
+  background: var(--paper-deep);
+  border-bottom: 1px solid var(--paper-line);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.demo-url {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  background: var(--paper);
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--paper-line);
+  flex: 1;
+}
+.demo-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  color: var(--copper-deep);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.demo-body { padding: 2.5rem 2rem; }
+.demo-body h3 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+.demo-body .talk {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: rgba(46,164,163,0.06);
+  border-left: 3px solid var(--teal);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 6px 6px 0;
+}
+.demo-body p { font-size: 1rem; line-height: 1.7; color: var(--ink-soft); margin-bottom: 0.75rem; }
+.demo-body ul { padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
+.demo-body ul li { font-size: 1rem; color: var(--ink-soft); margin-bottom: 0.4rem; }
+
+/* ============= COMPARISON ============= */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 740px) { .compare { grid-template-columns: 1fr; } }
+.compare-card {
+  border-radius: 10px;
+  padding: 1.75rem;
+  border: 1px solid var(--paper-line);
+}
+.compare-card.lose {
+  background: rgba(232,55,89,0.05);
+  border-color: rgba(232,55,89,0.25);
+}
+.compare-card.win {
+  background: rgba(46,164,163,0.06);
+  border-color: rgba(46,164,163,0.3);
+}
+.compare-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+.compare-card.lose .compare-label { color: var(--crimson-deep); }
+.compare-card.win .compare-label { color: var(--teal-deep); }
+.compare-card h4 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+.compare-card ul { list-style: none; padding: 0; }
+.compare-card ul li {
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  position: relative;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  border-bottom: 1px dashed var(--paper-line);
+}
+.compare-card.lose ul li::before { content: '✕'; color: var(--crimson); position: absolute; left: 0; font-weight: 700; }
+.compare-card.win ul li::before { content: '✓'; color: var(--teal); position: absolute; left: 0; font-weight: 700; }
+
+/* ============= CTA ============= */
+.cta-block {
+  text-align: center;
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-radius: 14px;
+  padding: 3rem 2.5rem;
+}
+.cta-block h2 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin-bottom: 1rem;
+}
+.cta-block p { font-size: 1.1rem; color: var(--ink-soft); margin-bottom: 2rem; max-width: 50ch; margin-left: auto; margin-right: auto; }
+.cta-pill {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  margin: 0 0.5rem 0.5rem;
+}
+.cta-pill:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -6px rgba(26,36,51,0.3); }
+.cta-pill.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+/* ============= FOOTER ============= */
+footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+}
+footer a { color: var(--copper-deep); text-decoration: none; }
+
+/* ============= SOURCE PILL ============= */
+.source-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--paper-warm);
+  color: var(--ink-mute);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  vertical-align: super;
+  margin-left: 0.15rem;
+}
+
+/* ============= ANIMATIONS ============= */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+section > .rail > * { animation: fadeUp 600ms ease-out both; }
+
+@media print {
+  section, .hero { padding: 2rem 0; page-break-inside: avoid; }
+  body { font-size: 11pt; }
+  .demo-tabs { display: none; }
+  .demo-step { display: block !important; page-break-after: always; }
+  .cta-pill { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============= HERO ============= -->
+<section class="hero" style="border-top:0">
+  <div class="rail hero-inner">
+    <svg class="caduceus-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="caduceus-grad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#b87333" />
+          <stop offset="100%" stop-color="#8a4f1f" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#caduceus-grad)" stroke-width="1.5" opacity="0.4"/>
+      <line x1="50" y1="14" x2="50" y2="86" stroke="url(#caduceus-grad)" stroke-width="2"/>
+      <path d="M50 22 C 35 32, 35 48, 50 50 C 65 52, 65 68, 50 78" fill="none" stroke="#2ea4a3" stroke-width="2" stroke-linecap="round"/>
+      <path d="M50 22 C 65 32, 65 48, 50 50 C 35 52, 35 68, 50 78" fill="none" stroke="#e83759" stroke-width="2" stroke-linecap="round"/>
+      <path d="M30 22 Q 50 8, 70 22 L 50 18 Z" fill="url(#caduceus-grad)" opacity="0.7"/>
+      <circle cx="50" cy="50" r="3" fill="url(#caduceus-grad)"/>
+    </svg>
+
+    <div class="eyebrow">Toxicology Knowledge Garden &middot; A Brief for Plaintiffs&rsquo; Counsel</div>
+
+    <h1>When the deposition starts, you want <span class="accent">him</span> on your side.</h1>
+
+    <p class="hero-sub">
+      Fifty years of expert toxicology testimony &mdash; Hinkley chromium-6, Sky Valley PCBs,
+      asbestos, dioxin, benzene, silica &mdash; encoded as a queryable, citable evidence platform
+      with an M.D. toxicologist in the loop.
+    </p>
+
+    <p class="tagline">
+      Three sources behind every claim &middot;
+      <span>Daubert-ready</span> &middot;
+      Curated by Dr. James G. Dahlgren, M.D.
+    </p>
+  </div>
+</section>
+
+<!-- ============= PROBLEM ============= -->
+<section>
+  <div class="rail">
+    <div class="section-head">
+      <div class="eyebrow">Why this exists</div>
+      <h2 class="h2">Toxic-tort prep is paralegal hours, ChatGPT hallucinations, and the constant risk that opposing counsel impeaches your expert at the Daubert stage.</h2>
+    </div>
+
+    <p class="body-text">
+      Every plaintiffs&rsquo; firm working a chemical-injury case rebuilds the same dossier from scratch.
+      Forty hours of paralegal time per substance, IARC monographs and ATSDR profiles re-typed into Word,
+      verbatim quotes manually transcribed and re-checked, expert disclosures drafted under FRCP 26(a)(2)
+      with citation lists that opposing counsel will probe for the smallest gap.
+    </p>
+    <p class="body-text">
+      Asking ChatGPT speeds the front end up but introduces a new exposure: roughly one in four AI citations
+      is fabricated, paraphrased without attribution, or attached to a study that says something different
+      from the conclusion the model summarised. That risk shows up at the Daubert stage. It does not survive cross.
+    </p>
+    <p class="body-text">
+      <strong>The Toxicology Knowledge Garden is the alternative.</strong> A curated, audit-trailed evidence
+      graph for chemical and biological hazards, anchored on a sitting M.D. toxicologist with five decades
+      of expert-witness work. Every claim shows its sources, its tier, its retrieval date, and its curator.
+      Every export is a chambers-ready PDF with page numbers, citations footer, and a signature line.
+    </p>
+  </div>
+</section>
+
+<!-- ============= THREE PILLARS ============= -->
+<section>
+  <div class="rail">
+    <div class="section-head" style="text-align:center">
+      <div class="eyebrow">The three pillars</div>
+      <h2 class="h2">What this platform does that ChatGPT structurally cannot.</h2>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar p1">
+        <div class="pillar-num">01 &middot; Provenance</div>
+        <h3>Auditable Provenance</h3>
+        <p>
+          Every claim is tied to real <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--paper-warm);padding:0 .25rem;border-radius:3px">evidence_sources</code>
+          rows with DOIs, PubMed IDs, retrieval timestamps, and verbatim-quote pages. Each source carries a
+          tier badge: <strong>T1 regulatory</strong> (IARC, ATSDR, EPA), <strong>T2 systematic review</strong>,
+          <strong>T3 peer-reviewed cohort</strong>, <strong>T4 industry/news</strong>. That hierarchy
+          is the same strength-of-evidence ladder Dr. Dahlgren uses in deposition prep. ChatGPT
+          generates citations post-hoc and hallucinates roughly one in four. We don&rsquo;t. Every pin
+          on every claim is a real document on a real date.
+        </p>
+      </div>
+
+      <div class="pillar p2">
+        <div class="pillar-num">02 &middot; Deliverables</div>
+        <h3>Court-Ready Deliverables</h3>
+        <p>
+          The platform produces formatted PDFs for the work product lawyers actually need:
+          <strong>Daubert exhibit packets</strong>, <strong>Rule 26(a)(2) expert disclosures</strong>,
+          <strong>causation briefs</strong>, <strong>cross-examination preparation dossiers</strong>.
+          Watermarked, paginated, citations footer, version history, signed-by metadata.
+          ChatGPT outputs flat text. We output a Daubert exhibit packet you can file Tuesday.
+          Forty paralegal hours collapsed to ninety seconds.
+        </p>
+      </div>
+
+      <div class="pillar p3">
+        <div class="pillar-num">03 &middot; Curation</div>
+        <h3>The Dahlgren Curation Signature</h3>
+        <p>
+          The toxicology expert in <em>Anderson v. Pacific Gas &amp; Electric</em> &mdash; the Hinkley
+          chromium-6 case the Erin Brockovich film dramatised &mdash; is the curator of this platform.
+          Dr. James G. Dahlgren, M.D., UCSF, fifty years of testimony in PCB, asbestos, dioxin, and
+          PFOA cases. His name on a curated claim has weight that an AI&rsquo;s output cannot replicate.
+          When opposing counsel does discovery on your expert, this is what they find: cited, versioned,
+          traceable. ChatGPT has no such curator. Only Dr. Dahlgren has Dr. Dahlgren.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= DAHLGREN PROFILE ============= -->
+<section>
+  <div class="rail">
+    <div class="section-head">
+      <div class="eyebrow">The toxicologist in the loop</div>
+      <h2 class="h2">Dr. James G. Dahlgren, M.D. &mdash; fifty years of testifying on what chemicals do to people.</h2>
+    </div>
+
+    <div class="dahlgren-grid">
+      <div class="dahlgren-card">
+        <div class="dahlgren-name">James G. Dahlgren, M.D.</div>
+        <div class="dahlgren-affil">James Dahlgren Medical &middot; Santa Monica, CA<br/>Retired Asst. Professor, UCLA School of Medicine</div>
+
+        <p style="font-size:0.95rem;color:var(--ink-soft);line-height:1.6;margin-bottom:1rem">
+          M.D., University of California San Francisco. Diplomate, American Board of Internal Medicine.
+          Board-certified subspecialty in Occupational and Environmental Medicine. Founded Pacific
+          Toxicology Laboratories. Active in clinical toxicology and expert-witness work since 1977.
+        </p>
+
+        <p style="font-size:0.95rem;color:var(--ink-soft);line-height:1.6">
+          Author or co-author of peer-reviewed studies in <em>Environmental Health Perspectives</em>,
+          <em>Chemosphere</em>, <em>Archives of Environmental &amp; Occupational Health</em>. Testifying
+          expert in landmark toxic-tort cases including the Hinkley chromium-6 settlement, the Sky Valley
+          PCB verdict, asbestos mesothelioma trials, DuPont C8/PFOA class action, and the WTC 9/11
+          rescue worker exposure cohort.
+        </p>
+      </div>
+
+      <div>
+        <div class="dahlgren-quote">
+          &ldquo;Chromium was the poison in the Brockovich case&hellip; Chromium is super toxic and super carcinogenic.&rdquo;
+          <div class="dahlgren-cite">&mdash; Dr. James G. Dahlgren, <em>San Francisco Bay View</em>, June 2022</div>
+        </div>
+
+        <p class="body-text">
+          The 2000 Steven Soderbergh film starring Julia Roberts dramatised the Hinkley case from
+          the legal-clerk vantage point. Behind the legal advocacy was the medical/toxicological
+          assessment of chromium-6 health effects in the Hinkley plaintiffs &mdash; expert work
+          attributed to Dr. Dahlgren in expert-witness directories and contemporaneous reporting.
+          The case settled in 1996 for <strong>$333 million</strong>, then the largest environmental
+          class-action settlement in U.S. history.
+        </p>
+
+        <p class="body-text">
+          Roughly two decades later, in <em>Crane Co. v. DeLisle</em> (Florida), the Fourth District
+          Court of Appeal initially excluded Dr. Dahlgren&rsquo;s expert testimony on asbestos causation
+          under Daubert. The Florida Supreme Court reversed, holding the Daubert amendment unconstitutional
+          and reinstating his testimony along with the $8 million jury verdict for the plaintiff.
+          Forty-plus years of cross-examination and the testimony stands.
+        </p>
+
+        <ul class="timeline">
+          <li>
+            <div class="timeline-year">1996 &middot; HINKLEY CHROMIUM-6</div>
+            <div class="timeline-event">Anderson v. Pacific Gas &amp; Electric</div>
+            <div class="timeline-detail">$333M settlement &mdash; the foundation of the Erin Brockovich film. Dahlgren retained as toxicology expert on chromium-6 health effects.</div>
+          </li>
+          <li>
+            <div class="timeline-year">2003 &middot; CREOSOTE / PCP</div>
+            <div class="timeline-event">Wood Treatment Plant Health Effects Study (Mississippi)</div>
+            <div class="timeline-detail">Peer-reviewed study (<em>Environmental Health Perspectives</em>) showing 17.8% bronchitis vs 5.8% in controls; PAH-DNA adducts 4.7&times; higher in exposed residents.</div>
+          </li>
+          <li>
+            <div class="timeline-year">2007 &middot; 9/11 / WTC RESCUE WORKERS</div>
+            <div class="timeline-event">Persistent Organic Pollutants in WTC Recovery Personnel</div>
+            <div class="timeline-detail">Peer-reviewed study (<em>Chemosphere</em>) on PCBs, dibenzofurans, and dioxins in approximately 40,000 9/11 first-responders.</div>
+          </li>
+          <li>
+            <div class="timeline-year">2016&ndash;2018 &middot; ASBESTOS / DAUBERT REVERSAL</div>
+            <div class="timeline-event">Crane Co. v. DeLisle</div>
+            <div class="timeline-detail">$8M mesothelioma verdict; Florida Supreme Court reversed lower-court Daubert exclusion of Dahlgren&rsquo;s testimony, restoring the verdict.</div>
+          </li>
+          <li>
+            <div class="timeline-year">2021 &middot; SKY VALLEY PCB</div>
+            <div class="timeline-event">Erickson v. Monsanto / Pharmacia</div>
+            <div class="timeline-detail">$185M jury verdict for three teachers exposed to PCB-contaminated school caulk and lighting fixtures. Dahlgren lead expert on neurological and hormonal injury causation.</div>
+          </li>
+          <li>
+            <div class="timeline-year">2025 &middot; SKY VALLEY APPELLATE / SETTLEMENT</div>
+            <div class="timeline-event">Washington Supreme Court Affirms; Monsanto Settles 200+ Cases</div>
+            <div class="timeline-detail">$185M verdict upheld 6-3; Bayer/Monsanto settles Erickson plus 200+ additional Sky Valley plaintiffs on confidential terms (December 2025).</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= DELIVERABLES ============= -->
+<section>
+  <div class="rail">
+    <div class="section-head">
+      <div class="eyebrow">What you can buy from this platform</div>
+      <h2 class="h2">Eight deliverables for plaintiffs&rsquo; counsel.</h2>
+      <p class="body-text" style="margin-top:1.25rem;max-width:60ch">
+        Every output is a chambers-ready PDF generated from the curated evidence graph,
+        watermarked, paginated, with full source citations and Dr. Dahlgren&rsquo;s
+        signature on the curation line.
+      </p>
+    </div>
+
+    <div class="deliverables">
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Daubert prep</span>
+          <h3 class="deliverable-title">Daubert Pre-Motion Packet</h3>
+          <p>Substance-specific exhibit packet: certified-vs-contested ratio, regulatory tier-1 source list, peer-review tier-3 cohort summaries, contradicting-source side-by-side. Designed to anchor or defend a Daubert challenge.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Causation</span>
+          <h3 class="deliverable-title">Causation Brief</h3>
+          <p>Substance &times; endpoint dossier with confidence score, mechanism of action, dose-response curve, biomarker panel, and full evidence trail. For motions in limine and direct testimony prep.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">FRCP 26(a)(2)</span>
+          <h3 class="deliverable-title">Expert Witness Pre-Disclosure</h3>
+          <p>Dr. Dahlgren&rsquo;s curated case file on a specific substance, formatted for FRCP 26(a)(2)(B) compliance. Credentials, prior testimony list, publications, opinion summary, basis-and-reasons section, fee schedule.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6 M8 6l-6 6 6 6"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Cross-Examination</span>
+          <h3 class="deliverable-title">Opposing-Expert Vulnerability Brief</h3>
+          <p>Surfaces every contested claim where opposing counsel&rsquo;s expert may rely on a single regulatory body in disagreement with the wider literature (e.g., EPA non-finding vs. IARC 2A on glyphosate). Cross-examination ammunition.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 11H1l8-8 8 8h-8v8H9z"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Quote Bank</span>
+          <h3 class="deliverable-title">Daubert-Ready Claim Set</h3>
+          <p>Verbatim-quote-grade claim collection. Each claim with supporting and contradicting verbatim quotes from primary sources, page citations, retrieval timestamps. Filable as exhibits without re-typing.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Discovery</span>
+          <h3 class="deliverable-title">Case Timeline + Document Register</h3>
+          <p>Pre-formatted matter chronology and document index for any toxic-tort case in the platform&rsquo;s graph. Saves the discovery production assembly phase. Sky Valley case ships with 13 events and 31 documents already cited.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Mass Tort</span>
+          <h3 class="deliverable-title">Comparable-Case Lookup</h3>
+          <p>List of prior cases by substance, jurisdiction, verdict, and settlement size. For early-stage viability assessment of a contemplated litigation track. Useful for partner-meeting decision packets.</p>
+        </div>
+      </div>
+
+      <div class="deliverable">
+        <div class="deliverable-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div>
+          <span class="deliverable-tag">Strategy</span>
+          <h3 class="deliverable-title">Settlement-Posture Brief</h3>
+          <p>Quantified case-strength score combining certified-claim ratio, regulatory-vs-peer-review balance, and historical comparable verdicts. Supports settlement-vs-trial decision and demand-letter authoring.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============= DEMO PATH ============= -->
+<section>
+  <div class="rail">
+    <div class="section-head">
+      <div class="eyebrow">Walk it with the partner</div>
+      <h2 class="h2">The five-step demo a managing partner sees in under three minutes.</h2>
+      <p class="body-text" style="margin-top:1rem;max-width:60ch">
+        Click each step to see what happens. The full path lands on a chambers-ready Daubert exhibit
+        packet PDF, generated from real curated evidence in approximately ninety seconds.
+      </p>
+    </div>
+
+    <div class="demo-tabs" id="demo-tabs">
+      <button class="demo-tab active" data-step="1">01 &middot; The Case</button>
+      <button class="demo-tab" data-step="2">02 &middot; The Substance</button>
+      <button class="demo-tab" data-step="3">03 &middot; The Expert</button>
+      <button class="demo-tab" data-step="4">04 &middot; The Packet</button>
+      <button class="demo-tab" data-step="5">05 &middot; The Comparison</button>
+    </div>
+
+    <div class="demo-step active" data-step="1">
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <span class="demo-step-num">01 / 05</span>
+          <div class="demo-url">toxicology.theknowledgegardens.com/case/sky-valley</div>
+        </div>
+        <div class="demo-body">
+          <h3>Open the Sky Valley PCB case as a queryable docket.</h3>
+          <p>Instead of a text summary, the partner sees the case rendered as a structured dossier:
+            13 case events from the original 2014 filing through the 2025 Washington Supreme Court
+            affirmation, 31 documents cross-linked to the events that filed them, 13 parties
+            including the named plaintiffs, defense counsel firms, and Dr. Dahlgren himself in his
+            expert role. Substances at issue: PCBs and TCDD, each linking forward to a compound
+            page.</p>
+          <div class="talk">
+            &ldquo;This is your case rendered as a queryable docket. Every event has a date, every document
+            has a source URL, every party has a role. This is the discovery production layer. It&rsquo;s
+            not a search result; it&rsquo;s a structured archive.&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" data-step="2">
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <span class="demo-step-num">02 / 05</span>
+          <div class="demo-url">toxicology.theknowledgegardens.com/compound/pcbs</div>
+        </div>
+        <div class="demo-body">
+          <h3>Click into PCBs &mdash; eight curated claims, each with tiered evidence.</h3>
+          <p>Eight substantive claims for PCBs &mdash; carcinogenicity, immunotoxicity,
+            endocrine disruption, neurodevelopmental toxicity in offspring, cardiovascular
+            outcomes, bioaccumulation, hepatic enzyme induction via AhR, aquatic ecotox.</p>
+          <ul>
+            <li>IARC Monograph 107 (2016) &middot; Tier 1 regulatory</li>
+            <li>ATSDR Toxicological Profile for PCBs &middot; Tier 1 regulatory</li>
+            <li>Yu-Cheng cohort &middot; Tier 3 peer-reviewed cohort</li>
+            <li>Faroe Islands cohort (Heilmann et al.) &middot; Tier 3 peer-reviewed cohort</li>
+            <li>EPA IRIS reassessment &middot; Tier 1 regulatory</li>
+          </ul>
+          <div class="talk">
+            &ldquo;The tier badges are the same strength-of-evidence hierarchy you use in deposition prep.
+            T1 is regulatory, T2 is systematic review, T3 is peer-reviewed cohort. Now toggle the lane
+            in the upper right &mdash; Counsel view leads with the Daubert posture. Consumer view
+            shows certified claims only. Same data, three audiences, three deliverables.&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" data-step="3">
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <span class="demo-step-num">03 / 05</span>
+          <div class="demo-url">toxicology.theknowledgegardens.com/expert/dahlgren</div>
+        </div>
+        <div class="demo-body">
+          <h3>Click his name &mdash; the canonical expert profile.</h3>
+          <p>Dr. Dahlgren&rsquo;s name in the Sky Valley page is a deep link. Click it and you land on
+            <code style="font-family:var(--font-mono);font-size:0.85em;background:var(--paper-warm);padding:0 .25rem;border-radius:3px">/expert/dahlgren</code>
+            &mdash; his profile, affiliation, specialty, bio, every case he&rsquo;s on in the platform,
+            every claim cited through his case work. Versioned, cited, traceable.</p>
+          <div class="talk">
+            &ldquo;When opposing counsel does discovery on your expert, this is what they find.
+            Curated. Cited. Versioned. Their counter-expert can&rsquo;t produce this paper trail.
+            ChatGPT can&rsquo;t produce this paper trail. The platform is your expert&rsquo;s
+            reputation rendered as a queryable archive.&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" data-step="4">
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <span class="demo-step-num">04 / 05</span>
+          <div class="demo-url">toxicology.theknowledgegardens.com/flow/counsel?case=sky-valley</div>
+        </div>
+        <div class="demo-body">
+          <h3>Generate the Case-Prep Exhibit Packet PDF.</h3>
+          <p>Five-stage workflow: <em>frame</em> (substances, jurisdiction, theory of harm), <em>assemble</em>
+            (parties, documents, events), <em>argue</em> (Daubert table with certified-contested-tier breakdown),
+            <em>witness</em> (expert credentials), <em>file</em> (counsel, firm, filing reference). Click
+            &ldquo;Generate exhibit packet.&rdquo; The output is a six-to-seven-page PDF with watermark, page
+            numbers, citations footer, signature line.</p>
+          <div class="talk">
+            &ldquo;You now have a chambers-ready Daubert exhibit packet that took ninety seconds.
+            The same packet at firm rate is forty paralegal hours. That&rsquo;s ten thousand
+            dollars in billed time, every case, every motion, recovered to the partner&rsquo;s
+            margin instead of the associate pool.&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" data-step="5">
+      <div class="demo-card">
+        <div class="demo-card-header">
+          <span class="demo-step-num">05 / 05</span>
+          <div class="demo-url">side-by-side &middot; ChatGPT vs. The Garden</div>
+        </div>
+        <div class="demo-body">
+          <h3>Now ask ChatGPT for the same packet. Watch what comes back.</h3>
+          <div class="compare">
+            <div class="compare-card lose">
+              <div class="compare-label">ChatGPT output</div>
+              <h4>Flat text. Brittle citations.</h4>
+              <ul>
+                <li>Citations generated post-hoc; ~25% hallucinated</li>
+                <li>No tier hierarchy on sources</li>
+                <li>No verbatim-quote provenance</li>
+                <li>No retrieval date or version</li>
+                <li>No expert curator signature</li>
+                <li>Can&rsquo;t survive Daubert cross-examination</li>
+                <li>Output is text; not a chambers-ready PDF</li>
+              </ul>
+            </div>
+            <div class="compare-card win">
+              <div class="compare-label">The Garden output</div>
+              <h4>A Daubert exhibit packet.</h4>
+              <ul>
+                <li>Every citation is a real, retrieved source</li>
+                <li>Tier badges (T1/T2/T3/T4) on every entry</li>
+                <li>Verbatim quotes with page-or-section citations</li>
+                <li>Retrieved-on timestamps and version history</li>
+                <li>Dr. Dahlgren&rsquo;s curator signature on every claim</li>
+                <li>Daubert-defensible methodology trail</li>
+                <li>PDF: watermark, page numbers, signature line, footer</li>
+              </ul>
+            </div>
+          </div>
+          <div class="talk" style="margin-top:1.5rem">
+            &ldquo;ChatGPT is a stochastic prose generator with a citation simulator on top. The Garden
+            is your expert&rsquo;s archive with a chambers-ready output layer on top. The first wins
+            speed. The second wins the case.&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= ECONOMICS ============= -->
+<section class="dark">
+  <div class="rail">
+    <div class="section-head" style="text-align:center">
+      <div class="eyebrow">The economics</div>
+      <h2 class="h2">A platform license that pays for itself in the first motion.</h2>
+    </div>
+
+    <p class="body-text" style="text-align:center;max-width:60ch;margin:0 auto 2rem">
+      Plaintiffs&rsquo; firms spend $25K&ndash;$75K per toxic-tort matter on expert prep:
+      paralegal hours assembling exhibit packets, expert engagement fees,
+      cross-checking citations under deadline. The Garden compresses that workflow
+      to hours, not weeks, with an M.D. toxicologist&rsquo;s signature on every claim.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem;text-align:center">
+      <div>
+        <div style="font-family:var(--font-body);font-weight:800;font-size:3rem;color:var(--peach);line-height:1">40</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8c4be;margin-top:0.5rem">Paralegal hours saved per case</div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-body);font-weight:800;font-size:3rem;color:var(--teal);line-height:1">90s</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8c4be;margin-top:0.5rem">From query to chambers-ready PDF</div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-body);font-weight:800;font-size:3rem;color:var(--crimson);line-height:1">50yr</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:#b8c4be;margin-top:0.5rem">Of curated expert testimony anchored in the platform</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============= CTA ============= -->
+<section>
+  <div class="rail-narrow">
+    <div class="cta-block">
+      <div class="eyebrow">Engage</div>
+      <h2>Bring Dr. Dahlgren on as toxicologist of record &mdash; with the platform behind him.</h2>
+      <p>
+        Engagement options: per-case license, firm-wide license, expert-of-record retainer.
+        Reach out to walk a case through the platform with us.
+      </p>
+      <a href="mailto:chillyd@gmail.com?subject=Toxicology%20Knowledge%20Garden%20%E2%80%94%20Lawyer%20Inquiry" class="cta-pill">Talk to us &rarr;</a>
+      <a href="https://toxicology.theknowledgegardens.com" class="cta-pill secondary">Open the Garden &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="rail">
+    The Toxicology Knowledge Garden &middot; toxicology.theknowledgegardens.com &middot; 2026<br/>
+    Curated by Dr. James G. Dahlgren, M.D. &middot; <a href="mailto:chillyd@gmail.com">chillyd@gmail.com</a><br/>
+    <span style="opacity:0.7;display:inline-block;margin-top:0.75rem">
+      Sources: <a href="https://www.jurispro.com/files/documents/doc-1066204677-resume.pdf">JurisPro CV</a> &middot;
+      <a href="https://sfbayview.com/2022/06/arieann-harrison-continues-her-mothers-environmental-justice-advocacy-for-bayview-hunters-point/">SF Bay View, 2022</a> &middot;
+      <a href="https://en.wikipedia.org/wiki/Hinkley_groundwater_contamination">Hinkley case</a> &middot;
+      <a href="https://www.seattletimes.com/seattle-news/king-county-jury-awards-185m-to-3-teachers-who-suffered-brain-damage-from-toxins-at-monroe-school/">Seattle Times, Sky Valley verdict</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function() {
+  const tabs = document.querySelectorAll('#demo-tabs .demo-tab');
+  const steps = document.querySelectorAll('.demo-step');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const stepNum = tab.getAttribute('data-step');
+      tabs.forEach(t => t.classList.remove('active'));
+      steps.forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      const targetStep = document.querySelector('.demo-step[data-step="' + stepNum + '"]');
+      if (targetStep) targetStep.classList.add('active');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

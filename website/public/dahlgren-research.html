@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dr. James G. Dahlgren, M.D. &mdash; Research Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,500&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --paper:        #f5f0e8;
+  --paper-warm:   #ede5d6;
+  --paper-deep:   #e3d9c5;
+  --paper-line:   #d4c8b1;
+  --ink:          #1a2433;
+  --ink-soft:     #3a4658;
+  --ink-mute:     #6b7388;
+  --teal:         #2ea4a3;
+  --teal-deep:    #1a5c5c;
+  --copper:       #b87333;
+  --copper-deep:  #8a4f1f;
+  --crimson:      #e83759;
+  --crimson-deep: #b71d3a;
+  --peach:        #ffb166;
+  --peach-deep:   #c97a30;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-serif:   'Cormorant Garamond', 'Times New Roman', serif;
+  --font-mono:    'Space Mono', 'Menlo', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 1.05rem;
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 4rem 2rem 5rem;
+}
+
+/* ============= HEADER ============= */
+.cover {
+  border-bottom: 1px solid var(--paper-line);
+  padding-bottom: 3rem;
+  margin-bottom: 3rem;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--copper-deep);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+h1 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+  max-width: 22ch;
+}
+h1 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--peach-deep);
+}
+.cover-meta {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-mute);
+  margin-top: 1.5rem;
+}
+.cover-meta dt { font-weight: 700; color: var(--ink-soft); }
+.cover-meta dd { color: var(--ink-mute); }
+
+/* ============= NAV ============= */
+nav.toc {
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 3rem;
+}
+.toc-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--copper-deep);
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+nav.toc ol { list-style: none; padding: 0; counter-reset: toc-counter; }
+nav.toc ol li {
+  counter-increment: toc-counter;
+  padding: 0.35rem 0;
+  font-size: 0.95rem;
+}
+nav.toc ol li::before {
+  content: counter(toc-counter, decimal-leading-zero) " ";
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--copper);
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+nav.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: color 200ms, border-color 200ms;
+}
+nav.toc a:hover { color: var(--teal-deep); border-bottom-color: var(--teal); }
+
+/* ============= SECTION ============= */
+section.dossier {
+  margin-bottom: 3rem;
+  scroll-margin-top: 2rem;
+}
+section.dossier h2 {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--paper-line);
+  color: var(--ink);
+}
+section.dossier h2 .num {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--copper-deep);
+  letter-spacing: 0.15em;
+  vertical-align: super;
+  margin-right: 0.6rem;
+}
+section.dossier h3 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  color: var(--ink);
+}
+section.dossier p {
+  margin-bottom: 1rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+section.dossier strong { color: var(--ink); font-weight: 700; }
+section.dossier em { font-family: var(--font-serif); font-style: italic; font-weight: 500; }
+
+/* ============= LISTS ============= */
+ul.fact-list { list-style: none; padding: 0; margin: 1rem 0; }
+ul.fact-list li {
+  padding: 0.5rem 0 0.5rem 1.25rem;
+  position: relative;
+  border-bottom: 1px dashed var(--paper-line);
+}
+ul.fact-list li::before {
+  content: '\25C6';
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  color: var(--copper);
+  font-size: 0.7rem;
+}
+ul.fact-list li:last-child { border-bottom: 0; }
+
+/* ============= QUOTE ============= */
+.quote-block {
+  background: rgba(46, 164, 163, 0.06);
+  border-left: 3px solid var(--teal);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+}
+.quote-block .quote-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.quote-block .quote-attr {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  margin-top: 0.6rem;
+}
+
+/* ============= CASE CARDS ============= */
+.case-card {
+  background: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.case-card.hinkley { --accent: var(--copper); }
+.case-card.sky-valley { --accent: var(--crimson); }
+.case-card.crane { --accent: var(--teal); }
+.case-card.wood { --accent: var(--peach-deep); }
+.case-card.pfoa { --accent: var(--copper-deep); }
+.case-card.wtc { --accent: var(--ink-soft); }
+.case-card h3 { margin-top: 0; }
+.case-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+}
+.case-meta strong { color: var(--copper-deep); font-weight: 700; }
+
+/* ============= INLINE CITES ============= */
+.cite {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: var(--paper-warm);
+  color: var(--ink-mute);
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  text-decoration: none;
+  vertical-align: super;
+  margin-left: 0.1rem;
+  border: 1px solid var(--paper-line);
+}
+.cite:hover { background: var(--paper-deep); }
+
+/* ============= ASSESSMENT BLOCK ============= */
+.assessment {
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  margin: 1.5rem 0;
+}
+.assessment .label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+.assessment.verified .label { color: var(--teal-deep); }
+.assessment.unverified .label { color: var(--crimson-deep); }
+
+/* ============= SOURCES ============= */
+.sources-section {
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+  padding: 2rem 2rem;
+  margin-top: 3rem;
+}
+.sources-section h2 { border-bottom: 0; margin-bottom: 0.5rem; padding-bottom: 0; }
+.sources-section ol {
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.sources-section ol li { margin-bottom: 0.85rem; }
+.sources-section a {
+  color: var(--teal-deep);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--teal);
+  word-break: break-word;
+}
+.sources-section a:hover { border-bottom-style: solid; }
+
+/* ============= FOOTER ============= */
+footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--paper-line);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.08em;
+}
+footer a { color: var(--copper-deep); text-decoration: none; }
+
+@media print {
+  body { font-size: 10pt; }
+  .page { padding: 1rem; max-width: 100%; }
+  nav.toc { page-break-after: always; }
+  section.dossier { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="cover">
+    <div class="eyebrow">Toxicology Knowledge Garden &middot; Internal Research</div>
+    <h1>Dr. James G. Dahlgren, M.D. <span class="accent">&mdash; research dossier</span></h1>
+    <p style="font-family:var(--font-serif);font-style:italic;font-size:1.2rem;color:var(--ink-soft);max-width:50ch;margin-top:1rem">
+      A defensible, citation-anchored biographical research file compiled from public-record sources.
+      No fabrication. No embellishment. Source quality flagged where mixed.
+    </p>
+    <dl class="cover-meta">
+      <dt>Compiled</dt><dd>May 5, 2026</dd>
+      <dt>Purpose</dt><dd>Source material for the lawyer-facing visual brief</dd>
+      <dt>Source quality</dt><dd>Mixed &mdash; strong on directories &amp; court records, weak on direct interview material</dd>
+      <dt>Citations</dt><dd>17 sources, all linked at the bottom</dd>
+    </dl>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-label">Contents</div>
+    <ol>
+      <li><a href="#identity">Identity &amp; current affiliation</a></li>
+      <li><a href="#hinkley">Erin Brockovich / Hinkley chromium-6</a></li>
+      <li><a href="#cases">Other documented cases</a></li>
+      <li><a href="#publications">Publications &amp; academic record</a></li>
+      <li><a href="#media">Public-facing media &amp; expert listings</a></li>
+      <li><a href="#recognition">Professional affiliations &amp; recognition</a></li>
+      <li><a href="#assessment">Assessment of the Hinkley/Brockovich connection</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============= IDENTITY ============= -->
+  <section class="dossier" id="identity">
+    <h2><span class="num">01</span>Identity &amp; current affiliation</h2>
+
+    <p><strong>Full name:</strong> James G. Dahlgren, M.D. (also recorded as &ldquo;James George Dahlgren&rdquo;).</p>
+
+    <h3>Degrees &amp; board certifications</h3>
+    <ul class="fact-list">
+      <li>M.D., University of California San Francisco<a href="#src1" class="cite">[1]</a></li>
+      <li>Diplomate, American Board of Internal Medicine<a href="#src1" class="cite">[1]</a></li>
+      <li>Board-certified subspecialty in Occupational and Environmental Medicine<a href="#src1" class="cite">[1]</a></li>
+    </ul>
+
+    <h3>Current practice</h3>
+    <p>James Dahlgren Medical, Santa Monica, California<a href="#src1" class="cite">[1]</a>.
+    2811 Wilshire Boulevard, Suite 510, Santa Monica, CA 90403<a href="#src2" class="cite">[2]</a>.</p>
+
+    <h3>Academic affiliation</h3>
+    <p>Retired Assistant Professor, UCLA School of Medicine, Department of Family Medicine<a href="#src3" class="cite">[3]</a>.
+    Active in clinical toxicology and occupational/environmental medicine since approximately 1977
+    (40+ years in private practice as of 2017)<a href="#src4" class="cite">[4]</a>.</p>
+
+    <h3>Founded</h3>
+    <p>Pacific Toxicology Laboratories. Founding date is disputed across sources: his resume lists 1995;
+    other sources indicate 1984<a href="#src5" class="cite">[5]</a>.</p>
+  </section>
+
+  <!-- ============= HINKLEY ============= -->
+  <section class="dossier" id="hinkley">
+    <h2><span class="num">02</span>Erin Brockovich / Hinkley chromium-6 case</h2>
+
+    <p><strong>Case details:</strong> <em>Anderson v. Pacific Gas &amp; Electric Co.</em>
+    (Hinkley groundwater contamination, Kern County, California). Settled 1996 for $333 million
+    &mdash; the largest environmental class-action settlement in U.S. history at that time<a href="#src6" class="cite">[6]</a>.</p>
+
+    <h3>Dr. Dahlgren&rsquo;s documented role</h3>
+    <p>In a 2022 feature in the <em>San Francisco Bay View</em>, Dr. Dahlgren is quoted describing his
+    expert toxicology work in the Hinkley case<a href="#src7" class="cite">[7]</a>:</p>
+
+    <div class="quote-block">
+      <div class="quote-text">&ldquo;Chromium was the poison in the Brockovich case&hellip; Chromium is super toxic and super carcinogenic.&rdquo;</div>
+      <div class="quote-attr">&mdash; Dr. James G. Dahlgren, San Francisco Bay View, June 2022 [7]</div>
+    </div>
+
+    <p>He noted in comparative context that toxins at other contaminated sites (Hunters Point Naval
+    Shipyard) are &ldquo;even more deadly&rdquo; and that the Hinkley case involved &ldquo;about
+    150 plaintiffs who got money&rdquo;<a href="#src7" class="cite">[7]</a>.</p>
+
+    <p>The 2000 Steven Soderbergh film <em>Erin Brockovich</em> (Universal Pictures; Julia Roberts won
+    Best Actress) dramatised the case from the legal-clerk perspective. <strong>Dr. Dahlgren&rsquo;s role
+    was on the medical/toxicological expert-witness side, not the legal advocacy side</strong> &mdash;
+    that was Erin Brockovich, the legal clerk. The two are distinct people with distinct roles:
+    Brockovich was the legal facilitator; Dahlgren was the independent medical expert assessing
+    health effects<a href="#src6" class="cite">[6]</a><a href="#src7" class="cite">[7]</a>.</p>
+
+    <h3>Public quote on Hinkley health effects</h3>
+    <div class="quote-block">
+      <div class="quote-text">&ldquo;These all could be an aberration, but you have a whole cluster of rare and unusual cancers.&rdquo;</div>
+      <div class="quote-attr">&mdash; Dr. Dahlgren, comments during a health-effects presentation [7]</div>
+    </div>
+
+    <div class="assessment unverified">
+      <div class="label">Honest caveat</div>
+      <p style="margin:0">No direct quote from Erin Brockovich (the person) publicly crediting Dr. Dahlgren by name
+      was found in web search. His role is documented in expert-witness databases and contemporaneous
+      news coverage but is not prominently featured in Brockovich&rsquo;s own published interviews or
+      memoir. For marketing purposes, position him as &ldquo;the M.D. toxicologist behind the
+      Hinkley case&rdquo; with attribution to expert-witness directories and the 2022 Bay View
+      interview &mdash; not as someone Brockovich named publicly.</p>
+    </div>
+  </section>
+
+  <!-- ============= OTHER CASES ============= -->
+  <section class="dossier" id="cases">
+    <h2><span class="num">03</span>Other documented cases</h2>
+
+    <div class="case-card sky-valley">
+      <div class="case-meta">
+        <span><strong>Case:</strong> Erickson v. Monsanto / Pharmacia (Sky Valley PCB)</span>
+        <span><strong>Jurisdiction:</strong> King County Superior Court, WA</span>
+        <span><strong>Years:</strong> Trial 2021; appeals 2024&ndash;25</span>
+      </div>
+      <h3>Sky Valley Education Center PCB litigation</h3>
+      <p>Testifying expert witness on toxicology and health causation<a href="#src8" class="cite">[8]</a>.
+      <strong>Initial jury verdict $185 million</strong> (compensatory + punitive damages); upheld by
+      Washington Supreme Court (6-3) October 2025<a href="#src9" class="cite">[9]</a><a href="#src10" class="cite">[10]</a>.
+      December 10, 2025: Monsanto settled the Erickson case plus 200+ additional plaintiffs on
+      confidential terms<a href="#src11" class="cite">[11]</a>. Dr. Dahlgren testified that PCBs from
+      caulk and fluorescent lighting fixtures in aging school buildings caused neurological and
+      hormonal injury to three lead plaintiffs (Kerry Erickson, Michelle Leahy, Joyce Marquardt)
+      and other exposed teachers<a href="#src8" class="cite">[8]</a><a href="#src11" class="cite">[11]</a>.</p>
+    </div>
+
+    <div class="case-card crane">
+      <div class="case-meta">
+        <span><strong>Case:</strong> Crane Co. v. DeLisle</span>
+        <span><strong>Jurisdiction:</strong> Florida Fourth District / FL Supreme Court</span>
+        <span><strong>Years:</strong> Trial 2016; appellate Sept 2016; FL Supreme Court Oct 2018</span>
+      </div>
+      <h3>Asbestos litigation &mdash; Daubert reversal</h3>
+      <p>Expert witness for plaintiff (DeLisle) on mesothelioma causation. <strong>$8 million verdict
+      for plaintiff; later reversed on Daubert grounds, then reinstated on appeal</strong><a href="#src12" class="cite">[12]</a><a href="#src13" class="cite">[13]</a>.
+      Key testimony: Dr. Dahlgren opined that &ldquo;every exposure&rdquo; to asbestos above background
+      level constitutes a substantial contributing cause of mesothelioma. The Fourth District Court
+      of Appeal initially ruled his opinion inadmissible under Daubert (insufficient methodology/data,
+      particularly for chrysotile asbestos). <strong>The Florida Supreme Court later reversed this,
+      ruling the Daubert amendment unconstitutional and restoring his testimony.</strong>
+      This is the strongest single argument that his testimony survives Daubert challenges.</p>
+    </div>
+
+    <div class="case-card wood">
+      <div class="case-meta">
+        <span><strong>Location:</strong> Wood treatment plant, Mississippi</span>
+        <span><strong>Population:</strong> 1,269 exposed; 214 in detail</span>
+        <span><strong>Publication:</strong> Environmental Health Perspectives, 2003</span>
+      </div>
+      <h3>Wood treatment plant exposure (creosote &amp; pentachlorophenol)</h3>
+      <ul class="fact-list">
+        <li>Exposed residents: 17.8% diagnosed bronchitis vs. 5.8% controls<a href="#src14" class="cite">[14]</a></li>
+        <li>Exposed residents: 40.5% asthma history vs. 11% controls<a href="#src14" class="cite">[14]</a></li>
+        <li>Attic dust contaminated with pentachlorophenol (PCP, carcinogenic)<a href="#src14" class="cite">[14]</a></li>
+        <li>PAH-DNA adducts 4.7&times; higher in exposed group, indicating active exposure to polycyclic aromatic hydrocarbons<a href="#src14" class="cite">[14]</a></li>
+      </ul>
+      <p>Peer-reviewed publication in <em>Environmental Health Perspectives</em> (2003) and
+      <em>Archives of Environmental &amp; Occupational Health</em> (2007)<a href="#src14" class="cite">[14]</a>.</p>
+    </div>
+
+    <div class="case-card pfoa">
+      <div class="case-meta">
+        <span><strong>Case:</strong> DuPont C8/PFOA Class Action</span>
+        <span><strong>Locations:</strong> Wood County WI; Parkersburg WV</span>
+      </div>
+      <h3>PFOA / C8 contamination</h3>
+      <p>Retained by plaintiffs in class action against DuPont. Key findings: overall cancer prevalence
+      significantly higher in PFOA-exposed population vs. general population; elevated rates in ages
+      24&ndash;65; increased prevalence of atypical cancers (Hodgkin&rsquo;s lymphoma, leukemia,
+      multiple myeloma)<a href="#src15" class="cite">[15]</a>. DuPont contested findings, arguing PFOA
+      is not a human carcinogen and Dr. Dahlgren&rsquo;s methodology was flawed; case is referenced in
+      epidemiological literature on PFOA toxicity<a href="#src15" class="cite">[15]</a>.</p>
+    </div>
+
+    <div class="case-card wtc">
+      <div class="case-meta">
+        <span><strong>Population:</strong> ~40,000 9/11 rescue/recovery workers</span>
+        <span><strong>Publication:</strong> Chemosphere, 2007</span>
+      </div>
+      <h3>World Trade Center exposure (persistent organic pollutants)</h3>
+      <p>Body burden study of PCBs, polychlorinated dibenzofurans (PCDFs), and dioxins in 9/11 rescue
+      and recovery workers exposed to ultra-fine particulate dust. Published in <em>Chemosphere</em> 69(8)
+      with co-authors Marie Cecchini, Harpreet Takhar, Olaf Paepke (UCLA Occupational Medicine
+      program)<a href="#src16" class="cite">[16]</a>. The study received critical commentary from
+      other scientists regarding methodological concerns &mdash; a fact worth noting for completeness.</p>
+    </div>
+
+    <div class="assessment verified">
+      <div class="label">Cases NOT verified in this dossier</div>
+      <p style="margin:0">Despite frequent references in informal contexts, web search did not surface
+      strong public-record citations for Dr. Dahlgren&rsquo;s involvement in: <em>gold mining cases in
+      Peru</em>, <em>silica/silicosis</em> as a discrete docket, <em>fracking</em> as a discrete docket,
+      <em>large-scale mold/Stachybotrys</em> cases, <em>benzene/BTEX</em> as a discrete docket. He may
+      have worked these &mdash; but for marketing purposes we should not claim them without a citable
+      court record or peer-reviewed paper.</p>
+    </div>
+  </section>
+
+  <!-- ============= PUBLICATIONS ============= -->
+  <section class="dossier" id="publications">
+    <h2><span class="num">04</span>Publications &amp; academic record</h2>
+
+    <h3>Peer-reviewed publications (verified)</h3>
+    <ul class="fact-list">
+      <li><strong>Dahlgren, J., et al. (2003).</strong> &ldquo;Health effects on nearby residents of a wood treatment plant.&rdquo; <em>Environmental Health Perspectives</em><a href="#src14" class="cite">[14]</a></li>
+      <li><strong>Dahlgren, J., et al. (2007).</strong> &ldquo;Persistent organic pollutants in 9/11 world trade center rescue workers: reduction following detoxification.&rdquo; <em>Chemosphere</em> 69(8):1320&ndash;1325<a href="#src16" class="cite">[16]</a></li>
+      <li><strong>Dahlgren, J., et al. (2007).</strong> &ldquo;Residential and biological exposure assessment of chemicals from a wood treatment plant.&rdquo; <em>Archives of Environmental &amp; Occupational Health</em><a href="#src14" class="cite">[14]</a></li>
+    </ul>
+
+    <h3>ResearchGate profile</h3>
+    <p>Lists 16 followers and three published papers covering persistent organic pollutants in 9/11
+    rescue workers; cluster of systemic lupus erythematosus associated with oil-field waste site;
+    asthma in hairdressers exposed to hair-straightening products containing formaldehyde<a href="#src3" class="cite">[3]</a>.</p>
+
+    <h3>Conference presentations</h3>
+    <ul class="fact-list">
+      <li>Euro Toxicology 2017: co-presented with Patrick Talbott (James Dahlgren Medical)<a href="#src3" class="cite">[3]</a></li>
+    </ul>
+
+    <h3>Academic positions</h3>
+    <p>Directed epidemiological studies and UCLA graduate student research projects<a href="#src3" class="cite">[3]</a>.</p>
+  </section>
+
+  <!-- ============= MEDIA ============= -->
+  <section class="dossier" id="media">
+    <h2><span class="num">05</span>Public-facing media &amp; expert witness listings</h2>
+
+    <h3>Expert witness directories</h3>
+    <ul class="fact-list">
+      <li>JurisPro Expert Witness Directory (resume PDF, cited as credential reference)<a href="#src1" class="cite">[1]</a></li>
+      <li>Expert Witness Profiler database<a href="#src4" class="cite">[4]</a></li>
+      <li>Courtroom View Network (CVN) witness database; transcripts available for Erickson v. Monsanto trial (2021)<a href="#src8" class="cite">[8]</a></li>
+    </ul>
+
+    <h3>News coverage &amp; media</h3>
+    <ul class="fact-list">
+      <li>Environmental justice feature, <em>San Francisco Bay View</em> (2022): Dr. Dahlgren interviewed on chromium toxicity, comparative contamination risks (Hinkley vs. Hunters Point)<a href="#src7" class="cite">[7]</a></li>
+      <li>Trial coverage: <em>The Seattle Times</em>, King County Superior Court docket records on Erickson v. Monsanto; Washington Supreme Court decision (2025)<a href="#src9" class="cite">[9]</a><a href="#src10" class="cite">[10]</a><a href="#src11" class="cite">[11]</a></li>
+    </ul>
+
+    <h3>Regulatory &amp; government dockets</h3>
+    <ul class="fact-list">
+      <li>Federal Environmental Impact Statement (EIS) comments on Ebeys Reserve Naval property (2007); Dr. Dahlgren provided toxicology input<a href="#src17" class="cite">[17]</a></li>
+    </ul>
+  </section>
+
+  <!-- ============= RECOGNITION ============= -->
+  <section class="dossier" id="recognition">
+    <h2><span class="num">06</span>Professional affiliations &amp; recognition</h2>
+
+    <h3>Board certifications</h3>
+    <ul class="fact-list">
+      <li>American Board of Internal Medicine, Diplomate<a href="#src1" class="cite">[1]</a></li>
+      <li>Subspecialty certification: Occupational and Environmental Medicine<a href="#src1" class="cite">[1]</a></li>
+    </ul>
+
+    <h3>Professional societies</h3>
+    <p>No explicit listing of ACOEM, AIHA, or other major OEM/toxicology societies found in public sources;
+    he is, however, qualified in OEM and listed in relevant expert directories<a href="#src1" class="cite">[1]</a><a href="#src4" class="cite">[4]</a>.</p>
+
+    <h3>Academic affiliation</h3>
+    <p>UCLA School of Medicine, Department of Family Medicine, Retired Assistant Professor<a href="#src3" class="cite">[3]</a>.</p>
+
+    <div class="assessment unverified">
+      <div class="label">Honest caveat</div>
+      <p style="margin:0">No evidence of journal editorship, organizational leadership roles, or formal
+      award nominations was found in the public record. Search results inconclusive.</p>
+    </div>
+  </section>
+
+  <!-- ============= ASSESSMENT ============= -->
+  <section class="dossier" id="assessment">
+    <h2><span class="num">07</span>Assessment of the Hinkley/Brockovich connection</h2>
+
+    <div class="assessment verified">
+      <div class="label">What is verified</div>
+      <ul class="fact-list">
+        <li>Dr. Dahlgren was a toxicology expert in <em>Anderson v. Pacific Gas &amp; Electric</em> (1996 settlement, $333 million)<a href="#src6" class="cite">[6]</a><a href="#src7" class="cite">[7]</a></li>
+        <li>He provided expert opinion on health effects of chromium exposure<a href="#src7" class="cite">[7]</a></li>
+        <li>The case became the basis for the 2000 film <em>Erin Brockovich</em><a href="#src6" class="cite">[6]</a></li>
+        <li>A direct public quote attributed to Dr. Dahlgren on chromium toxicity exists<a href="#src7" class="cite">[7]</a></li>
+      </ul>
+    </div>
+
+    <div class="assessment unverified">
+      <div class="label">What is NOT verified</div>
+      <ul class="fact-list">
+        <li>Direct quote or statement from Erin Brockovich (the legal clerk) publicly crediting Dr. Dahlgren by name</li>
+        <li>Specific testimony transcripts or deposition excerpts from the Hinkley trial (the case settled before trial completion)</li>
+        <li>Detailed description of his sampling methodology or precise expert role (consultant vs. testifying expert vs. health-effects assessor)</li>
+        <li>Any interview between Dr. Dahlgren and Brockovich or her team in the public record</li>
+      </ul>
+    </div>
+
+    <h3>Honest assessment</h3>
+    <p>Dr. Dahlgren&rsquo;s involvement in Hinkley is documented in expert-witness networks and news
+    coverage, but he is not prominently featured in popular accounts of the case. The 2000 film focuses
+    on Erin Brockovich (the clerk) and her legal team; Dr. Dahlgren&rsquo;s behind-the-scenes
+    toxicology role is real but not a starring element of the Brockovich narrative.</p>
+
+    <p><strong>For lawyer-facing marketing:</strong> Position him as &ldquo;the M.D. toxicologist behind
+    the Hinkley case&rdquo; with full attribution and context; cite the 2022 Bay View interview and
+    expert-witness directories; do not overstate Brockovich&rsquo;s public acknowledgment because
+    it did not happen. The single strongest narrative anchor for survivability under Daubert is not
+    Hinkley but <strong>Crane Co. v. DeLisle</strong>, where the Florida Supreme Court reversed a lower
+    court&rsquo;s Daubert exclusion of his testimony.</p>
+  </section>
+
+  <!-- ============= SOURCES ============= -->
+  <section class="dossier sources-section" id="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li id="src1">James G. Dahlgren, M.D. &mdash; Resume. JurisPro Expert Witness Directory.
+        <a href="https://www.jurispro.com/files/documents/doc-1066204677-resume.pdf" target="_blank" rel="noreferrer">jurispro.com/files/documents/doc-1066204677-resume.pdf</a> (Accessed May 2026)</li>
+      <li id="src2">Dr. James Dahlgren, MD &mdash; Internist, Santa Monica, CA. Sharecare.
+        <a href="https://providers.sharecare.com/doctor/dr-james-g-dahlgren" target="_blank" rel="noreferrer">providers.sharecare.com/doctor/dr-james-g-dahlgren</a> (Accessed May 2026)</li>
+      <li id="src3">James DAHLGREN. ResearchGate, UCLA Department of Family Medicine.
+        <a href="https://www.researchgate.net/profile/James-Dahlgren" target="_blank" rel="noreferrer">researchgate.net/profile/James-Dahlgren</a> (Accessed May 2026)</li>
+      <li id="src4">James Dahlgren &mdash; Internal Medicine, Occupational Medicine, Toxicology Expert Witness. Expert Witness Profiler.
+        <a href="https://expertwitnessprofiler.com/expert-witness/James-Dahlgren/1512314" target="_blank" rel="noreferrer">expertwitnessprofiler.com</a> (Accessed May 2026)</li>
+      <li id="src5">Pacific Toxicology Laboratories. Corporate profiles: Crunchbase, PitchBook, LinkedIn.
+        <a href="https://www.pactox.com/" target="_blank" rel="noreferrer">pactox.com</a> (Accessed May 2026)</li>
+      <li id="src6">Hinkley Groundwater Contamination. Wikipedia.
+        <a href="https://en.wikipedia.org/wiki/Hinkley_groundwater_contamination" target="_blank" rel="noreferrer">en.wikipedia.org/wiki/Hinkley_groundwater_contamination</a> (Accessed May 2026)</li>
+      <li id="src7">Arieann Harrison Continues Her Mother&rsquo;s Environmental Justice Advocacy for Bayview Hunters Point. <em>San Francisco Bay View</em>, June 2022.
+        <a href="https://sfbayview.com/2022/06/arieann-harrison-continues-her-mothers-environmental-justice-advocacy-for-bayview-hunters-point/" target="_blank" rel="noreferrer">sfbayview.com</a></li>
+      <li id="src8">Erickson v. Monsanto. Courtroom View Network.
+        <a href="https://cvn.com/proceedings/erickson-v-monsanto-trial-2020-11-09/witness/dahlgren-dr-james" target="_blank" rel="noreferrer">cvn.com</a> (Trial testimony and expert declarations)</li>
+      <li id="src9">King County Jury Awards $185M to 3 Teachers Who Suffered Brain Damage from Toxins at Monroe School. <em>The Seattle Times</em>, June 2021.
+        <a href="https://www.seattletimes.com/seattle-news/king-county-jury-awards-185m-to-3-teachers-who-suffered-brain-damage-from-toxins-at-monroe-school/" target="_blank" rel="noreferrer">seattletimes.com</a></li>
+      <li id="src10">$185 Million Verdict Stands in Product Liability Case After Washington Supreme Court Clarifies Choice of Law Rules. <em>Clark Hill PLC</em>, October 2025.
+        <a href="https://www.clarkhill.com/news-events/news/185-million-verdict-stands-in-product-liability-case-after-washington-supreme-court-clarifies-choice-of-law-rules/" target="_blank" rel="noreferrer">clarkhill.com</a></li>
+      <li id="src11">Monsanto Reaches Agreements in Principle to Resolve Additional PCB Cases at the Sky Valley Education Center. Bayer/Monsanto Media Release, December 2025.
+        <a href="https://www.bayer.com/media/en-us/monsanto-reaches-agreements-in-principle-to-resolve-additional-pcb-cases-at-the-sky-valley-education-center/" target="_blank" rel="noreferrer">bayer.com</a></li>
+      <li id="src12">CRANE CO v. DeLISLE (2016). <em>Florida District Court of Appeal</em>. FindLaw.
+        <a href="https://caselaw.findlaw.com/court/fl-district-court-of-appeal/1754073.html" target="_blank" rel="noreferrer">caselaw.findlaw.com</a></li>
+      <li id="src13">Florida Appeals Court Finds Lower Court Erred in Allowing Some Expert Testimony. <em>Expert Witness Blog</em>, September 14, 2016.
+        <a href="https://www.expertwitnessblog.com/florida-appeals-court-finds-lower-court-erred-allowing-expert-testimony/" target="_blank" rel="noreferrer">expertwitnessblog.com</a></li>
+      <li id="src14">Health Effects on Nearby Residents of a Wood Treatment Plant. Dahlgren, J., et al. <em>Environmental Health Perspectives</em> and <em>Archives of Environmental &amp; Occupational Health</em> (2003, 2007). PubMed / ResearchGate.
+        <a href="https://pubmed.ncbi.nlm.nih.gov/12854689/" target="_blank" rel="noreferrer">pubmed.ncbi.nlm.nih.gov/12854689</a></li>
+      <li id="src15">PFOA/C8 Study: Cancer Prevalence in Exposed Populations. Dahlgren, J., et al. Multiple sources: Fluoride Action Network, Environmental Working Group (EWG), Wood County Litigation Records.
+        <a href="https://fluoridealert.org/news/new-study-finds-cancer-rate-higher-in-c8-exposed-areas/" target="_blank" rel="noreferrer">fluoridealert.org</a></li>
+      <li id="src16">Persistent Organic Pollutants in 9/11 World Trade Center Rescue Workers: Reduction Following Detoxification. Dahlgren, J., et al. <em>Chemosphere</em> 69(8) (2007). PubMed.
+        <a href="https://pubmed.ncbi.nlm.nih.gov/17234251/" target="_blank" rel="noreferrer">pubmed.ncbi.nlm.nih.gov/17234251</a></li>
+      <li id="src17">Dahlgren, J. &mdash; Response to Naval EIS. Ebeys Reserve citizen comments.
+        <a href="https://citizensofebeysreserve.com/Files/DEIS-Comments/Dahlgren-Final-Response-to-Naval-EIS.pdf" target="_blank" rel="noreferrer">citizensofebeysreserve.com</a> (Accessed May 2026)</li>
+    </ol>
+  </section>
+
+  <footer>
+    Toxicology Knowledge Garden &middot; Internal Research &middot; 2026<br/>
+    Compiled May 5, 2026 &middot; <a href="/lawyer-brief.html">View the lawyer brief &rarr;</a>
+  </footer>
+
+</div>
+</body>
+</html>

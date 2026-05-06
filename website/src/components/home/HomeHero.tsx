@@ -24,11 +24,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import AnimatedBackdrop from './AnimatedBackdrop';
+import { searchEverything, slug } from '@/lib/queries-tox';
 
 export default function HomeHero() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [revealed, setRevealed] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [chipsRevealed, setChipsRevealed] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
 
   // Mount-trigger reveal — the hero is always above the fold, so reveal on mount
@@ -38,13 +41,53 @@ export default function HomeHero() {
     return () => clearTimeout(t);
   }, []);
 
-  const submit = (e?: FormEvent) => {
+  // Chips appear 100ms after input is visible
+  useEffect(() => {
+    if (!revealed) return;
+    const t = setTimeout(() => setChipsRevealed(true), 100);
+    return () => clearTimeout(t);
+  }, [revealed]);
+
+  const submit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     const q = query.trim();
-    const url = q
-      ? `/workflow/identify/compound-lookup?q=${encodeURIComponent(q)}`
-      : '/workflow/identify/compound-lookup';
-    router.push(url);
+    if (!q) return;
+
+    setSearching(true);
+    try {
+      const results = await searchEverything(q);
+
+      // Rule a: exactly one substance with no other types
+      const substanceResults = results.filter((r) => r.type === 'substance');
+      const otherResults = results.filter((r) => r.type !== 'substance');
+      if (substanceResults.length === 1 && otherResults.length === 0) {
+        router.push(substanceResults[0].link);
+        return;
+      }
+
+      // Rule b: exact alias match (requires extra lookup)
+      const { data: subs } = await (await import('@/lib/supabase-tox')).supabaseTox
+        .from('substances')
+        .select('id, name, aliases')
+        .limit(50);
+
+      if (subs && Array.isArray(subs)) {
+        const exactAliasMatches = subs.filter(
+          (s: any) =>
+            Array.isArray(s.aliases) &&
+            s.aliases.some((alias: string) => alias.toLowerCase() === q.toLowerCase())
+        );
+        if (exactAliasMatches.length === 1) {
+          router.push(`/compound/${slug(exactAliasMatches[0].name)}`);
+          return;
+        }
+      }
+
+      // Rule c: fallback to search page
+      router.push(`/search?q=${encodeURIComponent(q)}`);
+    } finally {
+      setSearching(false);
+    }
   };
 
   return (
@@ -152,38 +195,162 @@ export default function HomeHero() {
           with workflow tools for the people who actually have to act on them.
         </p>
 
-        {/* TWO CLEAR CTA BUTTONS — primary + secondary */}
-        <div
-          className="mb-10 flex flex-col items-center gap-3 sm:flex-row sm:gap-4"
+        {/* SEARCH INPUT */}
+        <form
+          onSubmit={submit}
+          className="mb-8 w-full max-w-[640px]"
           style={{
             opacity: revealed ? 1 : 0,
             transform: revealed ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 600ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 600ms',
+            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 500ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 500ms',
+          }}
+        >
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search a chemical, an alias, or a CAS number"
+              className="w-full rounded-full transition-all"
+              style={{
+                background: 'var(--paper)',
+                border: query || searching ? '2px solid var(--copper-orn-deep)' : '2px solid rgba(255, 255, 255, 0.25)',
+                padding: 'clamp(0.85rem, 1.5vw, 1.1rem) 1.4rem',
+                paddingRight: '3.5rem',
+                fontFamily: 'var(--font-body)',
+                fontWeight: 500,
+                fontSize: 'clamp(1rem, 1.5vw, 1.15rem)',
+                color: '#0d0d0d',
+                boxShadow: query || searching ? '0 0 0 4px rgba(184, 115, 51, 0.18)' : 'none',
+              }}
+              aria-label="Search compounds"
+            />
+            <button
+              type="submit"
+              disabled={searching}
+              className="absolute right-2 flex items-center justify-center transition-all"
+              style={{
+                width: '2.5rem',
+                height: '2.5rem',
+                background: 'var(--copper-orn-deep)',
+                borderRadius: '50%',
+                color: '#FFF',
+                fontSize: '1.1rem',
+                opacity: searching ? 0.7 : 1,
+              }}
+              aria-label="Submit search"
+            >
+              {searching ? '...' : '↵'}
+            </button>
+          </div>
+        </form>
+
+        {/* CHIPS ROW */}
+        <div
+          className="mb-10 w-full max-w-[640px]"
+          style={{
+            opacity: chipsRevealed ? 1 : 0,
+            transform: chipsRevealed ? 'translateY(0)' : 'translateY(-10px)',
+            transition: 'opacity 400ms ease, transform 400ms ease',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.65rem',
+              letterSpacing: '0.32em',
+              textTransform: 'uppercase',
+              color: 'rgba(232, 240, 250, 0.5)',
+              marginBottom: '0.8rem',
+            }}
+          >
+            Or jump directly to
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              href="/compound/pcbs"
+              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
+              style={{
+                background: 'rgba(245, 240, 232, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                color: '#FFF',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.2)';
+                el.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.12)';
+                el.style.transform = 'translateY(0)';
+              }}
+            >
+              PCBs
+            </Link>
+            <Link
+              href="/compound/dioxin"
+              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
+              style={{
+                background: 'rgba(245, 240, 232, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                color: '#FFF',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.2)';
+                el.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.12)';
+                el.style.transform = 'translateY(0)';
+              }}
+            >
+              Dioxin
+            </Link>
+            <Link
+              href="/compound/glyphosate"
+              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
+              style={{
+                background: 'rgba(245, 240, 232, 0.12)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                color: '#FFF',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.2)';
+                el.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'rgba(245, 240, 232, 0.12)';
+                el.style.transform = 'translateY(0)';
+              }}
+            >
+              Glyphosate
+            </Link>
+          </div>
+        </div>
+
+        {/* Secondary lookup wizard link */}
+        <div
+          className="mb-10"
+          style={{
+            opacity: revealed ? 1 : 0,
+            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 700ms',
           }}
         >
           <Link
             href="/workflow/identify/compound-lookup"
-            className="cta-pill cta-pill-lg cta-pill-primary group inline-flex items-center gap-2"
+            className="group inline-flex items-center text-sm transition-all"
             style={{
-              background: '#9DD9C4',
-              color: '#0d3328',
-              boxShadow: '0 18px 50px -12px rgba(157, 217, 196, 0.5)',
+              color: 'rgba(232, 240, 250, 0.7)',
+              fontFamily: 'var(--font-body)',
             }}
           >
-            Look up a compound
-            <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
-          </Link>
-          <Link
-            href="#browse-the-garden"
-            className="cta-pill cta-pill-lg cta-pill-ghost group inline-flex items-center gap-2"
-            style={{
-              borderColor: 'rgba(255, 255, 255, 0.35)',
-              color: '#F8FAFC',
-              background: 'rgba(255, 255, 255, 0.04)',
-            }}
-          >
-            See what&rsquo;s here
-            <span className="transition-transform group-hover:translate-y-0.5" aria-hidden>↓</span>
+            Or use the lookup wizard
+            <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
           </Link>
         </div>
 
@@ -224,10 +391,6 @@ export default function HomeHero() {
         </div>
       </div>
 
-      {/* Hidden form for visual continuity but accessible — quick search via Enter */}
-      <form onSubmit={submit} className="sr-only">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search" />
-      </form>
     </section>
   );
 }

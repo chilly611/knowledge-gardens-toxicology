@@ -105,7 +105,7 @@ export default function CaseDetailPage({
 
             {/* Caption */}
             <h1 className="mb-4 text-5xl font-bold text-[var(--ink)]" style={{ fontStyle: 'normal' }}>
-              {caseData.caption}
+              {caseData.name}
             </h1>
 
             {/* Description */}
