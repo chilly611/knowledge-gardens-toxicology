@@ -85,84 +85,215 @@ function ReferenceListContent() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-serif mb-2" style={{ fontFamily: 'var(--font-serif)' }}>
-          Reference
-        </h1>
-        <p className="text-lg text-gray-700 mb-8">
-          Regulatory frameworks, scientific standards, and legal concepts essential for counsel.
-        </p>
-
-        <div className="mb-8 space-y-4">
-          <input
-            type="text"
-            placeholder="Search terms..."
-            value={query}
-            onChange={onQueryChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-            style={{ backgroundColor: 'white' }}
-          />
-          <select
-            value={category}
-            onChange={onCategoryChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-            style={{ backgroundColor: 'white' }}
+    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
+      <div className="rail-default py-20">
+        {/* Header Section */}
+        <section className="mb-24 border-b border-[var(--paper-line)] pb-16">
+          {/* Eyebrow */}
+          <div
+            className="mb-6"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.65rem',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--copper-orn-deep)',
+            }}
           >
-            <option value="">All Categories</option>
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            Reference · {terms.length} Entries · Lawyer Education
+          </div>
 
-        {loading && <p className="text-center text-gray-500">Loading...</p>}
+          {/* H1 */}
+          <h1
+            className="mb-8 max-w-2xl"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontStyle: 'normal',
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              fontWeight: 800,
+              color: 'var(--ink)',
+              lineHeight: 1.2,
+            }}
+          >
+            The frameworks behind every claim
+          </h1>
 
-        {!loading && terms.length === 0 && !query && !category && (
-          <p className="text-center text-gray-500">No terms yet. Check back soon.</p>
-        )}
+          {/* Body paragraph */}
+          <p
+            className="max-w-2xl body-readable"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.05rem',
+              color: 'var(--ink-soft)',
+              lineHeight: 1.7,
+            }}
+          >
+            Regulatory standards, scientific methodologies, and legal concepts essential for understanding toxicology claims in litigation.
+          </p>
+        </section>
 
-        {!loading && terms.length === 0 && (query || category) && (
-          <p className="text-center text-gray-500">No matches found.</p>
-        )}
+        {/* Search & Filter Section */}
+        <section className="mb-20">
+          <div className="space-y-4 mb-8">
+            <input
+              type="text"
+              placeholder="Search reference terms..."
+              value={query}
+              onChange={onQueryChange}
+              className="w-full px-4 py-3 rounded"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.95rem',
+                backgroundColor: 'var(--paper-warm)',
+                border: '1px solid var(--paper-line)',
+                color: 'var(--ink)',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--copper-orn-deep)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--paper-line)';
+              }}
+            />
+            <select
+              value={category}
+              onChange={onCategoryChange}
+              className="w-full px-4 py-3 rounded"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.95rem',
+                backgroundColor: 'var(--paper-warm)',
+                border: '1px solid var(--paper-line)',
+                color: 'var(--ink)',
+              }}
+            >
+              <option value="">All Categories</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        {!loading && terms.length > 0 && (
-          <div className="grid gap-6">
-            {terms.map((term) => (
-              <Link key={term.id} href={`/reference/${term.slug}`}>
-                <div className="block p-6 border border-gray-200 rounded hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: 'white' }}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div
-                        className="text-xs font-mono uppercase tracking-wider mb-2"
-                        style={{ color: 'var(--copper-orn-deep)' }}
-                      >
-                        {CATEGORIES.find((c) => c.id === term.category)?.label}
-                      </div>
-                      <h2 className="text-2xl font-serif mb-2" style={{ fontFamily: 'var(--font-serif)' }}>
-                        {term.name}
-                      </h2>
-                      <p className="text-gray-700 mb-4">{term.short_definition}</p>
+          {loading && (
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                color: 'var(--ink-mute)',
+                textAlign: 'center',
+              }}
+            >
+              Loading...
+            </p>
+          )}
+
+          {!loading && terms.length === 0 && !query && !category && (
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                color: 'var(--ink-mute)',
+                textAlign: 'center',
+              }}
+            >
+              No terms yet. Check back soon.
+            </p>
+          )}
+
+          {!loading && terms.length === 0 && (query || category) && (
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                color: 'var(--ink-mute)',
+                textAlign: 'center',
+              }}
+            >
+              No matches found.
+            </p>
+          )}
+
+          {!loading && terms.length > 0 && (
+            <div className="tile-grid-3">
+              {terms.map((term) => (
+                <Link key={term.id} href={`/reference/${term.slug}`}>
+                  <div
+                    className="tile group transition-all hover:shadow-md hover:border-[var(--copper-orn-deep)]"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {/* Eyebrow */}
+                    <div
+                      className="mb-4"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.65rem',
+                        letterSpacing: '0.22em',
+                        textTransform: 'uppercase',
+                        color: 'var(--copper-orn-deep)',
+                      }}
+                    >
+                      {CATEGORIES.find((c) => c.id === term.category)?.label}
                     </div>
-                    <div className="text-sm" style={{ color: 'var(--copper-orn-deep)' }}>
-                      →
+
+                    {/* Title */}
+                    <h2
+                      className="mb-4"
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontStyle: 'normal',
+                        fontSize: '1.25rem',
+                        fontWeight: 800,
+                        color: 'var(--ink)',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {term.name}
+                    </h2>
+
+                    {/* Short definition */}
+                    <p
+                      className="flex-1 mb-6"
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '0.95rem',
+                        color: 'var(--ink-soft)',
+                        lineHeight: 1.65,
+                        maxWidth: '60ch',
+                      }}
+                    >
+                      {term.short_definition}
+                    </p>
+
+                    {/* Read deeper link */}
+                    <div
+                      className="mt-auto pt-4 border-t border-[var(--paper-line)] group-hover:border-[var(--copper-orn-deep)]"
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '0.95rem',
+                        fontWeight: 700,
+                        color: 'var(--copper-orn-deep)',
+                        transition: 'color 200ms ease',
+                      }}
+                    >
+                      Read deeper →
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 
 export default function ReferencePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
       <ReferenceListContent />
     </Suspense>
   );

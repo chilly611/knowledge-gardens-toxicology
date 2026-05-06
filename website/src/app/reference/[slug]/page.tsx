@@ -50,139 +50,388 @@ function ReferenceTermContent({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>
-        <div className="max-w-3xl mx-auto px-6 py-12">
-          <p className="text-center text-gray-500">Loading...</p>
+      <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
+        <div className="rail-default py-20">
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              color: 'var(--ink-mute)',
+              textAlign: 'center',
+            }}
+          >
+            Loading...
+          </p>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (notFound || !term) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>
-        <div className="max-w-3xl mx-auto px-6 py-12">
-          <h1 className="text-3xl font-serif mb-4">Term not found</h1>
-          <p className="text-gray-700 mb-6">
+      <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
+        <div className="rail-default py-20">
+          <h1
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '2rem',
+              fontWeight: 800,
+              color: 'var(--ink)',
+              marginBottom: '1.5rem',
+            }}
+          >
+            Term not found
+          </h1>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              color: 'var(--ink-soft)',
+              marginBottom: '2rem',
+            }}
+          >
             The reference term '{slug}' does not exist.
           </p>
           <Link href="/reference">
-            <a className="text-blue-600 hover:underline">← Back to Reference</a>
+            <div
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                color: 'var(--copper-orn-deep)',
+                cursor: 'pointer',
+              }}
+            >
+              ← Back to Reference
+            </div>
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>
-      <div className="max-w-3xl mx-auto px-6 py-12">
+    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
+      <div className="rail-default py-20">
+        {/* Back link */}
         <Link href="/reference">
-          <a className="text-sm" style={{ color: 'var(--copper-orn-deep)' }}>
+          <div
+            className="mb-16"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              color: 'var(--copper-orn-deep)',
+              cursor: 'pointer',
+            }}
+          >
             ← Back to Reference
-          </a>
+          </div>
         </Link>
 
+        {/* Eyebrow + breadcrumb */}
         <div
-          className="text-xs font-mono uppercase tracking-wider mt-4 mb-2"
-          style={{ color: 'var(--copper-orn-deep)' }}
+          className="mb-6"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.65rem',
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: 'var(--copper-orn-deep)',
+          }}
         >
-          {CATEGORIES[term.category] || term.category}
+          Reference / {term.slug}
         </div>
 
+        {/* H1 */}
         <h1
-          className="text-4xl font-serif mb-6"
-          style={{ fontFamily: 'var(--font-serif)' }}
+          className="mb-10"
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontStyle: 'normal',
+            fontSize: 'clamp(2rem, 4vw, 3rem)',
+            fontWeight: 800,
+            color: 'var(--ink)',
+            lineHeight: 1.2,
+            maxWidth: '50rem',
+          }}
         >
           {term.name}
         </h1>
 
-        <div className="bg-white border-l-4 p-6 mb-8" style={{ borderLeftColor: 'var(--copper-orn-deep)' }}>
-          <p className="text-base text-gray-800">{term.short_definition}</p>
+        {/* Short definition callout tile */}
+        <div
+          className="tile mb-16"
+          style={{
+            borderLeftWidth: '4px',
+            borderLeftColor: 'var(--copper-orn-deep)',
+            borderTopWidth: '0px',
+            maxWidth: '50rem',
+          }}
+        >
+          <p
+            className="body-readable"
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '1.05rem',
+              color: 'var(--ink)',
+              lineHeight: 1.7,
+              fontStyle: 'italic',
+            }}
+          >
+            {term.short_definition}
+          </p>
         </div>
 
-        <div className="prose prose-sm max-w-none mb-8">
-          {markdownToJsx(term.deep_explanation_md)}
-        </div>
+        {/* Deep explanation section */}
+        {term.deep_explanation_md && (
+          <section className="mb-16">
+            <div
+              className="body-readable-wide prose prose-sm max-w-none"
+              style={{
+                fontFamily: 'var(--font-body)',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.7,
+              }}
+            >
+              {markdownToJsx(term.deep_explanation_md)}
+            </div>
+          </section>
+        )}
 
+        {/* For counsel callout */}
         {term.lawyer_angle && (
-          <div className="bg-blue-50 border border-blue-200 p-6 mb-8 rounded">
-            <h2 className="font-serif text-lg mb-3">For counsel</h2>
-            <p className="text-gray-800">{term.lawyer_angle}</p>
+          <div
+            className="tile mb-16"
+            style={{
+              borderLeftWidth: '4px',
+              borderLeftColor: 'var(--teal)',
+              borderTopWidth: '0px',
+              maxWidth: '50rem',
+            }}
+          >
+            <div
+              className="mb-4"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.65rem',
+                letterSpacing: '0.22em',
+                textTransform: 'uppercase',
+                color: 'var(--teal)',
+              }}
+            >
+              For Counsel
+            </div>
+            <h2
+              className="mb-4"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontStyle: 'italic',
+                fontSize: '1.25rem',
+                fontWeight: 400,
+                color: 'var(--ink)',
+                lineHeight: 1.3,
+              }}
+            >
+              Lawyer angle
+            </h2>
+            <p
+              className="body-readable"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '1.05rem',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.7,
+              }}
+            >
+              {term.lawyer_angle}
+            </p>
           </div>
         )}
 
+        {/* Daubert posture callout */}
         {term.daubert_relevance && (
-          <div className="bg-amber-50 border border-amber-200 p-6 mb-8 rounded">
-            <h2 className="font-serif text-lg mb-3">Daubert posture</h2>
-            <p className="text-gray-800">{term.daubert_relevance}</p>
+          <div
+            className="tile mb-16"
+            style={{
+              borderLeftWidth: '4px',
+              borderLeftColor: 'var(--crimson)',
+              borderTopWidth: '0px',
+              maxWidth: '50rem',
+            }}
+          >
+            <div
+              className="mb-4"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.65rem',
+                letterSpacing: '0.22em',
+                textTransform: 'uppercase',
+                color: 'var(--crimson)',
+              }}
+            >
+              Daubert Posture
+            </div>
+            <p
+              className="body-readable"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '1.05rem',
+                color: 'var(--ink-soft)',
+                lineHeight: 1.7,
+              }}
+            >
+              {term.daubert_relevance}
+            </p>
           </div>
         )}
 
+        {/* Citations section */}
         {term.citations.length > 0 && (
-          <div className="mb-8">
-            <h2 className="font-serif text-lg mb-4">Citations</h2>
-            <ol className="space-y-3 ml-6 list-decimal">
+          <section className="mb-16">
+            <h2
+              className="mb-8"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontStyle: 'normal',
+                fontSize: '1.5rem',
+                fontWeight: 800,
+                color: 'var(--ink)',
+                lineHeight: 1.2,
+              }}
+            >
+              Citations
+            </h2>
+            <ol
+              style={{
+                listStyleType: 'decimal',
+                marginLeft: '2rem',
+              }}
+            >
               {term.citations.map((cite, i) => (
-                <li key={i} className="text-sm text-gray-800">
-                  <span className="font-semibold">{cite.title}</span>
-                  {cite.authors && cite.authors.length > 0 && (
-                    <span className="text-gray-700">
-                      {' '}
-                      by {cite.authors.join(', ')}
-                    </span>
-                  )}
-                  {cite.year && <span className="text-gray-700"> ({cite.year})</span>}
+                <li
+                  key={i}
+                  className="tile-inner mb-4"
+                  style={{
+                    marginLeft: '0.5rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: 'var(--ink)',
+                      marginBottom: '0.5rem',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {cite.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.85rem',
+                      color: 'var(--ink-mute)',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    {cite.authors && cite.authors.length > 0 && `${cite.authors.join(', ')} `}
+                    {cite.year && `(${cite.year})`}
+                  </div>
                   {cite.doi && (
-                    <>
-                      {' '}
-                      <a
-                        href={`https://doi.org/${cite.doi}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        DOI: {cite.doi}
-                      </a>
-                    </>
+                    <a
+                      href={`https://doi.org/${cite.doi}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.85rem',
+                        color: 'var(--copper-orn-deep)',
+                        textDecoration: 'none',
+                        marginRight: '1rem',
+                      }}
+                    >
+                      DOI: {cite.doi}
+                    </a>
                   )}
                   {cite.url && (
-                    <>
-                      {' '}
-                      <a
-                        href={cite.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        Link
-                      </a>
-                    </>
+                    <a
+                      href={cite.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.85rem',
+                        color: 'var(--copper-orn-deep)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Link
+                    </a>
                   )}
                 </li>
               ))}
             </ol>
-          </div>
+          </section>
         )}
 
+        {/* Related terms section */}
         {related.length > 0 && (
-          <div>
-            <h2 className="font-serif text-lg mb-4">Related terms</h2>
-            <div className="flex flex-wrap gap-3">
+          <section>
+            <h2
+              className="mb-8"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontStyle: 'normal',
+                fontSize: '1.5rem',
+                fontWeight: 800,
+                color: 'var(--ink)',
+                lineHeight: 1.2,
+              }}
+            >
+              Related Terms
+            </h2>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              }}
+            >
               {related.map((t) => (
                 <Link key={t.id} href={`/reference/${t.slug}`}>
-                  <a
-                    className="px-3 py-1 bg-gray-200 rounded-full text-sm hover:bg-gray-300 transition-colors"
+                  <div
+                    style={{
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      paddingTop: '0.5rem',
+                      paddingBottom: '0.5rem',
+                      backgroundColor: 'var(--paper-warm)',
+                      borderRadius: '1rem',
+                      fontSize: '0.95rem',
+                      fontFamily: 'var(--font-body)',
+                      color: 'var(--ink-soft)',
+                      border: '1px solid var(--paper-line)',
+                      cursor: 'pointer',
+                      transition: 'all 200ms ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--paper)';
+                      e.currentTarget.style.borderColor = 'var(--copper-orn-deep)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--paper-warm)';
+                      e.currentTarget.style.borderColor = 'var(--paper-line)';
+                    }}
                   >
                     {t.name}
-                  </a>
+                  </div>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -192,7 +441,7 @@ export default function ReferenceTermPage({
   params: { slug: string };
 }) {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ backgroundColor: 'var(--paper)' }}>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
       <ReferenceTermContent slug={params.slug} />
     </Suspense>
   );

@@ -318,3 +318,19 @@ It also accepts `animate` to enable the `caduceus-drift` keyframe (slow rotate +
 - **Brand:** Paper surface + peach/crimson accents. Cormorant italic for captions, Space Mono for all metadata/controls. No localStorage/sessionStorage.
 - **Testing:** All 7 stages route correctly, autoplay cycles through all stages and repeats, pause/resume works, share buttons copy correct URLs, stage pills jump to correct stage, prev/next navigation wraps around.
 - **No modifications to:** `src/lib/queries-tox.ts`, `src/lib/types-tox.ts`, `src/styles/tokens.ts`, `src/lib/animations.ts`, `src/app/globals.css`, existing route pages, `src/components/shared/`.
+
+## L-022 · Public-facing pages MUST use the composition system, period
+
+**Discovered:** 2026-05-06, after `/reference` shipped with bare HTML on parchment — no .tile cards, no copper accents, no Space Mono eyebrows, no italics for emphasis. Owner called it "1980s academic website" regression. Days of design work erased in one PR.
+
+**Rule (mandatory for ALL new public-facing pages):**
+
+1. The page MUST be wrapped in `.rail-default` or `.rail-canvas`. NEVER bare elements directly under <main>.
+2. Every header section MUST have a Space Mono uppercase eyebrow (font-mono, 0.65-0.7rem, letter-spacing 0.22em, color copper-orn-deep).
+3. Body text MUST be wrapped in `.body-readable` (max-width 60ch, line-height 1.7) for any prose paragraph longer than 1 sentence.
+4. Cards/sections MUST use `.tile`, `.tile-feature`, `.tile-inner`, or `.tile-grid-3`. NEVER raw <div> + p-N tailwind.
+5. Use Inter bold 700-800 normal style for headlines. Cormorant italic ONLY for emphasis via `.emphasis-italic` class.
+6. Each tile/card MUST have a brand accent: copper, teal, crimson, peach-deep — applied as a left border 4px, top accent stripe 3px, or color-coded category dot.
+7. Before declaring a page done, the agent MUST visually compare against `compound/[slug]/page.tsx`, `counsel-brief/page.tsx`, or `case/sky-valley/page.tsx`. If the new page doesn't share their visual register, the agent rewrites until it does.
+
+**Test for compliance:** Take a screenshot of the new page. If it could be confused with a 1990s university research department site, redesign.
