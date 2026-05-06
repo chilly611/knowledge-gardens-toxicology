@@ -311,3 +311,55 @@ export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 
   }
   return out;
 }
+
+/* =============================================================================
+   Reference Terms (Lawyer Education Layer)
+   ============================================================================= */
+
+import type { ReferenceTerm } from './types-tox';
+
+export async function getReferenceTerm(slug: string): Promise<ReferenceTerm | null> {
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (error) throw error;
+  return data as ReferenceTerm | null;
+}
+
+export async function listReferenceTerms(category?: string): Promise<ReferenceTerm[]> {
+  let q = supabaseTox.from('reference_terms').select('*').order('name');
+  if (category) q = q.eq('category', category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
+
+export async function searchReferenceTerms(q: string): Promise<ReferenceTerm[]> {
+  const query = q.trim();
+  if (!query) return [];
+  
+  // Try FTS first if available; fallback to ilike
+  const like = `%${query}%`;
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(`name.ilike.${like},short_definition.ilike.${like},deep_explanation_md.ilike.${like}`)
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
+
+export async function getReferenceTermsByAliases(aliases: string[]): Promise<ReferenceTerm[]> {
+  if (!aliases.length) return [];
+  
+  // Use ilike fallback: match if aliases array overlaps
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(aliases.map((a) => `aliases.cs.{${a}}`).join(','))
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
