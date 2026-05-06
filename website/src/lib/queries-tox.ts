@@ -366,7 +366,7 @@ export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 
 
 export type Lane = 'consumer' | 'clinician' | 'counsel' | 'hygienist' | 'inspector';
 
-/** Filter the substance\'s claims for a given audience lane.
+/** Filter the substance's claims for a given audience lane.
  * Consumer  -> certified only.
  * Clinician -> certified + provisional (drop retracted).
  * Counsel   -> certified + provisional + contested (drop retracted).
@@ -380,14 +380,61 @@ export function filterClaimsForLane(claims: CertifiedClaimRow[], lane: Lane): Ce
 }
 
 /** Returns the visible tier order for a lane.
- * Consumer  -> [\'hazard\', \'profile\']                 (hide regulatory + citations as a tier -- replace citations with a "Where this came from" link)
- * Clinician -> [\'profile\', \'hazard\', \'response\', \'citations\']    (mechanism-first)
- * Counsel   -> [\'response\', \'citations\', \'profile\', \'hazard\']    (Daubert posture first, evidence next)
- * Hygienist -> falls through to clinician
- * Inspector -> falls through to clinician */
+ * Consumer  -> ['hazard', 'profile']
+ * Clinician -> ['profile', 'hazard', 'response', 'citations']    (mechanism-first)
+ * Counsel   -> ['response', 'citations', 'profile', 'hazard']    (Daubert posture first)
+ * Hygienist + Inspector -> falls through to clinician */
 export type LaneTier = 'hazard' | 'profile' | 'response' | 'citations';
 export function prioritizeTiersForLane(lane: Lane): LaneTier[] {
   if (lane === 'consumer') return ['hazard', 'profile'];
   if (lane === 'counsel')  return ['response', 'citations', 'profile', 'hazard'];
   return ['profile', 'hazard', 'response', 'citations']; // clinician + fallthrough
+}
+
+/* =============================================================================
+   Reference Terms (Lawyer Education Layer)
+   ============================================================================= */
+
+import type { ReferenceTerm } from './types-tox';
+
+export async function getReferenceTerm(slug: string): Promise<ReferenceTerm | null> {
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (error) throw error;
+  return data as ReferenceTerm | null;
+}
+
+export async function listReferenceTerms(category?: string): Promise<ReferenceTerm[]> {
+  let q = supabaseTox.from('reference_terms').select('*').order('name');
+  if (category) q = q.eq('category', category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
+
+export async function searchReferenceTerms(q: string): Promise<ReferenceTerm[]> {
+  const query = q.trim();
+  if (!query) return [];
+  const like = `%${query}%`;
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(`name.ilike.${like},short_definition.ilike.${like},deep_explanation_md.ilike.${like}`)
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
+
+export async function getReferenceTermsByAliases(aliases: string[]): Promise<ReferenceTerm[]> {
+  if (!aliases.length) return [];
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(aliases.map((a) => `aliases.cs.{${a}}`).join(','))
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
 }

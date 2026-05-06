@@ -143,3 +143,17 @@ export type SearchResult = {
   snippet: string | null;
   link: string;
 };
+
+export type ReferenceTerm = {
+  id: string;
+  slug: string;
+  name: string;
+  category: 'regulatory_body' | 'classification' | 'legal_standard' | 'methodology' | 'concept' | 'metric';
+  short_definition: string;
+  deep_explanation_md: string;
+  lawyer_angle: string | null;
+  daubert_relevance: string | null;
+  citations: Array<{ title: string; authors?: string[]; year?: number; doi?: string; url?: string }>;
+  aliases: string[];
+  related_terms: string[];
+};
