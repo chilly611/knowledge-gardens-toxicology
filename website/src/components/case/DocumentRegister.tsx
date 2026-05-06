@@ -23,12 +23,12 @@ function docTypeBadgeColor(docType: string): string {
 }
 
 export default function DocumentRegister({ documents }: { documents: CaseDocument[] }) {
-  // Sort by filed_at ascending
+  // Sort by document_date ascending
   const sorted = useMemo(
     () =>
       [...documents].sort((a, b) => {
-        const dateA = a.filed_at ? new Date(a.filed_at).getTime() : 0;
-        const dateB = b.filed_at ? new Date(b.filed_at).getTime() : 0;
+        const dateA = a.document_date ? new Date(a.document_date).getTime() : 0;
+        const dateB = b.document_date ? new Date(b.document_date).getTime() : 0;
         return dateA - dateB;
       }),
     [documents]
@@ -40,8 +40,8 @@ export default function DocumentRegister({ documents }: { documents: CaseDocumen
     <div ref={ref} className="space-y-1">
       {sorted.map((doc, idx) => {
         const isRevealed = indices.has(idx);
-        const dateStr = doc.filed_at
-          ? new Date(doc.filed_at).toLocaleDateString('en-US', {
+        const dateStr = doc.document_date
+          ? new Date(doc.document_date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
@@ -61,9 +61,9 @@ export default function DocumentRegister({ documents }: { documents: CaseDocumen
 
             {/* Document title in italic Cormorant */}
             <div className="col-span-7 italic text-[var(--ink)]">
-              {doc.url ? (
+              {doc.source_url ? (
                 <a
-                  href={doc.url}
+                  href={doc.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="no-underline transition-colors hover:text-[var(--teal)]"
@@ -83,9 +83,9 @@ export default function DocumentRegister({ documents }: { documents: CaseDocumen
               >
                 {doc.doc_type}
               </span>
-              {doc.url && (
+              {doc.source_url && (
                 <a
-                  href={doc.url}
+                  href={doc.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[var(--teal)] no-underline transition-colors hover:text-[var(--teal-deep)]"

@@ -229,7 +229,7 @@ export default function CounselFlow({
                       {party.name}
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--ink-mute)' }}>
-                      {party.party_type} {party.role && `· ${party.role}`}
+                      {party.role || 'Party'}
                     </div>
                   </div>
                 ))}
@@ -249,7 +249,7 @@ export default function CounselFlow({
                       {doc.title}
                     </div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--ink-mute)' }}>
-                      {doc.doc_type} {doc.filed_at && `· ${doc.filed_at.split('T')[0]}`}
+                      {doc.doc_type} {doc.document_date && `· ${doc.document_date.split('T')[0]}`}
                     </div>
                   </div>
                 ))}
@@ -266,7 +266,7 @@ export default function CounselFlow({
                 {caseData.events.map((event) => (
                   <div key={event.id} className="p-3 rounded border border-[var(--paper-line)]">
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--ink-mute)' }}>
-                      {event.event_type} {event.occurred_at && `· ${event.occurred_at.split('T')[0]}`}
+                      {event.event_type} {event.event_date && `· ${event.event_date.split('T')[0]}`}
                     </div>
                     <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--ink)' }}>
                       {event.description}
@@ -400,7 +400,7 @@ export default function CounselFlow({
                   key={expert.id}
                   className="p-4 rounded border border-[var(--paper-line)]"
                   style={{
-                    borderLeft: expert.full_name.includes('Dahlgren') ? '4px solid var(--crimson)' : undefined,
+                    borderLeft: expert.name.includes('Dahlgren') ? '4px solid var(--crimson)' : undefined,
                   }}
                 >
                   <div
@@ -412,8 +412,8 @@ export default function CounselFlow({
                       marginBottom: '0.25rem',
                     }}
                   >
-                    {expert.full_name}
-                    {expert.full_name.includes('Dahlgren') && ' ★'}
+                    {expert.name}
+                    {expert.name.includes('Dahlgren') && ' ★'}
                   </div>
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--ink-mute)', marginBottom: '0.5rem' }}>
                     {expert.specialty}

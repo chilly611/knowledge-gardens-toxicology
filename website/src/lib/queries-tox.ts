@@ -9,8 +9,12 @@ import { supabaseTox } from './supabase-tox';
 import type {
   CertifiedClaimRow,
   CaseDetail,
+  CaseDocument,
+  CaseEvent,
+  CaseParty,
   CrossGardenLink,
   EvidenceSource,
+  Expert,
   LegalCase,
   ResearchBacklogRow,
   SearchResult,
@@ -165,53 +169,99 @@ export async function getCases(): Promise<LegalCase[]> {
   return (data ?? []) as LegalCase[];
 }
 
-export async function getCase(shortNameOrCaption: string): Promise<CaseDetail | null> {
-  // Try short_name first, then fuzzy on caption
+export async function getCase(shortNameOrId: string): Promise<CaseDetail | null> {
+  // Try short_name first, then fuzzy on name
   let { data: c, error } = await supabaseTox
     .from('legal_cases')
     .select('*')
-    .ilike('short_name', shortNameOrCaption.replace(/-/g, ' '))
+    .or(
+      `short_name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)},name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)}`
+    )
     .maybeSingle();
   if (error) throw error;
-  if (!c) {
-    const res = await supabaseTox
-      .from('legal_cases')
-      .select('*')
-      .ilike('caption', `%${shortNameOrCaption}%`)
-      .maybeSingle();
-    if (res.error) throw res.error;
-    c = res.data;
-  }
   if (!c) return null;
   const legalCase = c as LegalCase;
 
-  const [partiesRes, docsRes, eventsRes, casSubRes, expertsRes] = await Promise.all([
+  const [partiesRes, docsRes, eventsRes, casSubRes, leadExpertRes] = await Promise.all([
     supabaseTox.from('case_parties').select('*').eq('case_id', legalCase.id),
-    supabaseTox.from('case_documents').select('*').eq('case_id', legalCase.id),
-    supabaseTox.from('case_events').select('*').eq('case_id', legalCase.id).order('occurred_at'),
+    supabaseTox.from('case_documents').select('*').eq('case_id', legalCase.id).order('document_date', { ascending: true }),
+    supabaseTox.from('case_events').select('*').eq('case_id', legalCase.id).order('event_date', { ascending: true }),
     supabaseTox
       .from('case_substances')
       .select('substance_id, substances(id, name, cas_number)')
       .eq('case_id', legalCase.id),
-    supabaseTox
-      .from('expert_case_appearances')
-      .select('expert_id, experts(id, full_name, specialty, bio)')
-      .eq('case_id', legalCase.id),
+    legalCase.lead_expert_id
+      ? supabaseTox
+          .from('experts')
+          .select('*')
+          .eq('id', legalCase.lead_expert_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const substances = (casSubRes.data ?? []).map((r: any) => r.substances).filter(Boolean);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const experts = (expertsRes.data ?? []).map((r: any) => r.experts).filter(Boolean);
+
+  // Collect experts: lead expert + any case_parties with expert-like roles
+  const expertsMap = new Map<string, Expert>();
+
+  // Add lead expert if available
+  if (leadExpertRes.data) {
+    const e = leadExpertRes.data as Expert;
+    expertsMap.set(e.id, e);
+  }
+
+  // Scan case_parties for expert-like roles and match to experts table or synthesize
+  const partiesData = (partiesRes.data ?? []) as CaseParty[];
+  for (const party of partiesData) {
+    if (party.role && party.role.toLowerCase().includes('expert')) {
+      // Try to match by name
+      const { data: matched } = await supabaseTox
+        .from('experts')
+        .select('*')
+        .ilike('name', `%${party.name}%`)
+        .maybeSingle();
+      if (matched) {
+        const e = matched as Expert;
+        expertsMap.set(e.id, e);
+      }
+    }
+  }
+
+  const experts = Array.from(expertsMap.values());
 
   return {
     ...legalCase,
-    parties:   (partiesRes.data ?? []) as CaseDetail['parties'],
+    parties:   partiesData,
     documents: (docsRes.data ?? []) as CaseDetail['documents'],
     events:    (eventsRes.data ?? []) as CaseDetail['events'],
     substances,
     experts,
   };
+}
+
+export async function getCaseByShortName(shortName: string): Promise<CaseDetail | null> {
+  return getCase(shortName);
+}
+
+export async function getCaseEvents(caseId: string): Promise<CaseEvent[]> {
+  const { data, error } = await supabaseTox
+    .from('case_events')
+    .select('*')
+    .eq('case_id', caseId)
+    .order('event_date', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as CaseEvent[];
+}
+
+export async function getCaseDocuments(caseId: string): Promise<CaseDocument[]> {
+  const { data, error } = await supabaseTox
+    .from('case_documents')
+    .select('*')
+    .eq('case_id', caseId)
+    .order('document_date', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as CaseDocument[];
 }
 
 /* =============================================================================
@@ -248,8 +298,8 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
       .limit(8),
     supabaseTox
       .from('legal_cases')
-      .select('id, short_name, caption, description')
-      .or(`caption.ilike.${like},description.ilike.${like},short_name.ilike.${like}`)
+      .select('id, short_name, name, description')
+      .or(`name.ilike.${like},description.ilike.${like},short_name.ilike.${like}`)
       .limit(8),
   ]);
 
@@ -267,7 +317,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
     results.push({ type: 'source', id: s.id, title: s.title, snippet: s.doi ?? s.url, link: s.url });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const c of (cases.data ?? []) as any[])
-    results.push({ type: 'case', id: c.id, title: c.caption, snippet: c.description, link: `/case/${slug(c.short_name)}` });
+    results.push({ type: 'case', id: c.id, title: c.name, snippet: c.description, link: `/case/${slug(c.short_name)}` });
 
   return results;
 }

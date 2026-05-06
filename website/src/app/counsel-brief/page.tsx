@@ -23,11 +23,15 @@ export default function CounselBriefPage() {
   useEffect(() => {
     const fetchLiveData = async () => {
       try {
-        // Fetch certified claims for PCBs (demo substance)
-        const claims = await getCertifiedClaims({ substance_id: 'pcbs' });
+        // PCBs UUID (verified from live Supabase). substance_id is uuid-typed; the
+        // string 'pcbs' would silently return zero matches.
+        const PCBS_UUID = '11111111-1111-4111-8111-111111111201';
+        const claims = await getCertifiedClaims({ substance_id: PCBS_UUID });
         const caseData = await getCase('sky-valley');
         setLiveData({ claims: claims.slice(0, 5), caseData });
       } catch (err) {
+        // getCase may throw on this branch until the schema-reconciliation PR
+        // merges. Don't crash the page; fall through to the no-data state.
         console.error('Failed to fetch live data:', err);
       } finally {
         setLoading(false);
