@@ -89,7 +89,7 @@ export default function CaseDetailPage({
   const expert = caseData.experts?.find(
     (e) =>
       e.specialty?.toLowerCase().includes('toxicology') ||
-      e.full_name?.toLowerCase().includes('dahlgren')
+      e.name?.toLowerCase().includes('dahlgren')
   );
 
   return (
@@ -105,7 +105,7 @@ export default function CaseDetailPage({
 
             {/* Caption */}
             <h1 className="mb-4 text-5xl font-bold text-[var(--ink)]" style={{ fontStyle: 'normal' }}>
-              {caseData.caption}
+              {caseData.name}
             </h1>
 
             {/* Description */}
@@ -125,7 +125,7 @@ export default function CaseDetailPage({
                     Lead Expert
                   </div>
                   <div className="mb-2 text-sm font-semibold text-[var(--ink)]">
-                    Dr. {expert.full_name}
+                    Dr. {expert.name}
                   </div>
                   {expert.specialty && (
                     <div className="text-xs text-[var(--ink-soft)]">{expert.specialty}</div>

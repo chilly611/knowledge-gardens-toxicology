@@ -65,7 +65,7 @@ function CounselPDFPreviewPageInner() {
     );
   }
 
-  const caseCaption = caseData.caption || caseData.short_name;
+  const caseCaption = caseData.name || caseData.short_name;
 
   return (
     <PDFShell
@@ -100,7 +100,7 @@ function CounselPDFPreviewPageInner() {
           }}
         >
           {jurisdiction ? `${jurisdiction} · ` : ''}
-          {caseData.filed_year || 'Year TBD'} · {caseData.theory_of_harm || 'Theory of Harm'}
+          {caseData.filed_year || 'Year TBD'} · Theory of Harm
         </div>
 
         <div className="mt-10 pt-6 border-t border-[var(--paper-line)]">
@@ -137,7 +137,7 @@ function CounselPDFPreviewPageInner() {
           Theory of Harm Narrative
         </h2>
         <div style={{ fontSize: '0.95rem', color: 'var(--ink-soft)', lineHeight: '1.7', marginBottom: '1.5rem' }}>
-          {caseData.theory_of_harm ||
+          {caseData.description ||
             `This case examines the causal nexus between exposure to ${caseData.substances.map((s) => s.name).join(' and ')} and the alleged health effects. The claim rests on three tiers of evidence: (1) regulatory position from agencies including EPA and IARC; (2) systematic reviews and meta-analyses from peer-reviewed literature; and (3) individual observational and experimental studies. Together, this evidence establishes a plausible biological mechanism and demonstrates increased disease risk at the exposures relevant to this case.`}
         </div>
         <div style={{ fontSize: '0.95rem', color: 'var(--ink-soft)', lineHeight: '1.7' }}>
@@ -350,7 +350,7 @@ function CounselPDFPreviewPageInner() {
               }}
             >
               <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--ink)', marginBottom: '0.25rem' }}>
-                {expert.full_name}
+                {expert.name}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--ink-mute)', marginBottom: '0.5rem' }}>
                 {expert.specialty}
@@ -392,7 +392,7 @@ function CounselPDFPreviewPageInner() {
                   }}
                 />
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--ink-mute)' }}>
-                  {event.occurred_at ? event.occurred_at.split('T')[0] : 'Date TBD'} · {event.event_type}
+                  {event.event_date ? event.event_date.split('T')[0] : 'Date TBD'} · {event.event_type}
                 </div>
                 <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '0.95rem', color: 'var(--ink)' }}>
                   {event.description}

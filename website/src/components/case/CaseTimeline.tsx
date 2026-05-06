@@ -12,12 +12,12 @@ export default function CaseTimeline({
   events: CaseEvent[];
   documents: CaseDocument[];
 }) {
-  // Sort by occurred_at ascending
+  // Sort by event_date ascending
   const sorted = useMemo(
     () =>
       [...events].sort((a, b) => {
-        const dateA = a.occurred_at ? new Date(a.occurred_at).getTime() : 0;
-        const dateB = b.occurred_at ? new Date(b.occurred_at).getTime() : 0;
+        const dateA = a.event_date ? new Date(a.event_date).getTime() : 0;
+        const dateB = b.event_date ? new Date(b.event_date).getTime() : 0;
         return dateA - dateB;
       }),
     [events]
@@ -41,8 +41,8 @@ export default function CaseTimeline({
 
       {sorted.map((event, idx) => {
         const isRevealed = indices.has(idx);
-        const dateStr = event.occurred_at
-          ? new Date(event.occurred_at).toLocaleDateString('en-US', {
+        const dateStr = event.event_date
+          ? new Date(event.event_date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
@@ -83,9 +83,9 @@ export default function CaseTimeline({
               <div className="mt-3 rounded border-l-2 border-[var(--teal)] bg-[var(--paper-warm)] pl-3 text-sm">
                 <p className="text-[var(--ink-soft)]">
                   <span className="font-semibold">Document: </span>
-                  {linkedDoc.url ? (
+                  {linkedDoc.source_url ? (
                     <a
-                      href={linkedDoc.url}
+                      href={linkedDoc.source_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="italic text-[var(--teal)] no-underline transition-colors hover:text-[var(--teal-deep)]"
