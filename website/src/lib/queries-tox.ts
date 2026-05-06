@@ -337,6 +337,80 @@ export async function getResearchBacklog(): Promise<ResearchBacklogRow[]> {
 }
 
 /* =============================================================================
+   Experts
+   ============================================================================= */
+
+/** Resolve an expert by slug (lowercased last name match against experts.name). */
+export async function getExpertBySlug(slug: string): Promise<Expert | null> {
+  const term = slug.replace(/-/g, ' ').trim().toLowerCase();
+  const { data, error } = await supabaseTox
+    .from('experts')
+    .select('id, name, affiliation, specialty, bio')
+    .ilike('name', `%${term}%`)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data as Expert | null;
+}
+
+/** All cases this expert is associated with — via lead_expert_id OR case_parties name match. */
+export async function getExpertCases(expertId: string): Promise<LegalCase[]> {
+  // (a) cases where they are lead expert
+  const leadRes = await supabaseTox
+    .from('legal_cases')
+    .select('*')
+    .eq('lead_expert_id', expertId);
+  // (b) cases where they appear in case_parties (by name match — get name from experts)
+  const expertRow = await supabaseTox.from('experts').select('name').eq('id', expertId).maybeSingle();
+  let nameMatchedCaseIds: string[] = [];
+  if (expertRow.data) {
+    const partiesRes = await supabaseTox
+      .from('case_parties')
+      .select('case_id')
+      .ilike('name', (expertRow.data as { name: string }).name);
+    nameMatchedCaseIds = (partiesRes.data ?? []).map((p) => (p as { case_id: string }).case_id);
+  }
+  let combined: LegalCase[] = (leadRes.data ?? []) as LegalCase[];
+  if (nameMatchedCaseIds.length > 0) {
+    const partyCasesRes = await supabaseTox
+      .from('legal_cases')
+      .select('*')
+      .in('id', nameMatchedCaseIds);
+    const partyCases = (partyCasesRes.data ?? []) as LegalCase[];
+    // dedupe by id
+    const seen = new Set(combined.map((c) => c.id));
+    for (const c of partyCases) {
+      if (!seen.has(c.id)) {
+        combined.push(c);
+        seen.add(c.id);
+      }
+    }
+  }
+  return combined;
+}
+
+/** Claims authored/affiliated with an expert. Heuristic: claims for substances appearing in cases this expert is on.
+ * Returns CertifiedClaimRow[] for now; if zero, the page renders "no claims yet" gracefully. */
+export async function getExpertClaims(expertId: string): Promise<CertifiedClaimRow[]> {
+  const cases = await getExpertCases(expertId);
+  if (cases.length === 0) return [];
+  const caseIds = cases.map((c) => c.id);
+  // get substances on those cases
+  const subsRes = await supabaseTox
+    .from('case_substances')
+    .select('substance_id')
+    .in('case_id', caseIds);
+  const substanceIds = Array.from(new Set((subsRes.data ?? []).map((r) => (r as { substance_id: string }).substance_id)));
+  if (substanceIds.length === 0) return [];
+  // pull claims on those substances
+  const claimsRes = await supabaseTox
+    .from('certified_claims_with_evidence')
+    .select('*')
+    .in('substance_id', substanceIds);
+  return (claimsRes.data ?? []) as CertifiedClaimRow[];
+}
+
+/* =============================================================================
    Helpers
    ============================================================================= */
 
