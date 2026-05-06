@@ -13,6 +13,7 @@ export type ClaimStatus = 'certified' | 'provisional' | 'contested' | 'retracted
 export type EffectDirection = 'positive_association' | 'negative_association' | 'mixed' | 'null';
 
 export type EvidenceSource = {
+  id: string;
   doi: string | null;
   url: string;
   /** 1 = regulatory, 2 = systematic review, 3 = peer-reviewed, 4 = industry/news */
@@ -24,6 +25,7 @@ export type EvidenceSource = {
   /** True if source supports the claim's effect direction; false if it contradicts. */
   supports: boolean;
   publisher: string | null;
+  authors?: string[] | null;
 };
 
 export type CertifiedClaimRow = {

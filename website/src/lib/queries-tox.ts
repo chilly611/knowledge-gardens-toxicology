@@ -512,3 +512,47 @@ export async function getReferenceTermsByAliases(aliases: string[]): Promise<Ref
   if (error) throw error;
   return (data ?? []) as ReferenceTerm[];
 }
+
+/* =============================================================================
+   Expert workbench queries — documents, publications, reference contributions
+   ============================================================================= */
+
+/** Get documents linked to an expert's cases. */
+export async function getExpertDocuments(expertId: string): Promise<CaseDocument[]> {
+  const cases = await getExpertCases(expertId);
+  if (cases.length === 0) return [];
+  const caseIds = cases.map((c) => c.id);
+  const { data, error } = await supabaseTox
+    .from('case_documents')
+    .select('*')
+    .in('case_id', caseIds)
+    .order('document_date', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as CaseDocument[];
+}
+
+/** Get evidence sources authored by or mentioning an expert (by last name). */
+export async function getExpertPublications(expertLastName: string): Promise<EvidenceSource[]> {
+  const { data, error } = await supabaseTox
+    .from('evidence_sources')
+    .select('*')
+    .or(`authors.cs.{${expertLastName}},authors.cs.{${expertLastName.toLowerCase()}},authors.cs.{${expertLastName.charAt(0).toUpperCase() + expertLastName.slice(1).toLowerCase()}}`)
+    .order('year', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as EvidenceSource[];
+}
+
+/** Get reference terms mentioning an expert by name in key fields. */
+export async function getExpertReferenceContributions(expertLastName: string): Promise<ReferenceTerm[]> {
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(
+      `lawyer_angle.ilike.%${expertLastName}%,` +
+      `daubert_relevance.ilike.%${expertLastName}%,` +
+      `deep_explanation_md.ilike.%${expertLastName}%`
+    )
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
