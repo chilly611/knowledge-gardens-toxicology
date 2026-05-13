@@ -19,12 +19,15 @@ export function SearchResults({
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const resultRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  // Group results by type
+  // Group results by type. Order = display priority in the overlay.
   const groupedResults = {
     substance: results.filter((r) => r.type === 'substance'),
+    case: results.filter((r) => r.type === 'case'),
+    document: results.filter((r) => r.type === 'document'),
+    event: results.filter((r) => r.type === 'event'),
+    party: results.filter((r) => r.type === 'party'),
     claim: results.filter((r) => r.type === 'claim'),
     source: results.filter((r) => r.type === 'source'),
-    case: results.filter((r) => r.type === 'case'),
   };
 
   const hasResults = Object.values(groupedResults).some((group) => group.length > 0);
@@ -137,11 +140,17 @@ export function SearchResults({
         const typeLabel =
           typeKey === 'substance'
             ? 'SUBSTANCES'
-            : typeKey === 'claim'
-              ? 'CLAIMS'
-              : typeKey === 'source'
-                ? 'SOURCES'
-                : 'CASES';
+            : typeKey === 'case'
+              ? 'CASES'
+              : typeKey === 'document'
+                ? 'CASE DOCUMENTS'
+                : typeKey === 'event'
+                  ? 'TIMELINE EVENTS'
+                  : typeKey === 'party'
+                    ? 'PARTIES'
+                    : typeKey === 'claim'
+                      ? 'CLAIMS'
+                      : 'SOURCES';
 
         return (
           <div key={typeKey}>

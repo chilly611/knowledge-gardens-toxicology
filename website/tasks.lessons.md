@@ -334,3 +334,105 @@ It also accepts `animate` to enable the `caduceus-drift` keyframe (slow rotate +
 7. Before declaring a page done, the agent MUST visually compare against `compound/[slug]/page.tsx`, `counsel-brief/page.tsx`, or `case/sky-valley/page.tsx`. If the new page doesn't share their visual register, the agent rewrites until it does.
 
 **Test for compliance:** Take a screenshot of the new page. If it could be confused with a 1990s university research department site, redesign.
+
+## L-023 · Next.js 16 dynamic-route params is a Promise, not a plain object
+
+**Discovered:** 2026-05-06, after every /reference/[slug] URL returned "Term not found" even though the data was in Supabase and the index page rendered fine. Root cause: the deep-article page read `params.slug` directly without awaiting.
+
+**Rule:** In Next.js 16 dynamic routes, the page function receives `params: Promise<{ slug: string }>`. You MUST `await params` to get the slug. Pattern:
+
+```tsx
+type Props = { params: Promise<{ slug: string }> };
+
+export default async function Page({ params }: Props) {
+  const { slug } = await params;          // <-- this line is mandatory
+  const data = await getThing(slug);
+  if (!data) return <NotFoundCard slug={slug} />;
+  return <Article data={data} />;
+}
+```
+
+If the page is a client component using `useParams()`, that's still synchronous and fine — this rule is for Server Components in dynamic routes only.
+
+**Test for compliance:** any page file under `src/app/*/[slug]/page.tsx` should grep-positive for `await params` if it's a Server Component.
+
+## L-024 · Branches cut from main BEFORE schema reconciliation must cherry-pick the type fixes
+
+**Discovered:** 2026-05-06, repeatedly. feat/ask-the-garden, feat/counsel-brief, and feat/expert-depth all branched from main BEFORE feat/case-page-from-supabase merged. Each branch hit TypeScript errors because their code referenced `Expert.full_name`, `LegalCase.caption`, `case_parties.party_type`, `case_documents.filed_at`, etc. — old types that didn't match the corrected schema.
+
+**Rule:** Whenever a branch is cut from a stale main, the integrator agent's prompt must include explicit schema reality:
+- `experts.name` (NOT `full_name`)
+- `legal_cases.name` + `case_number` + `lead_expert_id` (NOT `caption` or `theory_of_harm`)
+- `case_parties.role` (free-text; NO `party_type` enum)
+- `case_documents.document_date` + `source_url` + `drive_path` (NOT `filed_at`/`url`)
+- `case_events.event_date` (NOT `occurred_at`)
+- NO `expert_case_appearances` table — use `legal_cases.lead_expert_id` + `case_parties` role-match
+- NO `substance_aliases` table — use `substances.aliases` TEXT[] via `.cs` (contains) operator
+
+OR — even safer — the integrator picks up the fixed `types-tox.ts` and dependent components from feat/case-page-from-supabase via cherry-pick:
+```bash
+for f in website/src/lib/types-tox.ts website/src/lib/queries-tox.ts \
+  website/src/components/case/CaseTimeline.tsx \
+  website/src/components/case/DocumentRegister.tsx \
+  website/src/components/case/PartyGraph.tsx \
+  website/src/components/flow/CounselFlow.tsx \
+  website/src/components/tidepool/EvidenceGraph.tsx \
+  'website/src/app/case/[shortName]/page.tsx' \
+  website/src/app/pdf-preview/counsel/page.tsx ; do
+  git checkout feat/case-page-from-supabase -- "$f"
+done
+```
+
+When both branches eventually merge, git auto-resolves identical edits.
+
+## L-025 · Vercel Hobby tier locks the Development env-var scope; Production + Preview is enough
+
+**Discovered:** 2026-05-06, after the user couldn't tick the Development checkbox in the Vercel env-var editor.
+
+**Rule:** Hobby tier projects don't include the Development environment scope. The Development checkbox shows a lock icon. This is normal; ignore it. For all `NEXT_PUBLIC_SUPABASE_*` and `ANTHROPIC_API_KEY` vars, scope to **Production + Preview**. That's sufficient for both production deploys and preview branch deploys.
+
+If preview deploys still fail with "Failed to collect page data for /legacy/health-effects/[slug]" — that's the env vars not actually being saved to Preview scope. Re-edit each var, confirm both Production AND Preview checkboxes show as checked AFTER save (Vercel sometimes silently drops Preview), then redeploy.
+
+## L-026 · git index.lock blocking commits in the sandbox — use the cowork file-delete tool
+
+**Discovered:** 2026-05-06, after a subagent's commit was interrupted and left `.git/index.lock` behind. `rm` returned "Operation not permitted" because the bindfs mount restricts sandbox unlinks.
+
+**Rule:** When `.git/index.lock` is stuck in the sandbox, call the `mcp__cowork__allow_cowork_file_delete` tool with the lock file path. Once the user approves, the unlink works. Then `git status` works again.
+
+## L-027 · Subagents can lose work if they git-reset without committing first
+
+**Discovered:** 2026-05-06. Task 1's subagent staged ~500 lines of compound-page edits but couldn't commit due to the lock from L-026. A second agent then ran `git reset HEAD` (probably to clean state before its own work) and the staged changes vanished from the index. The work survived only because git keeps a dangling tree object. Recovery via `git fsck --dangling` + `git ls-tree` + `git cat-file -p {blob} > file`.
+
+**Rule:** Subagent prompts must explicitly forbid `git reset --hard` or any state-clearing operation when starting on an existing branch. Pattern: each agent runs `git status` first; if anything is staged or dirty, the agent stashes (not resets) and reports the existing state to the coordinator before proceeding.
+
+## L-028 · Use the workspace folder mount, not /Users/ paths, in mcp__workspace__bash
+
+**Discovered:** 2026-05-06. mcp__workspace__bash runs in a Linux sandbox with bindfs mounts. Host paths like `/Users/chillydahlgren/Documents/Claude/Projects/Knowledge Gardens Umbrella/TheKnowledgeGardens PC 1/toxicology-db` don't exist there. The mount appears at `/sessions/.../mnt/toxicology-db`.
+
+**Rule:** For mcp__workspace__bash use the `/sessions/.../mnt/...` path. For Read/Write/Edit/Grep/Glob use the host `/Users/...` path. Never mix them. The cowork tool description spells this out — read it before assuming a path works.
+
+## L-029 · Father-visit demo: father wants depth, not polish
+
+**Discovered:** 2026-05-06. Owner showed the platform to his M.D. father (the 50-year-veteran toxicologist who is its real subject-matter expert). Father's response: "ChatGPT does this. What's the business?" The platform's pillar isn't presentation polish; it's auditable provenance + court-ready deliverables + Dahlgren's curation signature. Strategic answer: stop polishing the homepage; deepen the data so /case/sky-valley, /compound/pcbs, /expert/dahlgren ARE the demo.
+
+**Rule:** When prioritizing the next sprint task, ask: does this make the database visibly DEEPER, or does it make the platform LOOK BETTER? Choose deeper unless the look directly serves a citation-worthiness signal (which is rare).
+
+## L-030 · Case page links must use the canonical short slug (`/case/sky-valley`), not the long form
+
+**Discovered:** 2026-05-13. The `/expert/[slug]/page.tsx` footer CTA pointed to `/case/sky-valley-pcb-case` (derived from `slug("Sky Valley PCB Case")`). That URL falls through to the dynamic `/case/[shortName]` catch-all route — a *different page component* with a different layout than the dedicated `/case/sky-valley/page.tsx`. Result: button clicks from /expert/dahlgren landed users on the wrong layout. Confusing on its own, demo-killing the night before a demo.
+
+**Rule:** When a case has BOTH a dedicated static route (`/case/sky-valley/page.tsx`) AND the dynamic `/case/[shortName]/page.tsx` catch-all, every internal link must use the short slug (`/case/sky-valley`) so it hits the curated static route. Never compute the case URL via `slug(c.short_name)` if the short_name is multi-word like "Sky Valley PCB Case" — that produces a long slug that bypasses the dedicated page. Either hardcode the short slug, or maintain a mapping in `lib/queries-tox.ts` from `case_id` → canonical URL.
+
+## L-032 · NEVER wrap PostgREST `.or()` filter values in `encodeURIComponent`
+
+**Discovered:** 2026-05-13, demo day. Live `/case/sky-valley` showed "Case not found" for every visit. Root cause: `getCase()` in `queries-tox.ts` built its `.or()` filter as `\`short_name.ilike.${encodeURIComponent(\`%${term}%\`)}, ...\``. The Supabase JS SDK does its own URL-encoding when it sends the filter string to PostgREST, so wrapping it in `encodeURIComponent` first **double-encodes** the `%` wildcards into `%25`. PostgREST then searches for the literal substring `%25Sky%20Valley%20PCB%20Case%25` — which matches no row. Silent failure: the query succeeds, just returns no rows.
+
+This had been broken since the case page was first wired up. The page reads as "Case not found" with no console error because `.maybeSingle()` legitimately returned `{ data: null, error: null }`.
+
+**Rule:** When building PostgREST filter strings (`.or()`, `.and()`, raw `.filter()`), pass the values UNENCODED — the Supabase SDK handles URL encoding internally. If a value contains a special character that breaks `.or()` parsing (literal comma, paren, ilike wildcard you want to escape), use sequential single-column queries instead of `.or()`, OR wrap in double quotes per PostgREST docs — never `encodeURIComponent`. The corrected `getCase()` now does two sequential `.ilike()` calls (short_name then name) and works for any multi-word case name.
+
+## L-031 · `searchEverything()` must include case_documents, case_events, case_parties — not just substances and cases
+
+**Discovered:** 2026-05-13. Global Cmd-K search hit substances, claims, sources, and legal_cases — but NOT the 52 case documents, 13 case events, or 13 case parties in the database. So the entire Sky Valley corpus was invisible to search. Users searching for "Erickson" (a party name) or "complaint" (a doc type) got no results.
+
+**Rule:** Whenever a new table holds searchable content, add it to `searchEverything()` in `queries-tox.ts` AND extend the `SearchResult.type` union in `types-tox.ts` AND extend the grouping/labeling in `SearchResults.tsx`. The three places must stay in lockstep — drop one and the new content is invisible to the UI or breaks TypeScript. When the schema-level FTS migration lands (tsvector + GIN), the same three places need updating again to use `websearch_to_tsquery` instead of `ilike`.
