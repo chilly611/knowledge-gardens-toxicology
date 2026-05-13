@@ -139,7 +139,7 @@ export type ResearchBacklogRow = {
 };
 
 export type SearchResult = {
-  type: 'substance' | 'claim' | 'source' | 'case';
+  type: 'substance' | 'claim' | 'source' | 'case' | 'document' | 'event' | 'party';
   id: string;
   title: string;
   snippet: string | null;

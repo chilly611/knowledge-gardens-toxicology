@@ -972,7 +972,7 @@ function ExpertPageInner({ params }: Props) {
       <section className="rail-default py-16 md:py-20">
         <div className="grid gap-4 md:grid-cols-3">
           <Link
-            href="/case/sky-valley-pcb-case"
+            href="/case/sky-valley"
             className="tile rounded-xl border border-[var(--paper-line)] p-6 text-center transition-all duration-200 hover:-translate-y-0.5"
             style={{ background: 'rgba(255, 255, 255, 0.4)' }}
           >
