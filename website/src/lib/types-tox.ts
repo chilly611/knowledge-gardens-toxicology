@@ -63,7 +63,7 @@ export type SubstanceAlias = {
 
 export type CrossGardenLink = {
   id: string;
-  source_entity_type: 'substance' | 'claim' | 'case' | 'endpoint';
+  source_entity_type: 'substance' | 'claim' | 'case' | 'endpoint' | 'expert';
   source_entity_id: string;
   target_garden: 'TKG' | 'HKG' | 'NatureMark' | 'BKG' | 'OKG';
   target_entity_type: string | null;
