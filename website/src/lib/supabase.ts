@@ -1,7 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Legacy Supabase client (the original `/legacy/*` routes still read from this).
+// The TKG demo uses `supabase-tox.ts` exclusively, but Next.js still evaluates
+// this module during `next build` page-data collection for the legacy routes.
+//
+// If `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` aren't set
+// (which is the current state in Vercel Preview + Production environments —
+// only the TOX-prefixed vars are configured), `createClient(undefined, undefined)`
+// throws at module evaluation and the whole build fails on the legacy pages.
+//
+// Fall back to inert placeholders so the module loads cleanly. Queries from
+// the legacy routes will still fail at request time if the real env vars are
+// missing, which is the correct degradation: the demo doesn't depend on them.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  // eslint-disable-next-line no-console
+  console.warn('[supabase] NEXT_PUBLIC_SUPABASE_URL or _ANON_KEY is missing — legacy /health-effects and /substances routes will return errors at request time.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 

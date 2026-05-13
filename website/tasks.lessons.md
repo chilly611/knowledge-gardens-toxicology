@@ -423,6 +423,18 @@ If preview deploys still fail with "Failed to collect page data for /legacy/heal
 
 **Rule:** When a case has BOTH a dedicated static route (`/case/sky-valley/page.tsx`) AND the dynamic `/case/[shortName]/page.tsx` catch-all, every internal link must use the short slug (`/case/sky-valley`) so it hits the curated static route. Never compute the case URL via `slug(c.short_name)` if the short_name is multi-word like "Sky Valley PCB Case" — that produces a long slug that bypasses the dedicated page. Either hardcode the short slug, or maintain a mapping in `lib/queries-tox.ts` from `case_id` → canonical URL.
 
+## L-034 · Legacy `supabase.ts` was throwing at module evaluation when Preview env vars were missing
+
+**Discovered:** 2026-05-13, second iteration of demo-day build unblock. After fixing the TS errors in `expert/[slug]/page.tsx`, the next Vercel build still failed — this time with: `Failed to collect page data for /legacy/health-effects`, stack trace pointing at module evaluation of `website_src_lib_supabase_ts_db50bf9a._.js`.
+
+Root cause: `src/lib/supabase.ts` did `createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)` at the top level. The `!` is a TypeScript non-null assertion; it does NOT add a runtime check. The legacy env vars are not configured in Vercel's Preview (and apparently Production) environments — only the `NEXT_PUBLIC_SUPABASE_TOX_*` vars are. So `createClient(undefined, undefined)` ran at module load, threw, and the entire build failed.
+
+Contrast with `supabase-tox.ts`: that one warns instead of throwing when env vars are missing. The legacy client never got the same defensive treatment.
+
+**Fix:** Fall back to inert placeholder URL/key so the module loads cleanly even with missing env. Queries from the legacy routes still fail at request time, which is the correct degradation — the demo doesn't depend on them, and we don't want a missing legacy env var to take down the whole build.
+
+**Rule:** Top-level `createClient(...)` calls in any module that Next.js might evaluate during page-data collection MUST tolerate missing env vars. Either lazy-initialize, fall back to placeholders, or wrap the entire client in a Proxy. The TS `!` operator is a *lie* at runtime — never use it to assert env vars are present.
+
 ## L-033 · Vercel build was hard-failing on TYPESCRIPT errors (not lint) since 2026-05-06
 
 **Discovered:** 2026-05-13, demo day. Vercel deployments dashboard showed every build after `4660a8b` (last "Ready" deploy on 2026-05-06) had failed with "Error" status. Production was serving a 6.5-day-old prerendered build (`x-vercel-cache: HIT, age: 561822s`) — every fix shipped this past week was invisible because the new builds never replaced the cached output.
