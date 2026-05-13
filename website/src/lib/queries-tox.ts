@@ -170,17 +170,36 @@ export async function getCases(): Promise<LegalCase[]> {
 }
 
 export async function getCase(shortNameOrId: string): Promise<CaseDetail | null> {
-  // Try short_name first, then fuzzy on name
-  let { data: c, error } = await supabaseTox
+  // Look up the case by short_name first, then by full name.
+  // The prior implementation used `.or()` with `encodeURIComponent` wrapped
+  // around the ilike pattern. That double-encoded the `%` wildcards into
+  // `%25`, so PostgREST searched for the literal text `%25...%25` and matched
+  // nothing — which is why `/case/sky-valley` had been silently 404ing in
+  // production. Split into two sequential `.ilike()` queries instead; the
+  // Supabase SDK handles URL encoding internally so the wildcards survive.
+  let legalCase: LegalCase | null = null;
+
+  const byShortName = await supabaseTox
     .from('legal_cases')
     .select('*')
-    .or(
-      `short_name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)},name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)}`
-    )
+    .ilike('short_name', `%${shortNameOrId}%`)
+    .limit(1)
     .maybeSingle();
-  if (error) throw error;
-  if (!c) return null;
-  const legalCase = c as LegalCase;
+  if (byShortName.error) throw byShortName.error;
+  legalCase = (byShortName.data as LegalCase | null);
+
+  if (!legalCase) {
+    const byName = await supabaseTox
+      .from('legal_cases')
+      .select('*')
+      .ilike('name', `%${shortNameOrId}%`)
+      .limit(1)
+      .maybeSingle();
+    if (byName.error) throw byName.error;
+    legalCase = (byName.data as LegalCase | null);
+  }
+
+  if (!legalCase) return null;
 
   const [partiesRes, docsRes, eventsRes, casSubRes, leadExpertRes] = await Promise.all([
     supabaseTox.from('case_parties').select('*').eq('case_id', legalCase.id),

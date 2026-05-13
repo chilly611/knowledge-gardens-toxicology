@@ -123,11 +123,18 @@ export default function SkyValleyCasePage() {
   const filterLower = filter.trim().toLowerCase();
   const matchesText = (s: string | null | undefined) =>
     !!s && s.toLowerCase().includes(filterLower);
-  const filteredDocs = !filterLower
+  // Sky Valley has ~2,000 documents from the local pipeline ingest. Cap the
+  // rendered list to keep the page snappy and avoid the staggered-fade-in
+  // animation running for 100+ seconds. The in-page search above is the
+  // navigation tool: typing narrows the matching set before the cap applies.
+  const DOC_DISPLAY_CAP = 50;
+  const docsMatchingFilter = !filterLower
     ? caseData.documents
     : caseData.documents.filter(
         (d) => matchesText(d.title) || matchesText(d.notes) || matchesText(d.doc_type)
       );
+  const filteredDocs = docsMatchingFilter.slice(0, DOC_DISPLAY_CAP);
+  const docsHidden = docsMatchingFilter.length - filteredDocs.length;
   const filteredEvents = !filterLower
     ? caseData.events
     : caseData.events.filter(
@@ -433,6 +440,19 @@ export default function SkyValleyCasePage() {
             >
               Documents
             </h2>
+            {docsHidden > 0 && (
+              <p
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.7rem',
+                  color: 'var(--ink-mute)',
+                  letterSpacing: '0.05em',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                Showing first {filteredDocs.length} of {docsMatchingFilter.length} documents — type in the search above to narrow.
+              </p>
+            )}
             <DocumentRegister documents={filteredDocs} />
           </section>
         )}

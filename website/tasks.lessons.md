@@ -423,6 +423,14 @@ If preview deploys still fail with "Failed to collect page data for /legacy/heal
 
 **Rule:** When a case has BOTH a dedicated static route (`/case/sky-valley/page.tsx`) AND the dynamic `/case/[shortName]/page.tsx` catch-all, every internal link must use the short slug (`/case/sky-valley`) so it hits the curated static route. Never compute the case URL via `slug(c.short_name)` if the short_name is multi-word like "Sky Valley PCB Case" — that produces a long slug that bypasses the dedicated page. Either hardcode the short slug, or maintain a mapping in `lib/queries-tox.ts` from `case_id` → canonical URL.
 
+## L-032 · NEVER wrap PostgREST `.or()` filter values in `encodeURIComponent`
+
+**Discovered:** 2026-05-13, demo day. Live `/case/sky-valley` showed "Case not found" for every visit. Root cause: `getCase()` in `queries-tox.ts` built its `.or()` filter as `\`short_name.ilike.${encodeURIComponent(\`%${term}%\`)}, ...\``. The Supabase JS SDK does its own URL-encoding when it sends the filter string to PostgREST, so wrapping it in `encodeURIComponent` first **double-encodes** the `%` wildcards into `%25`. PostgREST then searches for the literal substring `%25Sky%20Valley%20PCB%20Case%25` — which matches no row. Silent failure: the query succeeds, just returns no rows.
+
+This had been broken since the case page was first wired up. The page reads as "Case not found" with no console error because `.maybeSingle()` legitimately returned `{ data: null, error: null }`.
+
+**Rule:** When building PostgREST filter strings (`.or()`, `.and()`, raw `.filter()`), pass the values UNENCODED — the Supabase SDK handles URL encoding internally. If a value contains a special character that breaks `.or()` parsing (literal comma, paren, ilike wildcard you want to escape), use sequential single-column queries instead of `.or()`, OR wrap in double quotes per PostgREST docs — never `encodeURIComponent`. The corrected `getCase()` now does two sequential `.ilike()` calls (short_name then name) and works for any multi-word case name.
+
 ## L-031 · `searchEverything()` must include case_documents, case_events, case_parties — not just substances and cases
 
 **Discovered:** 2026-05-13. Global Cmd-K search hit substances, claims, sources, and legal_cases — but NOT the 52 case documents, 13 case events, or 13 case parties in the database. So the entire Sky Valley corpus was invisible to search. Users searching for "Erickson" (a party name) or "complaint" (a doc type) got no results.
