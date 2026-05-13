@@ -1,6 +1,9 @@
 import { getAllSubstances, getAllClassifications, searchSubstances, nameToSlug } from '@/lib/supabase';
 import type { Metadata } from 'next';
 
+// Legacy route — force fully dynamic. See sibling legacy pages for rationale.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Browse Substances',
   description: 'Explore 329 substances found in American drinking water — search by name, CAS number, or category.',

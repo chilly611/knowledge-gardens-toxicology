@@ -1,6 +1,12 @@
 import { getAllHealthEffects, supabase, nameToSlug } from '@/lib/supabase';
 import type { Metadata } from 'next';
 
+// Legacy route — force fully dynamic so the Vercel build doesn't try to
+// fetch from Supabase at page-data-collection time using the placeholder
+// env vars (legacy NEXT_PUBLIC_SUPABASE_* keys aren't configured in
+// Vercel). Page is still served at request time if real env vars exist.
+export const dynamic = 'force-dynamic';
+
 const EVIDENCE_COLORS: Record<string, string> = {
   known: '#c0392b', probable: '#e67e22', possible: '#f39c12',
   inadequate: '#95a5a6', not_classified: '#bdc3c7',
@@ -10,8 +16,8 @@ function slugToName(slug: string) { return slug.replace(/-/g, ' '); }
 function effectSlug(name: string) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
 
 export async function generateStaticParams() {
-  const effects = await getAllHealthEffects();
-  return effects.map((e: any) => ({ slug: effectSlug(e.name) }));
+  // No static pre-rendering for legacy routes — see `dynamic = 'force-dynamic'`.
+  return [];
 }
 
 interface Props { params: Promise<{ slug: string }>; }
