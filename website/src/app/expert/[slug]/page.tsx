@@ -622,7 +622,6 @@ function ExpertPageInner({ params }: Props) {
             style={{
               listStyle: 'decimal',
               listStylePosition: 'inside',
-              space: '1.5rem',
             }}
           >
             {publications.map((pub, idx) => (

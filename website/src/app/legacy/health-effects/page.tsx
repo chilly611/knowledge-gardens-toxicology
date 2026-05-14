@@ -1,6 +1,10 @@
 import { getAllHealthEffects, supabase } from '@/lib/supabase';
 import type { Metadata } from 'next';
 
+// Legacy route — force fully dynamic so the Vercel build doesn't try to
+// fetch from Supabase using the placeholder env vars at build time.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Health Effects',
   description: 'Browse health effects linked to drinking water contaminants — cancer, liver damage, endocrine disruption, and more.',

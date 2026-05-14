@@ -2,16 +2,17 @@
 
 /**
  * Case detail page — Sky Valley PCB case.
- * Fetches live case data from Supabase and renders with proper typography and hierarchy.
  *
- * Design principles applied:
- * - Uses .rail-default for proper centering and padding (no text pushing to viewport edge)
- * - Generous internal padding on all cards (p-8, p-10)
- * - Italic Cormorant Garamond for all headings and case titles
- * - Space Mono UPPERCASE for eyebrows, metadata, specialty labels
- * - Inter body text with 1.6-1.7 line-height for comfortable readability
- * - Clear color hierarchy: ink (primary), ink-soft (secondary), ink-mute (metadata)
- * - Asymmetric card layouts with left-border accents for hierarchy
+ * Design vocabulary: Emblem hero, italic Cormorant H1, Space Mono copper
+ * eyebrows, CornerBrackets, DimensionLine separators, .tile-grid-3 with
+ * lift-on-hover, alternating section backgrounds, GearOrnament footer.
+ * Same vocabulary as /counsel-brief.
+ *
+ * Functionality preserved:
+ *  - In-page filter across documents, timeline, substances, experts
+ *  - Filter pre-fills from ?q=<term>
+ *  - Document list capped at 50 (Sky Valley has ~2,000 rows)
+ *  - Anchor IDs on doc/event rows for search-result deep links
  */
 
 import { useEffect, useState } from 'react';
@@ -20,6 +21,22 @@ import { getCaseByShortName, slug } from '@/lib/queries-tox';
 import type { CaseDetail } from '@/lib/types-tox';
 import CaseTimeline from '@/components/case/CaseTimeline';
 import DocumentRegister from '@/components/case/DocumentRegister';
+import Emblem from '@/components/shared/Emblem';
+import CornerBrackets from '@/components/shared/CornerBrackets';
+import DimensionLine from '@/components/shared/DimensionLine';
+import GearOrnament from '@/components/shared/GearOrnament';
+
+/**
+ * Extract the canonical short slug from a substance name.
+ * Substance names in the DB carry their short form in parentheses:
+ *   "Polychlorinated biphenyls (PCBs)" → "pcbs"
+ *   "2,3,7,8-Tetrachlorodibenzo-p-dioxin (TCDD)" → "tcdd"
+ * Fall back to slugifying the whole name when no parens are present.
+ */
+function substanceSlug(name: string): string {
+  const m = name.match(/\(([^)]+)\)/);
+  return slug(m ? m[1] : name);
+}
 
 export default function SkyValleyCasePage() {
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
@@ -27,9 +44,7 @@ export default function SkyValleyCasePage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
 
-  // Pre-fill the in-page filter from ?q= so deep-links from the global Cmd-K
-  // search (and external links like /case/sky-valley?q=erickson) auto-scope
-  // the view to matching documents, events, parties, substances, and experts.
+  // Pre-fill the in-page filter from ?q=
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const q = new URLSearchParams(window.location.search).get('q');
@@ -54,31 +69,16 @@ export default function SkyValleyCasePage() {
   if (loading) {
     return (
       <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-        <div className="rail-default py-20">
-          <section className="mb-24 border-b border-[var(--paper-line)] pb-16">
-            <div
-              className="mb-6"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: 'var(--copper-orn-deep)',
-              }}
-            >
-              Legal Case
-            </div>
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1.05rem',
-                color: 'var(--ink-soft)',
-                lineHeight: 1.7,
-              }}
-            >
-              Loading case data...
-            </p>
-          </section>
+        <div className="rail-default py-20 text-center">
+          <div
+            className="mb-4 font-eyebrow"
+            style={{ color: 'var(--copper-orn-deep)' }}
+          >
+            Legal Case
+          </div>
+          <p style={{ fontFamily: 'var(--font-body)', color: 'var(--ink-soft)' }}>
+            Loading case data…
+          </p>
         </div>
       </main>
     );
@@ -87,46 +87,28 @@ export default function SkyValleyCasePage() {
   if (error || !caseData) {
     return (
       <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-        <div className="rail-default py-20">
-          <section className="mb-24 border-b border-[var(--paper-line)] pb-16">
-            <div
-              className="mb-6"
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: 'var(--copper-orn-deep)',
-              }}
-            >
-              Legal Case
-            </div>
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1.05rem',
-                color: 'var(--ink-soft)',
-                lineHeight: 1.7,
-              }}
-            >
-              {error ? `Error: ${error}` : 'Case not found.'}
-            </p>
-          </section>
+        <div className="rail-default py-20 text-center">
+          <div
+            className="mb-4 font-eyebrow"
+            style={{ color: 'var(--copper-orn-deep)' }}
+          >
+            Legal Case
+          </div>
+          <p style={{ fontFamily: 'var(--font-body)', color: 'var(--ink-soft)' }}>
+            {error ? `Error: ${error}` : 'Case not found.'}
+          </p>
         </div>
       </main>
     );
   }
 
   // Client-side filter across documents, events, substances, experts.
-  // Anchor scrolling (#doc-<id> / #event-<id>) from global-search deep-links
-  // still works because the underlying rows render the IDs unconditionally.
   const filterLower = filter.trim().toLowerCase();
   const matchesText = (s: string | null | undefined) =>
     !!s && s.toLowerCase().includes(filterLower);
+
   // Sky Valley has ~2,000 documents from the local pipeline ingest. Cap the
-  // rendered list to keep the page snappy and avoid the staggered-fade-in
-  // animation running for 100+ seconds. The in-page search above is the
-  // navigation tool: typing narrows the matching set before the cap applies.
+  // rendered list to keep the page snappy. Search above narrows before cap.
   const DOC_DISPLAY_CAP = 50;
   const docsMatchingFilter = !filterLower
     ? caseData.documents
@@ -135,6 +117,7 @@ export default function SkyValleyCasePage() {
       );
   const filteredDocs = docsMatchingFilter.slice(0, DOC_DISPLAY_CAP);
   const docsHidden = docsMatchingFilter.length - filteredDocs.length;
+
   const filteredEvents = !filterLower
     ? caseData.events
     : caseData.events.filter(
@@ -148,84 +131,140 @@ export default function SkyValleyCasePage() {
     : caseData.experts.filter(
         (e) => matchesText(e.name) || matchesText(e.specialty) || matchesText(e.bio)
       );
+
   const totalMatches =
     filteredDocs.length +
     filteredEvents.length +
     filteredSubstances.length +
     filteredExperts.length;
 
+  // Find Dahlgren for the lead-expert callout
+  const leadExpert =
+    caseData.experts.find((e) => e.name.includes('Dahlgren')) ?? caseData.experts[0];
+
   return (
     <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <div className="rail-default py-20">
-        {/* Header Section */}
-        <section className="mb-24 border-b border-[var(--paper-line)] pb-16">
-          {/* Eyebrow */}
-          <div
-            className="mb-6"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-            }}
-          >
-            Legal Case · {caseData.jurisdiction} · {caseData.filed_year}
+      {/* ============================================================ */}
+      {/*                          HEADER                              */}
+      {/* ============================================================ */}
+      <section className="rail-default py-16 md:py-20">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_auto] lg:gap-16">
+          <div>
+            <div className="font-eyebrow mb-5" style={{ color: 'var(--copper-orn-deep)' }}>
+              Legal Case · {caseData.jurisdiction ?? 'Washington State'} · {caseData.filed_year ?? '—'}
+            </div>
+
+            <h1
+              className="mb-6 max-w-[18ch]"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)',
+                lineHeight: 1.05,
+                color: 'var(--ink)',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {caseData.name}
+            </h1>
+
+            {caseData.description && (
+              <p
+                className="body-readable max-w-2xl"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.7,
+                  color: 'var(--ink-soft)',
+                }}
+              >
+                {caseData.description}
+              </p>
+            )}
           </div>
 
-          {/* Title */}
-          <h1
-            className="mb-8 max-w-3xl"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontStyle: 'normal',
-              fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)',
-              fontWeight: 800,
-              color: 'var(--ink)',
-              lineHeight: 1.2,
-            }}
-          >
-            {caseData.name}
-          </h1>
+          {/* Lead-expert callout — engineering-bracket frame */}
+          {leadExpert && (
+            <div className="lg:pt-2">
+              <CornerBrackets size={14} thickness={1.2} color="var(--crimson)">
+                <div
+                  className="px-7 py-6"
+                  style={{
+                    background: 'rgba(232, 55, 89, 0.04)',
+                    borderLeft: '3px solid var(--crimson)',
+                    minWidth: 260,
+                  }}
+                >
+                  <div className="font-eyebrow mb-3" style={{ color: 'var(--crimson)' }}>
+                    Lead Expert
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '1.15rem',
+                      fontWeight: 700,
+                      color: 'var(--ink)',
+                      marginBottom: '0.35rem',
+                    }}
+                  >
+                    Dr. {leadExpert.name.replace(/^Dr\.\s*/, '')}
+                  </div>
+                  {leadExpert.specialty && (
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.7rem',
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                        color: 'var(--ink-mute)',
+                        marginBottom: '0.75rem',
+                      }}
+                    >
+                      {leadExpert.specialty}
+                    </div>
+                  )}
+                  <Link
+                    href="/expert/dahlgren"
+                    className="cta-pill cta-pill-secondary inline-block"
+                    style={{ fontSize: '0.85rem' }}
+                  >
+                    Open workbench →
+                  </Link>
+                </div>
+              </CornerBrackets>
+            </div>
+          )}
+        </div>
 
-          {/* Description */}
-          <p
-            className="max-w-2xl"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '1.05rem',
-              color: 'var(--ink-soft)',
-              lineHeight: 1.7,
-            }}
-          >
-            {caseData.description}
-          </p>
-        </section>
+        <div className="mt-12 flex justify-center">
+          <DimensionLine length={240} label="case file" />
+        </div>
+      </section>
 
-        {/* Search bar — filter documents, timeline, parties, substances, experts */}
-        <section className="mb-16">
-          <div
-            className="mb-3"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-            }}
-          >
-            Search this case · {caseData.documents.length} documents · {caseData.events.length} events · {caseData.experts.length} experts
+      {/* ============================================================ */}
+      {/*                       SEARCH THIS CASE                       */}
+      {/* ============================================================ */}
+      <section
+        className="py-12 md:py-16"
+        style={{ background: 'var(--paper-warm)', borderTop: '1px solid var(--paper-line)', borderBottom: '1px solid var(--paper-line)' }}
+      >
+        <div className="rail-default">
+          <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
+            Search this case · {caseData.documents.length} documents · {caseData.events.length} events · {caseData.experts.length} {caseData.experts.length === 1 ? 'expert' : 'experts'}
           </div>
-          <div className="relative">
+          <div className="relative max-w-3xl">
             <input
               type="search"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder="Search documents, timeline, substances, experts…"
-              className="w-full border border-[var(--paper-line)] bg-[var(--paper-warm)] px-4 py-3 pr-20 outline-none transition-colors focus:border-[var(--teal)]"
+              className="w-full rounded border px-5 py-4 pr-24 outline-none transition-colors focus:border-[var(--teal)]"
               style={{
+                borderColor: 'var(--paper-line)',
+                background: 'var(--paper)',
                 fontFamily: 'var(--font-body)',
-                fontSize: '0.95rem',
+                fontSize: '1rem',
                 color: 'var(--ink)',
               }}
             />
@@ -233,7 +272,16 @@ export default function SkyValleyCasePage() {
               <button
                 type="button"
                 onClick={() => setFilter('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 px-2 text-sm text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border px-3 py-1.5 transition-colors hover:text-[var(--ink)]"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  borderColor: 'var(--paper-line)',
+                  color: 'var(--ink-mute)',
+                  background: 'var(--paper)',
+                }}
                 aria-label="Clear search"
               >
                 Clear
@@ -242,10 +290,10 @@ export default function SkyValleyCasePage() {
           </div>
           {filter && (
             <div
-              className="mt-3"
+              className="mt-4"
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: '0.7rem',
+                fontSize: '0.72rem',
                 color: 'var(--ink-mute)',
                 letterSpacing: '0.05em',
               }}
@@ -255,143 +303,186 @@ export default function SkyValleyCasePage() {
                 : `No matches for "${filter}" in this case.`}
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* Substances Section */}
-        {filteredSubstances.length > 0 && (
-          <section className="mb-24">
-            <h2
-              className="mb-10"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontStyle: 'normal',
-                fontSize: '1.5rem',
-                fontWeight: 800,
-                color: 'var(--ink)',
-                lineHeight: 1.2,
-              }}
-            >
-              Substances at Issue
-            </h2>
+      {/* ============================================================ */}
+      {/*                        SUBSTANCES                            */}
+      {/* ============================================================ */}
+      {filteredSubstances.length > 0 && (
+        <section className="rail-default py-16 md:py-20">
+          <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
+            Substances at Issue
+          </div>
+          <h2
+            className="mb-10 max-w-2xl"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontWeight: 500,
+              fontSize: 'clamp(1.8rem, 3vw, 2.4rem)',
+              color: 'var(--ink)',
+              lineHeight: 1.15,
+            }}
+          >
+            The compounds the plaintiffs allege caused harm
+          </h2>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
-              {filteredSubstances.map((substance) => (
-                <Link
-                  key={substance.id}
-                  href={`/compound/${slug(substance.name)}`}
-                  className="tile group transition-all hover:border-[var(--teal)] hover:shadow-sm"
+          <div className="tile-grid-3">
+            {filteredSubstances.map((substance) => (
+              <Link
+                key={substance.id}
+                href={`/compound/${substanceSlug(substance.name)}`}
+                className="tile group block rounded-lg border p-7 transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                style={{
+                  borderColor: 'var(--paper-line)',
+                  background: 'rgba(255,255,255,0.5)',
+                  borderLeft: '3px solid var(--peach-deep)',
+                }}
+              >
+                <div className="font-eyebrow mb-3" style={{ color: 'var(--peach-deep)' }}>
+                  Compound · Stratigraph
+                </div>
+                <h3
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '1.3rem',
+                    fontWeight: 700,
+                    color: 'var(--ink)',
+                    lineHeight: 1.25,
+                    marginBottom: '0.5rem',
+                  }}
                 >
-                  <h3
+                  {substance.name}
+                </h3>
+                {substance.cas_number && (
+                  <div
                     style={{
-                      fontFamily: 'var(--font-body)',
-                      fontStyle: 'normal',
-                      fontSize: '1.25rem',
-                      fontWeight: 800,
-                      color: 'var(--ink)',
-                      marginBottom: '0.75rem',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.72rem',
+                      color: 'var(--ink-mute)',
+                      letterSpacing: '0.04em',
+                      marginBottom: '1.25rem',
                     }}
                   >
-                    {substance.name}
-                  </h3>
-                  <p
-                    className="cta-pill cta-pill-secondary"
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '0.95rem',
-                      color: 'var(--ink-soft)',
-                      lineHeight: 1.6,
-                      display: 'inline-block',
-                    }}
-                  >
-                    View substance data →
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+                    CAS {substance.cas_number}
+                  </div>
+                )}
+                <span
+                  className="cta-pill cta-pill-secondary inline-block text-sm transition-colors group-hover:text-[var(--teal-deep)]"
+                >
+                  View substance data →
+                </span>
+              </Link>
+            ))}
+          </div>
 
-        {/* Expert Witnesses Section */}
-        {filteredExperts.length > 0 && (
-          <section className="mb-24">
+          <div className="mt-16 flex justify-center">
+            <DimensionLine length={200} />
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================ */}
+      {/*                      EXPERT WITNESSES                        */}
+      {/* ============================================================ */}
+      {filteredExperts.length > 0 && (
+        <section
+          className="py-16 md:py-20"
+          style={{ background: 'var(--paper-warm)', borderTop: '1px solid var(--paper-line)', borderBottom: '1px solid var(--paper-line)' }}
+        >
+          <div className="rail-default">
+            <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
+              Expert Witnesses
+            </div>
             <h2
-              className="mb-10"
+              className="mb-10 max-w-2xl"
               style={{
-                fontFamily: 'var(--font-body)',
-                fontStyle: 'normal',
-                fontSize: '1.5rem',
-                fontWeight: 800,
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: 'clamp(1.8rem, 3vw, 2.4rem)',
                 color: 'var(--ink)',
-                lineHeight: 1.2,
+                lineHeight: 1.15,
               }}
             >
-              Expert Witnesses
+              The credentialed voices behind the toxicology record
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {filteredExperts.map((expert) => {
                 const isDahlgren = expert.name.includes('Dahlgren');
-                const lastName = expert.name.split(' ').pop() || expert.name;
+                const lastName = expert.name.split(' ').pop() ?? expert.name;
                 const expertUrl = `/expert/${lastName.toLowerCase()}`;
                 return (
                   <Link
                     key={expert.id}
                     href={expertUrl}
-                    className="tile transition-all hover:border-[var(--teal)] hover:shadow-sm"
+                    className="tile group block rounded-lg border p-7 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                     style={{
-                      background: isDahlgren ? 'rgba(232, 55, 89, 0.04)' : 'var(--paper)',
-                      borderLeftWidth: isDahlgren ? '4px' : '1px',
-                      borderLeftColor: isDahlgren ? 'var(--crimson)' : 'var(--paper-line)',
-                      textDecoration: 'none',
+                      borderColor: 'var(--paper-line)',
+                      background: isDahlgren ? 'rgba(232, 55, 89, 0.05)' : 'rgba(255,255,255,0.5)',
+                      borderLeftWidth: '3px',
+                      borderLeftColor: isDahlgren ? 'var(--crimson)' : 'var(--teal)',
                     }}
                   >
-                    <h3
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        fontStyle: 'normal',
-                        fontSize: '1.2rem',
-                        fontWeight: 800,
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      {expert.name}
-                    </h3>
-                    {expert.specialty && (
-                      <p
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '0.7rem',
-                          color: 'var(--ink-mute)',
-                          letterSpacing: '0.08em',
-                          marginBottom: '0.6rem',
-                          textTransform: 'uppercase',
-                        }}
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+                      <div>
+                        <h3
+                          style={{
+                            fontFamily: 'var(--font-body)',
+                            fontSize: '1.3rem',
+                            fontWeight: 700,
+                            color: 'var(--ink)',
+                            marginBottom: '0.35rem',
+                          }}
+                        >
+                          Dr. {expert.name.replace(/^Dr\.\s*/, '')}
+                        </h3>
+                        {expert.specialty && (
+                          <div
+                            style={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '0.7rem',
+                              letterSpacing: '0.16em',
+                              textTransform: 'uppercase',
+                              color: 'var(--ink-mute)',
+                            }}
+                          >
+                            {expert.specialty}
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className="cta-pill cta-pill-secondary text-sm transition-colors group-hover:text-[var(--teal-deep)]"
                       >
-                        {expert.specialty}
-                      </p>
-                    )}
+                        Open workbench →
+                      </span>
+                    </div>
+
                     {expert.affiliation && (
                       <p
                         style={{
-                          fontFamily: 'var(--font-body)',
+                          fontFamily: 'var(--font-serif)',
                           fontStyle: 'italic',
-                          fontSize: '0.95rem',
+                          fontSize: '1rem',
                           color: 'var(--ink-soft)',
-                          marginBottom: '1.25rem',
+                          marginTop: '0.85rem',
+                          marginBottom: '0.85rem',
                         }}
                       >
                         {expert.affiliation}
                       </p>
                     )}
+
                     {expert.bio && (
                       <p
                         className="body-readable"
                         style={{
                           fontFamily: 'var(--font-body)',
-                          fontSize: '0.95rem',
-                          color: 'var(--ink-soft)',
+                          fontSize: '0.96rem',
                           lineHeight: 1.7,
+                          color: 'var(--ink-soft)',
                         }}
                       >
                         {expert.bio}
@@ -401,97 +492,158 @@ export default function SkyValleyCasePage() {
                 );
               })}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+      )}
 
-        {/* Case Timeline Section */}
-        {filteredEvents.length > 0 && (
-          <section className="mb-24">
-            <h2
-              className="mb-10"
+      {/* ============================================================ */}
+      {/*                       CASE TIMELINE                          */}
+      {/* ============================================================ */}
+      {filteredEvents.length > 0 && (
+        <section className="rail-default py-16 md:py-20">
+          <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
+            Procedural Timeline
+          </div>
+          <h2
+            className="mb-10 max-w-2xl"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontWeight: 500,
+              fontSize: 'clamp(1.8rem, 3vw, 2.4rem)',
+              color: 'var(--ink)',
+              lineHeight: 1.15,
+            }}
+          >
+            How the case moved from filing to verdict
+          </h2>
+
+          <CornerBrackets size={16} thickness={1} inset={-8}>
+            <div
+              className="rounded-lg p-7 md:p-10"
               style={{
-                fontFamily: 'var(--font-body)',
-                fontStyle: 'normal',
-                fontSize: '1.5rem',
-                fontWeight: 800,
-                color: 'var(--ink)',
-                lineHeight: 1.2,
+                background: 'rgba(255,255,255,0.4)',
+                border: '1px solid var(--paper-line)',
               }}
             >
-              Case Timeline
-            </h2>
-            <CaseTimeline events={filteredEvents} documents={caseData.documents} />
-          </section>
-        )}
+              <CaseTimeline events={filteredEvents} documents={caseData.documents} />
+            </div>
+          </CornerBrackets>
 
-        {/* Document Register Section */}
-        {filteredDocs.length > 0 && (
-          <section className="mb-24">
+          <div className="mt-16 flex justify-center">
+            <DimensionLine length={200} />
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================ */}
+      {/*                        DOCUMENTS                             */}
+      {/* ============================================================ */}
+      {filteredDocs.length > 0 && (
+        <section
+          className="py-16 md:py-20"
+          style={{ background: 'var(--paper-warm)', borderTop: '1px solid var(--paper-line)', borderBottom: '1px solid var(--paper-line)' }}
+        >
+          <div className="rail-default">
+            <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
+              Document Register
+            </div>
             <h2
-              className="mb-10"
+              className="mb-4 max-w-2xl"
               style={{
-                fontFamily: 'var(--font-body)',
-                fontStyle: 'normal',
-                fontSize: '1.5rem',
-                fontWeight: 800,
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: 'clamp(1.8rem, 3vw, 2.4rem)',
                 color: 'var(--ink)',
-                lineHeight: 1.2,
+                lineHeight: 1.15,
               }}
             >
-              Documents
+              The filings, reports, and exhibits in the docket
             </h2>
             {docsHidden > 0 && (
               <p
                 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
+                  fontSize: '0.72rem',
                   color: 'var(--ink-mute)',
                   letterSpacing: '0.05em',
-                  marginBottom: '1.25rem',
+                  marginBottom: '1.5rem',
                 }}
               >
                 Showing first {filteredDocs.length} of {docsMatchingFilter.length} documents — type in the search above to narrow.
               </p>
             )}
-            <DocumentRegister documents={filteredDocs} />
-          </section>
-        )}
 
-        {/* Call-to-Action Section */}
-        <section
-          className="rounded-lg border border-[var(--paper-line)] p-10"
-          style={{ background: 'var(--paper-warm)' }}
-        >
-          <h2
-            className="mb-4"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontStyle: 'italic',
-              fontSize: '1.4rem',
-              fontWeight: 400,
-              color: 'var(--ink)',
-            }}
-          >
-            Build an Exhibit Packet
-          </h2>
-          <p
-            className="mb-8 max-w-xl"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.95rem',
-              color: 'var(--ink-soft)',
-              lineHeight: 1.7,
-            }}
-          >
-            Use the Counsel flow to assemble a case-specific exhibit packet with all relevant evidence, expert credentials, regulatory positions, and timeline documentation.
-          </p>
-          <Link
-            href="/flow/counsel?case=sky-valley"
-            className="cta-pill cta-pill-lg cta-pill-primary inline-block"
-          >
-            Open Counsel Flow →
-          </Link>
+            <div
+              className="rounded-lg p-6 md:p-8"
+              style={{
+                background: 'rgba(255,255,255,0.5)',
+                border: '1px solid var(--paper-line)',
+              }}
+            >
+              <DocumentRegister documents={filteredDocs} />
+            </div>
+          </div>
         </section>
+      )}
+
+      {/* ============================================================ */}
+      {/*                    BUILD AN EXHIBIT PACKET                   */}
+      {/* ============================================================ */}
+      <section className="rail-default py-20 md:py-24">
+        <CornerBrackets size={18} thickness={1.4} color="var(--crimson)">
+          <div
+            className="rounded-lg p-10 md:p-12"
+            style={{
+              background: 'var(--paper-warm)',
+              borderLeft: '4px solid var(--crimson)',
+            }}
+          >
+            <div className="font-eyebrow mb-4" style={{ color: 'var(--crimson)' }}>
+              Counsel Flow · Deliverable
+            </div>
+            <h2
+              className="mb-5 max-w-3xl"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 500,
+                fontSize: 'clamp(1.8rem, 3.4vw, 2.6rem)',
+                color: 'var(--ink)',
+                lineHeight: 1.15,
+              }}
+            >
+              Build an exhibit packet from this case
+            </h2>
+            <p
+              className="body-readable mb-8 max-w-2xl"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '1.05rem',
+                lineHeight: 1.7,
+                color: 'var(--ink-soft)',
+              }}
+            >
+              Walk the Counsel flow with Sky Valley pre-loaded — frame, assemble,
+              argue, witness, file. Each stage compiles its own deliverable into a
+              Daubert-ready packet with three sources behind every claim.
+            </p>
+            <Link
+              href="/flow/counsel?case=sky-valley"
+              className="cta-pill cta-pill-lg cta-pill-primary inline-block"
+            >
+              Open Counsel Flow →
+            </Link>
+          </div>
+        </CornerBrackets>
+      </section>
+
+      {/* ============================================================ */}
+      {/*                       FOOTER ORNAMENT                        */}
+      {/* ============================================================ */}
+      <div className="flex justify-center py-12 opacity-30">
+        <GearOrnament size={56} speed={32} />
       </div>
     </main>
   );
