@@ -11,13 +11,16 @@ import {
 import type { Metadata } from 'next';
 import SubstanceDetail from '@/components/SubstanceDetail';
 
+// Legacy route — force fully dynamic. See sibling legacy pages for rationale.
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const substances = await getAllSubstances();
-  return substances.map((s) => ({ slug: nameToSlug(s.name) }));
+  // No static pre-rendering for legacy routes — see `dynamic = 'force-dynamic'`.
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

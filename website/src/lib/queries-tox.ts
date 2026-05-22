@@ -145,7 +145,7 @@ export async function getClaimWithEvidence(claimId: string): Promise<CertifiedCl
 
 export async function getCrossGardenLinks(
   entityId: string,
-  entityType: 'substance' | 'claim' | 'case' | 'endpoint'
+  entityType: 'substance' | 'claim' | 'case' | 'endpoint' | 'expert'
 ): Promise<CrossGardenLink[]> {
   const { data, error } = await supabaseTox
     .from('cross_garden_links')

@@ -423,6 +423,32 @@ If preview deploys still fail with "Failed to collect page data for /legacy/heal
 
 **Rule:** When a case has BOTH a dedicated static route (`/case/sky-valley/page.tsx`) AND the dynamic `/case/[shortName]/page.tsx` catch-all, every internal link must use the short slug (`/case/sky-valley`) so it hits the curated static route. Never compute the case URL via `slug(c.short_name)` if the short_name is multi-word like "Sky Valley PCB Case" — that produces a long slug that bypasses the dedicated page. Either hardcode the short slug, or maintain a mapping in `lib/queries-tox.ts` from `case_id` → canonical URL.
 
+## L-034 · Legacy `supabase.ts` was throwing at module evaluation when Preview env vars were missing
+
+**Discovered:** 2026-05-13, second iteration of demo-day build unblock. After fixing the TS errors in `expert/[slug]/page.tsx`, the next Vercel build still failed — this time with: `Failed to collect page data for /legacy/health-effects`, stack trace pointing at module evaluation of `website_src_lib_supabase_ts_db50bf9a._.js`.
+
+Root cause: `src/lib/supabase.ts` did `createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)` at the top level. The `!` is a TypeScript non-null assertion; it does NOT add a runtime check. The legacy env vars are not configured in Vercel's Preview (and apparently Production) environments — only the `NEXT_PUBLIC_SUPABASE_TOX_*` vars are. So `createClient(undefined, undefined)` ran at module load, threw, and the entire build failed.
+
+Contrast with `supabase-tox.ts`: that one warns instead of throwing when env vars are missing. The legacy client never got the same defensive treatment.
+
+**Fix:** Fall back to inert placeholder URL/key so the module loads cleanly even with missing env. Queries from the legacy routes still fail at request time, which is the correct degradation — the demo doesn't depend on them, and we don't want a missing legacy env var to take down the whole build.
+
+**Rule:** Top-level `createClient(...)` calls in any module that Next.js might evaluate during page-data collection MUST tolerate missing env vars. Either lazy-initialize, fall back to placeholders, or wrap the entire client in a Proxy. The TS `!` operator is a *lie* at runtime — never use it to assert env vars are present.
+
+## L-033 · Vercel build was hard-failing on TYPESCRIPT errors (not lint) since 2026-05-06
+
+**Discovered:** 2026-05-13, demo day. Vercel deployments dashboard showed every build after `4660a8b` (last "Ready" deploy on 2026-05-06) had failed with "Error" status. Production was serving a 6.5-day-old prerendered build (`x-vercel-cache: HIT, age: 561822s`) — every fix shipped this past week was invisible because the new builds never replaced the cached output.
+
+**False lead:** Initial diagnosis assumed ESLint was the blocker because `npx next lint` reports 112 errors. **Next.js 16 removed ESLint from the `next build` step**, so those errors don't actually block builds. The `eslint.ignoreDuringBuilds` config option was also removed in Next 16 — setting it now produces a TypeScript error on `NextConfig`.
+
+**Actual blockers:** Two real TypeScript errors in `src/app/expert/[slug]/page.tsx` (introduced when `feat/expert-depth` was first committed, hence the May 6 onset):
+- Line 99 — `getCrossGardenLinks(e.id, 'expert')` failed type-check because the function's second-parameter union (`'substance' | 'claim' | 'case' | 'endpoint'`) excluded `'expert'`. `'expert'` is in fact a valid `source_entity_type` value in the `cross_garden_links` table; only the TypeScript types were stale.
+- Line 625 — `<ol style={{ space: '1.5rem' }}>` used a non-existent CSS property; React's CSSProperties type correctly rejected it.
+
+**Fix:** Add `'expert'` to both type unions (`CrossGardenLink.source_entity_type` in `types-tox.ts` and the `getCrossGardenLinks` param in `queries-tox.ts`), and remove the `space:` line. `tsc --noEmit` now passes clean, so `next build` will succeed.
+
+**Rule:** When Vercel "errors" appear without context, the first move is to read the actual build log, not guess. The 112 ESLint errors are still a real maintenance burden — schedule a separate cleanup sprint — but they were never the deploy blocker. Verify which step is failing before reaching for `ignoreDuringBuilds`-style escape hatches, especially in Next 16 where the flag is a no-op.
+
 ## L-032 · NEVER wrap PostgREST `.or()` filter values in `encodeURIComponent`
 
 **Discovered:** 2026-05-13, demo day. Live `/case/sky-valley` showed "Case not found" for every visit. Root cause: `getCase()` in `queries-tox.ts` built its `.or()` filter as `\`short_name.ilike.${encodeURIComponent(\`%${term}%\`)}, ...\``. The Supabase JS SDK does its own URL-encoding when it sends the filter string to PostgREST, so wrapping it in `encodeURIComponent` first **double-encodes** the `%` wildcards into `%25`. PostgREST then searches for the literal substring `%25Sky%20Valley%20PCB%20Case%25` — which matches no row. Silent failure: the query succeeds, just returns no rows.
