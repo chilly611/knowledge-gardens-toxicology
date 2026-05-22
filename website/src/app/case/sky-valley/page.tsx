@@ -16,12 +16,12 @@
  */
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { getCaseByShortName, slug } from '@/lib/queries-tox';
 import type { CaseDetail } from '@/lib/types-tox';
 import CaseTimeline from '@/components/case/CaseTimeline';
 import DocumentRegister from '@/components/case/DocumentRegister';
-import Emblem from '@/components/shared/Emblem';
 import CornerBrackets from '@/components/shared/CornerBrackets';
 import DimensionLine from '@/components/shared/DimensionLine';
 import GearOrnament from '@/components/shared/GearOrnament';
@@ -145,23 +145,40 @@ export default function SkyValleyCasePage() {
   return (
     <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
       {/* ============================================================ */}
-      {/*                          HEADER                              */}
+      {/*                  HEADER — SPECIMEN PLATE                     */}
       {/* ============================================================ */}
-      <section className="rail-default py-16 md:py-20">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_auto] lg:gap-16">
+      <section className="rail-default py-12 md:py-16">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[auto_1fr] lg:gap-14">
+          {/* Caduceus specimen plate */}
+          <div className="flex justify-center lg:justify-start">
+            <Image
+              src="/teal-ink-caduceus.png"
+              alt="Toxicology Knowledge Garden — case specimen plate"
+              width={340}
+              height={340}
+              priority
+              style={{
+                mixBlendMode: 'multiply',
+                width: 'min(340px, 80vw)',
+                height: 'auto',
+              }}
+            />
+          </div>
+
+          {/* Title block */}
           <div>
-            <div className="font-eyebrow mb-5" style={{ color: 'var(--copper-orn-deep)' }}>
+            <div className="font-eyebrow mb-4" style={{ color: 'var(--copper-orn-deep)' }}>
               Legal Case · {caseData.jurisdiction ?? 'Washington State'} · {caseData.filed_year ?? '—'}
             </div>
 
             <h1
-              className="mb-6 max-w-[18ch]"
+              className="mb-6"
               style={{
                 fontFamily: 'var(--font-serif)',
                 fontStyle: 'italic',
                 fontWeight: 500,
-                fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)',
-                lineHeight: 1.05,
+                fontSize: 'clamp(2.2rem, 4.4vw, 3.6rem)',
+                lineHeight: 1.08,
                 color: 'var(--ink)',
                 letterSpacing: '-0.01em',
               }}
@@ -171,10 +188,10 @@ export default function SkyValleyCasePage() {
 
             {caseData.description && (
               <p
-                className="body-readable max-w-2xl"
+                className="body-readable mb-6 max-w-2xl"
                 style={{
                   fontFamily: 'var(--font-body)',
-                  fontSize: '1.1rem',
+                  fontSize: '1.05rem',
                   lineHeight: 1.7,
                   color: 'var(--ink-soft)',
                 }}
@@ -182,59 +199,55 @@ export default function SkyValleyCasePage() {
                 {caseData.description}
               </p>
             )}
-          </div>
 
-          {/* Lead-expert callout — engineering-bracket frame */}
-          {leadExpert && (
-            <div className="lg:pt-2">
+            {leadExpert && (
               <CornerBrackets size={14} thickness={1.2} color="var(--crimson)">
                 <div
-                  className="px-7 py-6"
+                  className="inline-block px-6 py-5"
                   style={{
                     background: 'rgba(232, 55, 89, 0.04)',
                     borderLeft: '3px solid var(--crimson)',
-                    minWidth: 260,
                   }}
                 >
-                  <div className="font-eyebrow mb-3" style={{ color: 'var(--crimson)' }}>
+                  <div className="font-eyebrow mb-2" style={{ color: 'var(--crimson)' }}>
                     Lead Expert
                   </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '1.15rem',
-                      fontWeight: 700,
-                      color: 'var(--ink)',
-                      marginBottom: '0.35rem',
-                    }}
-                  >
-                    Dr. {leadExpert.name.replace(/^Dr\.\s*/, '')}
-                  </div>
-                  {leadExpert.specialty && (
+                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                     <div
                       style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.7rem',
-                        letterSpacing: '0.16em',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-mute)',
-                        marginBottom: '0.75rem',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '1.1rem',
+                        fontWeight: 700,
+                        color: 'var(--ink)',
                       }}
                     >
-                      {leadExpert.specialty}
+                      Dr. {leadExpert.name.replace(/^Dr\.\s*/, '')}
                     </div>
-                  )}
-                  <Link
-                    href="/expert/dahlgren"
-                    className="cta-pill cta-pill-secondary inline-block"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    Open workbench →
-                  </Link>
+                    {leadExpert.specialty && (
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.68rem',
+                          letterSpacing: '0.16em',
+                          textTransform: 'uppercase',
+                          color: 'var(--ink-mute)',
+                        }}
+                      >
+                        {leadExpert.specialty}
+                      </div>
+                    )}
+                    <Link
+                      href="/expert/dahlgren"
+                      className="cta-pill cta-pill-secondary inline-block"
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Open workbench →
+                    </Link>
+                  </div>
                 </div>
               </CornerBrackets>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="mt-12 flex justify-center">
