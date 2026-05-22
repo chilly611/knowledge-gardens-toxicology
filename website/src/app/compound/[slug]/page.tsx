@@ -20,8 +20,16 @@ import TopFrame from '@/components/grammar/TopFrame';
 import LocationCrumb from '@/components/grammar/LocationCrumb';
 import { quoteOrPending } from '@/lib/queries-tox';
 
+// Skip static prerender: this page renders TopFrame (a client component that
+// uses useSearchParams), and Next.js 16's prerender pass refuses to compile it
+// without a page-level Suspense boundary. Force-dynamic side-steps that —
+// the page is rendered on demand instead of at build time. generateStaticParams
+// is kept below as documentation of the seed substances but is a no-op under
+// force-dynamic.
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
-  // Pre-render the 4 main substances (the 3 polymer subclasses can ISR on first hit)
+  // Documentation of the seed substances. No-op under force-dynamic above.
   return [
     { slug: 'glyphosate' },
     { slug: 'pcbs' },

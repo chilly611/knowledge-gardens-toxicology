@@ -13,6 +13,12 @@ import TopFrame from '@/components/grammar/TopFrame';
 import LocationCrumb from '@/components/grammar/LocationCrumb';
 import { quoteOrPending } from '@/lib/queries-tox';
 
+// Skip static prerender: TopFrame (a client component used in the page) reads
+// useSearchParams without a page-level Suspense boundary, and Next.js 16 fails
+// the prerender pass on that. force-dynamic renders on demand. revalidate is
+// effectively ignored once force-dynamic is set but kept for documentation.
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   return [{ caseSlug: 'sky-valley' }];
 }

@@ -23,6 +23,11 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+// Skip static prerender: TopFrame (a client component used inside this page)
+// reads useSearchParams without a page-level Suspense boundary, and Next.js 16
+// fails the build on that during prerender. force-dynamic renders on demand.
+export const dynamic = 'force-dynamic';
 import { supabaseTox } from '@/lib/supabase-tox';
 import TopFrame from '@/components/grammar/TopFrame';
 import LocationCrumb from '@/components/grammar/LocationCrumb';
