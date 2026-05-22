@@ -22,6 +22,11 @@ import { supabaseTox } from '@/lib/supabase-tox';
 import TopFrame from '@/components/grammar/TopFrame';
 import LocationCrumb from '@/components/grammar/LocationCrumb';
 
+// Skip static prerender: TopFrame (client component used inline) reads
+// useSearchParams without a page-level Suspense boundary, and Next.js 16
+// fails prerender on that. Render on demand instead.
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   return [{ slug: 'dahlgren' }];
 }
