@@ -1,1004 +1,328 @@
-'use client';
+// src/app/expert/[slug]/page.tsx
+//
+// P1.4 — Expert profile SSR depth.
+//
+// Stored bio is thin (~30 words). Depth comes from joins:
+//   - Cases where this expert is lead_expert_id
+//   - Substances in this expert's specialty area
+//   - Curated claims those substances appear in
+//   - Reference contributions (if cross_garden_links surface them)
+//
+// The /expert/dahlgren route is the canonical entry point opposing counsel
+// will hit during discovery on the expert. Must read as a research workbench,
+// not a stub.
+//
+// Verified against schema 2026-05-19. Assumes migration 010 applied OR
+// uses the slugify-on-read fallback.
 
-/**
- * /expert/[slug] — Expert research workbench
- * Deep dive into an expert's litigation record, publications, and evidence contributions.
- * Sections: header card, career timeline, cases, documents, publications, claims, reference terms.
- *
- * Design: Uses .rail-default, .tile-feature, .tile, .tile-grid-3 per L-022.
- * All sections prefixed with Space Mono uppercase eyebrow.
- * Body text in .body-readable. Accent colors by section: copper, teal, crimson, peach.
- */
-
-import { useEffect, useState, Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import {
-  getExpertBySlug,
-  getExpertCases,
-  getExpertClaims,
-  getExpertDocuments,
-  getExpertPublications,
-  getExpertReferenceContributions,
-  getCrossGardenLinks,
-  slug,
-} from '@/lib/queries-tox';
-import type { Expert, LegalCase, CertifiedClaimRow, CaseDocument, EvidenceSource, ReferenceTerm, CrossGardenLink } from '@/lib/types-tox';
+import Image from 'next/image';
+import { supabaseTox } from '@/lib/supabase-tox';
+import TopFrame from '@/components/grammar/TopFrame';
+import LocationCrumb from '@/components/grammar/LocationCrumb';
 
-type Props = { params: Promise<{ slug: string }> };
+export async function generateStaticParams() {
+  return [{ slug: 'dahlgren' }];
+}
 
-// Hardcoded timeline data for Dahlgren based on dahlgren-research.md
-const CAREER_TIMELINE = [
-  {
-    year: 1977,
-    event: 'Began clinical toxicology and occupational/environmental medicine practice',
-  },
-  {
-    year: 1996,
-    event: 'Served as toxicology expert in Anderson v. PG&E Hinkley chromium-6 case; $333M settlement',
-  },
-  {
-    year: 2003,
-    event: 'Published peer-reviewed study on wood treatment plant exposure in Environmental Health Perspectives',
-  },
-  {
-    year: 2007,
-    event: 'Published research on persistent organic pollutants in 9/11 World Trade Center rescue workers in Chemosphere',
-  },
-  {
-    year: 2016,
-    event: 'Expert witness in Crane Co. v. DeLisle asbestos mesothelioma case; $8M verdict upheld on appeal',
-  },
-  {
-    year: 2021,
-    event: 'Testified in Sky Valley Education Center PCB litigation; jury verdict $185M',
-  },
-  {
-    year: 2025,
-    event: 'Sky Valley case upheld by Washington Supreme Court; Monsanto settlement with 200+ additional plaintiffs',
-  },
-];
+export const revalidate = 3600;
 
-export default function ExpertPage({ params }: Props) {
+type Expert = {
+  id: string;
+  name: string;
+  affiliation: string | null;
+  specialty: string | null;
+  bio: string | null;
+};
+
+async function getExpertBundle(slug: string) {
+  const supabase = supabaseTox;
+
+  // Resolve expert by slug column (post-migration) or by last-name match (pre-migration)
+  let expert: Expert | null = null;
+  const { data: bySlug, error: slugErr } = await supabase
+    .from('experts')
+    .select('id, name, affiliation, specialty, bio')
+    .eq('slug', slug)
+    .maybeSingle();
+  
+  if (!slugErr && bySlug) {
+    expert = bySlug as Expert;
+  } else {
+    // Fallback: case-insensitive last-name match
+    const { data: byName } = await supabase
+      .from('experts')
+      .select('id, name, affiliation, specialty, bio')
+      .ilike('name', `%${slug}%`)
+      .limit(1)
+      .maybeSingle();
+    expert = byName as Expert | null;
+  }
+
+  if (!expert) return null;
+
+  // Cases led by this expert
+  const casesRes = await supabase
+    .from('legal_cases')
+    .select('id, name, short_name, jurisdiction, court, filed_year, status, description')
+    .eq('lead_expert_id', expert.id);
+  
+  const cases = casesRes.data ?? [];
+
+  // Per-case document counts (avoids pulling 1,959 docs)
+  const caseDocCounts = await Promise.all(
+    cases.map(async (c: any) => {
+      const { count } = await supabase
+        .from('case_documents')
+        .select('id', { count: 'exact', head: true })
+        .eq('case_id', c.id);
+      return { caseId: c.id, count: count ?? 0 };
+    })
+  );
+
+  // Substances linked to this expert's cases (case_substances join)
+  const caseIds = cases.map((c: any) => c.id);
+  const substancesRes = caseIds.length
+    ? await supabase
+        .from('case_substances')
+        .select('case_id, substance:substances!inner(id, name, cas_number, aliases)')
+        .in('case_id', caseIds)
+    : { data: [] };
+
+  // Get the unique substance IDs to pull related claims
+  const linkedSubstances = (substancesRes.data ?? []).map((cs: any) => cs.substance);
+  const substanceIds = Array.from(new Set(linkedSubstances.map((s: any) => s.id)));
+
+  // Top claims for those substances (highest confidence)
+  const topClaimsRes = substanceIds.length
+    ? await supabase
+        .from('certified_claims_with_evidence')
+        .select('claim_id, substance_name, endpoint_name, effect_summary, status, confidence_score, source_count')
+        .in('substance_id', substanceIds)
+        .order('confidence_score', { ascending: false })
+        .limit(8)
+    : { data: [] };
+
+  // Cross-garden links where this expert is the source or referenced in case links
+  const crossLinksRes = await supabase
+    .from('cross_garden_links')
+    .select('*')
+    .eq('source_entity_id', expert.id);
+
+  return {
+    expert,
+    cases,
+    caseDocCounts: Object.fromEntries(caseDocCounts.map((c) => [c.caseId, c.count])),
+    substances: linkedSubstances,
+    topClaims: topClaimsRes.data ?? [],
+    crossLinks: crossLinksRes.data ?? [],
+  };
+}
+
+export default async function ExpertPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const bundle = await getExpertBundle(slug);
+  if (!bundle) notFound();
+
+  const { expert, cases, caseDocCounts, substances, topClaims, crossLinks } = bundle;
+
+  // Surname for slug helpers
+  const surnameSlug = slug;
+
   return (
-    <Suspense fallback={null}>
-      <ExpertPageInner params={params} />
-    </Suspense>
+    <main className="min-h-screen bg-paper">
+      <TopFrame />
+      <div className="rail-default">
+        <LocationCrumb />
+
+        {/* HERO with caduceus monogram */}
+        <section className="section-pad-lg">
+          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-start">
+            <div>
+              <div className="mono-eyebrow">Expert · Toxicology</div>
+              <h1 className="headline-bold mt-2 text-ink">{expert.name}</h1>
+              {expert.affiliation && (
+                <div className="subtitle-bold mt-1 text-ink-soft">{expert.affiliation}</div>
+              )}
+              {expert.specialty && (
+                <p className="body-readable-wide mt-4 text-ink">{expert.specialty}</p>
+              )}
+              {expert.bio && (
+                <p className="body-readable-wide mt-3 text-ink-soft">{expert.bio}</p>
+              )}
+            </div>
+            {/* Caduceus monogram if asset is present */}
+            <div className="md:w-48 flex-shrink-0">
+              <Image
+                src="/imagery/caduceus-jd-monogram-masked.webp"
+                alt={`${expert.name} signature monogram`}
+                width={192}
+                height={256}
+                className="opacity-90"
+                style={{ mixBlendMode: 'multiply' }}
+                priority
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* STATS STRIP */}
+        <section className="section-pad">
+          <div className="tile-grid-3">
+            <div className="tile tile-feature">
+              <div className="label-mono">Cases led</div>
+              <div className="headline-bold text-tox-deep">{cases.length}</div>
+            </div>
+            <div className="tile tile-feature">
+              <div className="label-mono">Substances curated</div>
+              <div className="headline-bold text-tox-deep">{substances.length}</div>
+            </div>
+            <div className="tile tile-feature">
+              <div className="label-mono">Documents indexed</div>
+              <div className="headline-bold text-tox-deep">
+                {(Object.values(caseDocCounts) as number[]).reduce((a, b) => a + b, 0).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CASES LED */}
+        <section className="section-pad">
+          <h2 className="title-bold mb-4 text-ink text-2xl">Cases led as expert of record</h2>
+          {cases.length === 0 ? (
+            <p className="body-readable text-ink-soft">No cases currently linked.</p>
+          ) : (
+            <div className="grid gap-3">
+              {cases.map((c: any) => (
+                <div key={c.id} className="tile tile-feature">
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <div>
+                      <Link
+                        href={`/case/${caseSlugFor(c)}`}
+                        className="title-bold text-ink text-xl hover:text-tox"
+                      >
+                        {c.short_name ?? c.name}
+                      </Link>
+                      <div className="mono-eyebrow mt-1 text-ink-soft">
+                        {c.jurisdiction} · {c.court} · {c.filed_year}
+                      </div>
+                    </div>
+                    <div className="label-mono text-tox-deep">
+                      {caseDocCounts[c.id]?.toLocaleString() ?? 0} docs
+                    </div>
+                  </div>
+                  {c.description && (
+                    <p className="body-readable mt-3 text-ink-soft">
+                      {c.description?.slice(0, 280)}{c.description?.length > 280 ? '…' : ''}
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link
+                      href={`/case/${caseSlugFor(c)}`}
+                      className="cta-pill cta-pill-ghost"
+                    >
+                      Open case file →
+                    </Link>
+                    <Link
+                      href={`/flow/counsel/${caseSlugFor(c)}`}
+                      className="cta-pill cta-pill-secondary"
+                    >
+                      Open Counsel flow →
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* SUBSTANCES CURATED */}
+        {substances.length > 0 && (
+          <section className="section-pad">
+            <h2 className="title-bold mb-4 text-ink text-2xl">Substances curated</h2>
+            <div className="tile-grid-3">
+              {substances.map((s: any) => (
+                <Link
+                  key={s.id}
+                  href={`/compound/${substanceSlugFor(s)}`}
+                  className="tile hover:border-tox transition-colors"
+                >
+                  <div className="title-bold text-ink">{s.name}</div>
+                  {s.cas_number && (
+                    <div className="mono-eyebrow mt-1 text-ink-soft">CAS {s.cas_number}</div>
+                  )}
+                  {s.aliases?.length > 0 && (
+                    <div className="body-readable text-ink-soft text-sm mt-2">
+                      {s.aliases.slice(0, 3).join(', ')}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* TOP CLAIMS */}
+        {topClaims.length > 0 && (
+          <section className="section-pad">
+            <h2 className="title-bold mb-4 text-ink text-2xl">Top claims from curated substances</h2>
+            <div className="grid gap-3">
+              {topClaims.map((claim: any) => (
+                <div key={claim.claim_id} className="tile">
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <span className="mono-eyebrow">{claim.substance_name}</span>
+                    <span className="label-mono text-ink-soft">{claim.endpoint_name}</span>
+                    <span className="label-mono text-ink-soft">{claim.source_count} sources</span>
+                  </div>
+                  <p className="body-readable mt-2 text-ink">{claim.effect_summary}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* CROSS-GARDEN STRIP */}
+        {crossLinks.length > 0 && (
+          <section className="section-pad-lg">
+            <div className="tile tile-feature">
+              <div className="mono-eyebrow text-copper">Cross-garden contributions</div>
+              <p className="body-readable mt-2 text-ink-soft">
+                {expert.name}&apos;s expertise links to {crossLinks.length} entities across The Knowledge Gardens ecosystem.
+              </p>
+            </div>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }
 
-function ExpertPageInner({ params }: Props) {
-  const [slugParam, setSlugParam] = useState<string>('');
-  const [expert, setExpert] = useState<Expert | null>(null);
-  const [cases, setCases] = useState<LegalCase[]>([]);
-  const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);
-  const [documents, setDocuments] = useState<CaseDocument[]>([]);
-  const [publications, setPublications] = useState<EvidenceSource[]>([]);
-  const [referenceTerms, setReferenceTerms] = useState<ReferenceTerm[]>([]);
-  const [crossGardenLinks, setCrossGardenLinks] = useState<CrossGardenLink[]>([]);
-  const [loading, setLoading] = useState(true);
+// ---------- Helpers ----------
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const p = await params;
-      if (cancelled) return;
-      setSlugParam(p.slug);
-      const e = await getExpertBySlug(p.slug);
-      if (cancelled) return;
-      setExpert(e);
-      if (e) {
-        const lastNameMatch = e.name.match(/(\w+)$/);
-        const lastName = lastNameMatch ? lastNameMatch[1] : e.name;
-
-        const [cs, cls, docs, pubs, refs, links] = await Promise.all([
-          getExpertCases(e.id),
-          getExpertClaims(e.id),
-          getExpertDocuments(e.id),
-          getExpertPublications(lastName),
-          getExpertReferenceContributions(lastName),
-          getCrossGardenLinks(e.id, 'expert'),
-        ]);
-        if (cancelled) return;
-        setCases(cs);
-        setClaims(cls);
-        setDocuments(docs);
-        setPublications(pubs);
-        setReferenceTerms(refs);
-        setCrossGardenLinks(links);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [params]);
-
-  if (loading) {
-    return (
-      <main data-surface="tkg" className="min-h-screen flex items-center justify-center bg-[var(--paper)]">
-        <div style={{ color: 'var(--ink-mute)' }}>Loading...</div>
-      </main>
-    );
+/**
+ * Convert a case row's short_name into the URL slug.
+ * Post-migration this is c.slug. Pre-migration we derive from short_name.
+ */
+function caseSlugFor(c: any): string {
+  if (c.slug) return c.slug;
+  if (c.short_name) {
+    // "Sky Valley PCB Case" → "sky-valley"
+    return c.short_name.toLowerCase().split(/\s+/).slice(0, 2).join('-');
   }
+  return c.name.toLowerCase().split(/\s+/).slice(0, 2).join('-');
+}
 
-  if (!expert) {
-    return (
-      <main data-surface="tkg" className="min-h-screen flex flex-col items-center justify-center px-6 bg-[var(--paper)]">
-        <div
-          className="rounded-2xl border border-[var(--paper-line)] bg-white p-8"
-          style={{ background: 'rgba(255, 255, 255, 0.4)', maxWidth: '40ch' }}
-        >
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: '1.8rem',
-              fontStyle: 'italic',
-              color: 'var(--ink)',
-              marginBottom: '1rem',
-            }}
-          >
-            Expert not found
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', marginBottom: '1.5rem', fontFamily: 'var(--font-body)' }}>
-            The expert profile you are looking for does not exist. Try dahlgren for Dr. James G. Dahlgren.
-          </p>
-          <Link
-            href="/"
-            style={{
-              color: 'var(--teal-deep)',
-              fontFamily: 'var(--font-body)',
-              textDecoration: 'underline',
-            }}
-          >
-            Back to Loom
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
-  const claimsBySubstance: Record<string, CertifiedClaimRow[]> = {};
-  for (const claim of claims) {
-    if (!claimsBySubstance[claim.substance_name]) {
-      claimsBySubstance[claim.substance_name] = [];
-    }
-    claimsBySubstance[claim.substance_name].push(claim);
-  }
-
-  const statusColors: Record<string, string> = {
-    certified: 'var(--teal)',
-    provisional: 'var(--copper-orn-deep)',
-    contested: 'var(--crimson)',
-    retracted: 'var(--ink-mute)',
-  };
-
-  return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      {/* ================================================================
-          HEADER CARD
-          ================================================================ */}
-      <section className="rail-default py-16 md:py-20">
-        <div
-          className="tile-feature rounded-2xl border border-[var(--paper-line)] p-8 md:p-12"
-          style={{
-            background: 'rgba(255, 255, 255, 0.4)',
-            borderLeft: '4px solid var(--crimson)',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.7rem',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '1.5rem',
-            }}
-          >
-            Expert Witness · 50 Years · Toxicology
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-            <div className="flex-1">
-              <h1
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 800,
-                  fontSize: 'clamp(2.4rem, 5vw, 3.6rem)',
-                  lineHeight: 1.1,
-                  color: 'var(--ink)',
-                  marginBottom: '0.75rem',
-                }}
-              >
-                {expert.name}
-              </h1>
-
-              {expert.affiliation && (
-                <p
-                  className="emphasis-italic"
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontStyle: 'italic',
-                    fontSize: '1.05rem',
-                    color: 'var(--ink-soft)',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  {expert.affiliation}
-                </p>
-              )}
-
-              {expert.specialty && (
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: 'var(--copper-orn-deep)',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  {expert.specialty}
-                </div>
-              )}
-
-              {expert.bio && (
-                <div className="body-readable">
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '1.05rem',
-                      lineHeight: 1.7,
-                      color: 'var(--ink-soft)',
-                    }}
-                  >
-                    {expert.bio}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="md:w-48 flex flex-col gap-6">
-              {/* Photo placeholder */}
-              <div
-                style={{
-                  border: '2px solid var(--ink-mute)',
-                  borderRadius: '0.25rem',
-                  padding: '1rem',
-                  textAlign: 'center',
-                  fontSize: '0.85rem',
-                  color: 'var(--ink-mute)',
-                  fontFamily: 'var(--font-mono)',
-                  aspectRatio: '3/4',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                ┌─────────────┐<br />│ PHOTO       │<br />│ PENDING     │<br />└─────────────┘
-              </div>
-
-              {/* Action row */}
-              <div className="flex flex-col gap-3 text-sm">
-                <a
-                  href="https://www.jurispro.com/files/documents/doc-1066204677-resume.pdf"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: 'var(--teal)',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    textDecoration: 'underline',
-                    fontWeight: 600,
-                  }}
-                >
-                  Download CV
-                </a>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                  }}
-                >
-                  Contact
-                </div>
-                <a
-                  href="mailto:chillyd@gmail.com"
-                  style={{
-                    color: 'var(--crimson)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.9rem',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  chillyd@gmail.com
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================
-          CAREER TIMELINE
-          ================================================================ */}
-      <section className="rail-default py-12 md:py-16">
-        <div
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.65rem',
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            color: 'var(--copper-orn-deep)',
-            marginBottom: '3rem',
-          }}
-        >
-          Career Arc · 1977—Present
-        </div>
-
-        <div className="space-y-6">
-          {CAREER_TIMELINE.map((event, idx) => (
-            <div
-              key={idx}
-              className="tile rounded-lg border border-[var(--paper-line)] p-6"
-              style={{
-                background: 'rgba(255, 255, 255, 0.3)',
-                borderLeft: '4px solid var(--teal)',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase',
-                  color: 'var(--copper-orn-deep)',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                {event.year}
-              </div>
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  lineHeight: 1.6,
-                  color: 'var(--ink)',
-                }}
-              >
-                {event.event}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ================================================================
-          CASES SECTION
-          ================================================================ */}
-      {cases.length > 0 && (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Cases · Litigation Record
-          </div>
-
-          {/* Filter chips (visual only) */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {['ALL', 'TOXIC TORT', 'OCCUPATIONAL', 'PCBs', 'ASBESTOS'].map((filter) => (
-              <button
-                key={filter}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '2rem',
-                  border: filter === 'ALL' ? '2px solid var(--ink)' : '1px solid var(--paper-line)',
-                  background: filter === 'ALL' ? 'var(--ink)' : 'transparent',
-                  color: filter === 'ALL' ? 'var(--paper)' : 'var(--ink)',
-                  cursor: 'pointer',
-                }}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-
-          <div className="tile-grid-3">
-            {cases.map((c) => (
-              <Link
-                key={c.id}
-                href={`/case/${slug(c.short_name)}`}
-                className="tile rounded-2xl border border-[var(--paper-line)] p-6 md:p-8 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  borderLeft: '4px solid var(--crimson)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  {c.filed_year} · {c.jurisdiction}
-                </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  {c.short_name}
-                </h3>
-                {c.description && (
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '0.95rem',
-                      color: 'var(--ink-soft)',
-                      marginBottom: '1rem',
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {c.description.slice(0, 120)}
-                    {c.description.length > 120 ? '...' : ''}
-                  </p>
-                )}
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: 'var(--teal)',
-                  }}
-                >
-                  Open dossier →
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          DOCUMENTS SECTION
-          ================================================================ */}
-      {documents.length > 0 && (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '0.5rem',
-            }}
-          >
-            Documents · Trial Records
-          </div>
-          <p
-            className="body-readable"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.95rem',
-              color: 'var(--ink-soft)',
-              marginBottom: '3rem',
-            }}
-          >
-            {documents.length} documents linked to {expert.name}s cases. Filed reports, expert
-            disclosures, deposition transcripts.
-          </p>
-
-          <div className="tile-grid-3">
-            {documents.slice(0, 12).map((doc) => (
-              <div
-                key={doc.id}
-                className="tile rounded-2xl border border-[var(--paper-line)] p-6 md:p-8"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  borderLeft: '4px solid var(--peach)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {doc.doc_type || 'Document'}
-                </div>
-                <h4
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.75rem',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {doc.title.slice(0, 60)}
-                  {doc.title.length > 60 ? '...' : ''}
-                </h4>
-                {doc.document_date && (
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.7rem',
-                      color: 'var(--ink-mute)',
-                      marginBottom: '0.75rem',
-                    }}
-                  >
-                    {new Date(doc.document_date).toLocaleDateString()}
-                  </div>
-                )}
-                {doc.notes && (
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '0.9rem',
-                      color: 'var(--ink-soft)',
-                      marginBottom: '1rem',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {doc.notes.slice(0, 80)}
-                    {doc.notes.length > 80 ? '...' : ''}
-                  </p>
-                )}
-                {doc.source_url && (
-                  <a
-                    href={doc.source_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      color: 'var(--teal)',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Open document →
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          PUBLICATIONS SECTION
-          ================================================================ */}
-      {publications.length > 0 ? (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Publications · Peer-Reviewed Research
-          </div>
-
-          <ol
-            style={{
-              listStyle: 'decimal',
-              listStylePosition: 'inside',
-            }}
-          >
-            {publications.map((pub, idx) => (
-              <li
-                key={pub.id}
-                className="tile rounded-lg border border-[var(--paper-line)] p-6 mb-4"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  borderLeft: '4px solid var(--teal)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {pub.authors?.join(', ') || 'Unknown authors'} · {pub.year}
-                </div>
-                <h4
-                  style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontStyle: 'italic',
-                    fontSize: '1.05rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {pub.title}
-                </h4>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    color: 'var(--ink-soft)',
-                  }}
-                >
-                  {pub.publisher}
-                  {pub.doi && (
-                    <>
-                      {' · '}
-                      <a
-                        href={`https://doi.org/${pub.doi}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          color: 'var(--copper-orn-deep)',
-                          textDecoration: 'underline',
-                        }}
-                      >
-                        DOI: {pub.doi}
-                      </a>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ) : (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Publications · Peer-Reviewed Research
-          </div>
-          <div
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.95rem',
-              color: 'var(--ink-soft)',
-              padding: '2rem',
-            }}
-          >
-            Publications cataloging in progress; refer to{' '}
-            <a
-              href="https://www.researchgate.net/profile/James-Dahlgren"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                color: 'var(--teal)',
-                textDecoration: 'underline',
-              }}
-            >
-              ResearchGate
-            </a>
-            {' '}for current bibliography.
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          CLAIMS SECTION
-          ================================================================ */}
-      {claims.length > 0 && (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Cited Evidence · By Substance
-          </div>
-
-          <div className="space-y-8">
-            {Object.entries(claimsBySubstance).map(([substanceName, substanceClaims]) => (
-              <div key={substanceName}>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    color: 'var(--ink)',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  {substanceName}
-                </h3>
-                <div className="space-y-3">
-                  {substanceClaims.map((claim) => (
-                    <Link
-                      key={claim.claim_id}
-                      href={`/compound/${slug(claim.substance_name)}#claim-${claim.claim_id}`}
-                      className="block p-4 rounded-lg border border-[var(--paper-line)] transition-colors duration-200 hover:bg-[rgba(255,255,255,0.6)]"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.3)',
-                        borderLeft: '4px solid ' + (statusColors[claim.status] || 'var(--ink-mute)'),
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <p
-                            style={{
-                              fontFamily: 'var(--font-sans)',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              color: 'var(--ink)',
-                              marginBottom: '0.25rem',
-                            }}
-                          >
-                            {claim.endpoint_name}
-                          </p>
-                          <p
-                            style={{
-                              fontFamily: 'var(--font-body)',
-                              fontSize: '0.85rem',
-                              color: 'var(--ink-soft)',
-                            }}
-                          >
-                            {claim.population && `${claim.population} · `}
-                            {claim.exposure_route && `${claim.exposure_route} exposure`}
-                          </p>
-                        </div>
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '0.25rem',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            color: 'white',
-                            backgroundColor: statusColors[claim.status] || 'var(--ink-mute)',
-                          }}
-                        >
-                          {claim.status}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          REFERENCE CONTRIBUTIONS SECTION
-          ================================================================ */}
-      {referenceTerms.length > 0 && (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Legal Reference · Framework & Doctrine
-          </div>
-
-          <div className="tile-grid-3">
-            {referenceTerms.map((term) => (
-              <Link
-                key={term.id}
-                href={`/reference/${term.slug}`}
-                className="tile rounded-2xl border border-[var(--paper-line)] p-6 md:p-8 transition-all duration-200 hover:-translate-y-0.5"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  borderLeft: '4px solid var(--crimson)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {term.category}
-                </div>
-                <h4
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  {term.name}
-                </h4>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.9rem',
-                    color: 'var(--ink-soft)',
-                    marginBottom: '1rem',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {term.short_definition.slice(0, 100)}
-                  {term.short_definition.length > 100 ? '...' : ''}
-                </p>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: 'var(--teal)',
-                  }}
-                >
-                  Read more →
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          CROSS-GARDEN LINKS SECTION
-          ================================================================ */}
-      {crossGardenLinks.length > 0 && (
-        <section className="rail-default py-12 md:py-16">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '3rem',
-            }}
-          >
-            Cross-Garden Connections
-          </div>
-
-          <div className="tile-grid-3">
-            {crossGardenLinks.map((link) => (
-              <div
-                key={link.id}
-                className="tile rounded-2xl border border-[var(--paper-line)] p-6 md:p-8"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.4)',
-                  borderLeft: '4px solid var(--indigo)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.65rem',
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {link.target_garden}
-                </div>
-                <h4
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  {link.target_external_id}
-                </h4>
-                {link.notes && (
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '0.9rem',
-                      color: 'var(--ink-soft)',
-                      marginBottom: '1rem',
-                      fontStyle: 'italic',
-                    }}
-                  >
-                    {link.notes}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ================================================================
-          FOOTER CTA
-          ================================================================ */}
-      <section className="rail-default py-16 md:py-20">
-        <div className="grid gap-4 md:grid-cols-3">
-          <Link
-            href="/case/sky-valley"
-            className="tile rounded-xl border border-[var(--paper-line)] p-6 text-center transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: 'rgba(255, 255, 255, 0.4)' }}
-          >
-            <p style={{ fontFamily: 'var(--font-body)', color: 'var(--ink)', fontWeight: 600 }}>
-              Open Sky Valley case
-            </p>
-          </Link>
-          <Link
-            href="/case"
-            className="tile rounded-xl border border-[var(--paper-line)] p-6 text-center transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: 'rgba(255, 255, 255, 0.4)' }}
-          >
-            <p style={{ fontFamily: 'var(--font-body)', color: 'var(--ink)', fontWeight: 600 }}>
-              Browse all cases
-            </p>
-          </Link>
-          <Link
-            href="/"
-            className="tile rounded-xl border border-[var(--paper-line)] p-6 text-center transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: 'rgba(255, 255, 255, 0.4)' }}
-          >
-            <p style={{ fontFamily: 'var(--font-body)', color: 'var(--ink)', fontWeight: 600 }}>
-              Back to Loom
-            </p>
-          </Link>
-        </div>
-      </section>
-    </main>
-  );
+/**
+ * Convert a substance row to URL slug.
+ * Prefers parenthesized abbrev, else first word, else first alias.
+ */
+function substanceSlugFor(s: any): string {
+  const paren = s.name.match(/\(([^)]+)\)/);
+  if (paren) return paren[1].toLowerCase().replace(/[^a-z0-9]/g, '');
+  return s.name.split(/\s+/)[0].toLowerCase();
 }
