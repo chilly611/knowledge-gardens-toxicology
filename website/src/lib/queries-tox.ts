@@ -98,10 +98,19 @@ export async function getSubstance(slug: string): Promise<{
       .eq('source_entity_id', substance.id),
   ]);
 
+  // Normalize each claim: the `certified_claims_with_evidence` view returns
+  // `sources` as NULL (not '[]') for zero-evidence claims. Default to [] so
+  // every downstream consumer can safely .filter()/.flatMap() without crashing.
+  const normalizedClaims = ((claimsRes.data ?? []) as CertifiedClaimRow[]).map((c) => ({
+    ...c,
+    sources: (c.sources ?? []) as CertifiedClaimRow['sources'],
+    source_count: c.source_count ?? 0,
+  }));
+
   return {
     substance,
     aliases: aliasArray.map((a) => ({ alias: a, alias_type: 'common' })) as SubstanceAlias[],
-    claims:  (claimsRes.data ?? []) as CertifiedClaimRow[],
+    claims:  normalizedClaims,
     cross_garden_links: (linksRes.data ?? []) as CrossGardenLink[],
   };
 }
@@ -170,15 +179,28 @@ export async function getCases(): Promise<LegalCase[]> {
 }
 
 export async function getCase(shortNameOrId: string): Promise<CaseDetail | null> {
-  // Try short_name first, then fuzzy on name
+  // 1) Exact slug match — the canonical lookup (e.g. 'sky-valley').
   let { data: c, error } = await supabaseTox
     .from('legal_cases')
     .select('*')
-    .or(
-      `short_name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)},name.ilike.${encodeURIComponent(`%${shortNameOrId}%`)}`
-    )
+    .eq('slug', shortNameOrId)
     .maybeSingle();
   if (error) throw error;
+
+  // 2) Fallback: fuzzy match on short_name / name (hyphens -> spaces).
+  //    Do NOT encodeURIComponent the filter value — the PostgREST client
+  //    encodes it itself; manual encoding double-encodes spaces (%2520) and
+  //    the ILIKE never matches. (See tasks.lessons.md.)
+  if (!c) {
+    const term = shortNameOrId.replace(/-/g, ' ').trim();
+    const res = await supabaseTox
+      .from('legal_cases')
+      .select('*')
+      .or(`short_name.ilike.%${term}%,name.ilike.%${term}%`)
+      .maybeSingle();
+    if (res.error) throw res.error;
+    c = res.data;
+  }
   if (!c) return null;
   const legalCase = c as LegalCase;
 
@@ -432,6 +454,7 @@ export function quoteOrPending(quote: string | null | undefined): { text: string
 export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 | 4, EvidenceSource[]> {
   const out: Record<1 | 2 | 3 | 4, EvidenceSource[]> = { 1: [], 2: [], 3: [], 4: [] };
   for (const s of sources) {
+    if (!s) continue; // guard against null entries from zero-evidence claims
     const tier = (s.tier ?? 4) as 1 | 2 | 3 | 4;
     out[tier].push(s);
   }

@@ -1002,9 +1002,9 @@ function LayerCard({
                     lineHeight: 1.8,
                   }}
                 >
-                  <div>Regulatory: {claims.filter((c) => c.sources?.[0]?.tier === 1).length}</div>
-                  <div>Systematic: {claims.filter((c) => c.sources?.some((s) => s.tier === 2)).length}</div>
-                  <div>Peer-reviewed: {claims.filter((c) => c.sources?.some((s) => s.tier === 3)).length}</div>
+                  <div>Regulatory: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 1).length, 0)}</div>
+                  <div>Systematic: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 2).length, 0)}</div>
+                  <div>Peer-reviewed: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 3).length, 0)}</div>
                 </div>
               </div>
             </CornerBrackets>
@@ -1016,15 +1016,14 @@ function LayerCard({
 
   // Response layer content
   if (tier === 'response') {
-    const supportingClaims = claims.filter((c) => {
-      const supportingSources = c.sources.filter((s) => s.supports);
-      return supportingSources.length > 0;
-    });
+    const supportingClaims = claims.filter((c) => (c.sources ?? []).some((s) => s.supports));
+    const contradictingClaims = claims.filter((c) => (c.sources ?? []).some((s) => !s.supports));
 
-    const contradictingClaims = claims.filter((c) => {
-      const contradictingSources = c.sources.filter((s) => !s.supports);
-      return contradictingSources.length > 0;
-    });
+    // Real SOURCE counts across this lane's claims. (BUG 5: these previously
+    // counted contested *claims* in this tier — which is empty for substances
+    // with no contested claims — so the strip always read 0.)
+    const supportingSourceCount = allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.supports).length, 0);
+    const contradictingSourceCount = allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => !s.supports).length, 0);
 
     return (
       <div id={`tier-${id}`} className="mb-12 relative pl-16 scroll-mt-24 anim-layer-rise">
@@ -1160,7 +1159,7 @@ function LayerCard({
                   Supporting
                 </div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  {supportingClaims.length} sources back the concern
+                  {supportingSourceCount} sources back the concern
                 </div>
               </div>
 
@@ -1184,7 +1183,7 @@ function LayerCard({
                   Contradicting
                 </div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  {contradictingClaims.length} sources contest the claim
+                  {contradictingSourceCount} sources contest the claim
                 </div>
               </div>
             </div>
@@ -1285,7 +1284,7 @@ function LayerCard({
 
   // Citations layer content
   const sourcesByTier = groupSourcesByTier(
-    claims.flatMap((c) => c.sources)
+    claims.flatMap((c) => c.sources ?? [])
   );
 
   const tierLabels = {

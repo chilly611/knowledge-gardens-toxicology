@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getReferenceTerm, listReferenceTerms } from '@/lib/queries-tox';
 import { markdownToJsx } from '@/lib/markdown-to-jsx';
@@ -438,11 +438,14 @@ function ReferenceTermContent({ slug }: { slug: string }) {
 export default function ReferenceTermPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  // Next.js 16: route params is a Promise. Unwrap it before reading .slug,
+  // otherwise an empty slug is passed and every term shows "not found".
+  const { slug } = use(params);
   return (
     <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
-      <ReferenceTermContent slug={params.slug} />
+      <ReferenceTermContent slug={slug} />
     </Suspense>
   );
 }
