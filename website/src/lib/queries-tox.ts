@@ -135,7 +135,13 @@ export async function getCertifiedClaims(filters?: {
   if (filters?.substance_id)      q = q.eq('substance_id', filters.substance_id);
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as CertifiedClaimRow[];
+  // Normalize: the view returns sources=NULL for zero-evidence claims; default
+  // to [] so .filter()/groupSourcesByTier() can't crash downstream.
+  return ((data ?? []) as CertifiedClaimRow[]).map((c) => ({
+    ...c,
+    sources: (c.sources ?? []) as CertifiedClaimRow['sources'],
+    source_count: c.source_count ?? 0,
+  }));
 }
 
 export async function getClaimWithEvidence(claimId: string): Promise<CertifiedClaimRow | null> {
@@ -453,7 +459,7 @@ export function quoteOrPending(quote: string | null | undefined): { text: string
 /** Group an evidence source list by tier (1..4). */
 export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 | 4, EvidenceSource[]> {
   const out: Record<1 | 2 | 3 | 4, EvidenceSource[]> = { 1: [], 2: [], 3: [], 4: [] };
-  for (const s of sources) {
+  for (const s of (sources ?? [])) {
     if (!s) continue; // guard against null entries from zero-evidence claims
     const tier = (s.tier ?? 4) as 1 | 2 | 3 | 4;
     out[tier].push(s);

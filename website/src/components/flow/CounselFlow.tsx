@@ -93,11 +93,18 @@ export default function CounselFlow({
     loadData();
   }, [casePreset]);
 
-  const filteredClaims = allClaims.filter(
-    (c) =>
-      substances.length === 0 ||
-      substances.includes(c.substance_name)
-  );
+  // Tolerant match: preset/labels are short ("PCBs", "Dioxin") but the view's
+  // substance_name is the full name ("Polychlorinated biphenyls (PCBs)",
+  // "...dibenzo-p-dioxin (TCDD)"). Match case-insensitively in either direction
+  // so the Sky Valley preset actually surfaces its claims.
+  const filteredClaims = allClaims.filter((c) => {
+    if (substances.length === 0) return true;
+    const name = c.substance_name.toLowerCase();
+    return substances.some((sel) => {
+      const s = sel.toLowerCase();
+      return name.includes(s) || s.includes(name);
+    });
+  });
 
   if (loading) {
     return <div className="text-center py-12">Loading legal case data...</div>;
