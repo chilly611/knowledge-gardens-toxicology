@@ -51,7 +51,8 @@ export default function DocumentRegister({ documents }: { documents: CaseDocumen
         return (
           <div
             key={doc.id}
-            className="grid grid-cols-12 gap-4 border-b border-[var(--paper-line)] py-4 transition-opacity duration-500"
+            id={`doc-${doc.id}`}
+            className="grid grid-cols-12 gap-4 border-b border-[var(--paper-line)] py-4 transition-opacity duration-500 scroll-mt-24"
             style={{ opacity: isRevealed ? 1 : 0.3 }}
           >
             {/* Date in Space Mono */}

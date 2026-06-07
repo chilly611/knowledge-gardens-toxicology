@@ -25,6 +25,16 @@ export default function SkyValleyCasePage() {
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
+
+  // Pre-fill the in-page filter from ?q= so deep-links from the global Cmd-K
+  // search (and external links like /case/sky-valley?q=erickson) auto-scope
+  // the view to matching documents, events, parties, substances, and experts.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) setFilter(q);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +117,43 @@ export default function SkyValleyCasePage() {
     );
   }
 
+  // Client-side filter across documents, events, substances, experts.
+  // Anchor scrolling (#doc-<id> / #event-<id>) from global-search deep-links
+  // still works because the underlying rows render the IDs unconditionally.
+  const filterLower = filter.trim().toLowerCase();
+  const matchesText = (s: string | null | undefined) =>
+    !!s && s.toLowerCase().includes(filterLower);
+  // Sky Valley has ~2,000 documents from the local pipeline ingest. Cap the
+  // rendered list to keep the page snappy and avoid the staggered-fade-in
+  // animation running for 100+ seconds. The in-page search above is the
+  // navigation tool: typing narrows the matching set before the cap applies.
+  const DOC_DISPLAY_CAP = 50;
+  const docsMatchingFilter = !filterLower
+    ? caseData.documents
+    : caseData.documents.filter(
+        (d) => matchesText(d.title) || matchesText(d.notes) || matchesText(d.doc_type)
+      );
+  const filteredDocs = docsMatchingFilter.slice(0, DOC_DISPLAY_CAP);
+  const docsHidden = docsMatchingFilter.length - filteredDocs.length;
+  const filteredEvents = !filterLower
+    ? caseData.events
+    : caseData.events.filter(
+        (e) => matchesText(e.description) || matchesText(e.event_type)
+      );
+  const filteredSubstances = !filterLower
+    ? caseData.substances
+    : caseData.substances.filter((s) => matchesText(s.name));
+  const filteredExperts = !filterLower
+    ? caseData.experts
+    : caseData.experts.filter(
+        (e) => matchesText(e.name) || matchesText(e.specialty) || matchesText(e.bio)
+      );
+  const totalMatches =
+    filteredDocs.length +
+    filteredEvents.length +
+    filteredSubstances.length +
+    filteredExperts.length;
+
   return (
     <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
       <div className="rail-default py-20">
@@ -155,8 +202,63 @@ export default function SkyValleyCasePage() {
           </p>
         </section>
 
+        {/* Search bar — filter documents, timeline, parties, substances, experts */}
+        <section className="mb-16">
+          <div
+            className="mb-3"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.65rem',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              color: 'var(--copper-orn-deep)',
+            }}
+          >
+            Search this case · {caseData.documents.length} documents · {caseData.events.length} events · {caseData.experts.length} experts
+          </div>
+          <div className="relative">
+            <input
+              type="search"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Search documents, timeline, substances, experts…"
+              className="w-full border border-[var(--paper-line)] bg-[var(--paper-warm)] px-4 py-3 pr-20 outline-none transition-colors focus:border-[var(--teal)]"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '0.95rem',
+                color: 'var(--ink)',
+              }}
+            />
+            {filter && (
+              <button
+                type="button"
+                onClick={() => setFilter('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 px-2 text-sm text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {filter && (
+            <div
+              className="mt-3"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.7rem',
+                color: 'var(--ink-mute)',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {totalMatches > 0
+                ? `${totalMatches} match${totalMatches === 1 ? '' : 'es'} · ${filteredDocs.length} docs · ${filteredEvents.length} events · ${filteredSubstances.length} substances · ${filteredExperts.length} experts`
+                : `No matches for "${filter}" in this case.`}
+            </div>
+          )}
+        </section>
+
         {/* Substances Section */}
-        {caseData.substances.length > 0 && (
+        {filteredSubstances.length > 0 && (
           <section className="mb-24">
             <h2
               className="mb-10"
@@ -173,7 +275,7 @@ export default function SkyValleyCasePage() {
             </h2>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
-              {caseData.substances.map((substance) => (
+              {filteredSubstances.map((substance) => (
                 <Link
                   key={substance.id}
                   href={`/compound/${slug(substance.name)}`}
@@ -210,7 +312,7 @@ export default function SkyValleyCasePage() {
         )}
 
         {/* Expert Witnesses Section */}
-        {caseData.experts.length > 0 && (
+        {filteredExperts.length > 0 && (
           <section className="mb-24">
             <h2
               className="mb-10"
@@ -227,7 +329,7 @@ export default function SkyValleyCasePage() {
             </h2>
 
             <div className="space-y-6">
-              {caseData.experts.map((expert) => {
+              {filteredExperts.map((expert) => {
                 const isDahlgren = expert.name.includes('Dahlgren');
                 const lastName = expert.name.split(' ').pop() || expert.name;
                 const expertUrl = `/expert/${lastName.toLowerCase()}`;
@@ -303,7 +405,7 @@ export default function SkyValleyCasePage() {
         )}
 
         {/* Case Timeline Section */}
-        {caseData.events.length > 0 && (
+        {filteredEvents.length > 0 && (
           <section className="mb-24">
             <h2
               className="mb-10"
@@ -318,12 +420,12 @@ export default function SkyValleyCasePage() {
             >
               Case Timeline
             </h2>
-            <CaseTimeline events={caseData.events} documents={caseData.documents} />
+            <CaseTimeline events={filteredEvents} documents={caseData.documents} />
           </section>
         )}
 
         {/* Document Register Section */}
-        {caseData.documents.length > 0 && (
+        {filteredDocs.length > 0 && (
           <section className="mb-24">
             <h2
               className="mb-10"
@@ -338,7 +440,20 @@ export default function SkyValleyCasePage() {
             >
               Documents
             </h2>
-            <DocumentRegister documents={caseData.documents} />
+            {docsHidden > 0 && (
+              <p
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.7rem',
+                  color: 'var(--ink-mute)',
+                  letterSpacing: '0.05em',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                Showing first {filteredDocs.length} of {docsMatchingFilter.length} documents — type in the search above to narrow.
+              </p>
+            )}
+            <DocumentRegister documents={filteredDocs} />
           </section>
         )}
 

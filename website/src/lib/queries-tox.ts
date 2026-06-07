@@ -160,7 +160,7 @@ export async function getClaimWithEvidence(claimId: string): Promise<CertifiedCl
 
 export async function getCrossGardenLinks(
   entityId: string,
-  entityType: 'substance' | 'claim' | 'case' | 'endpoint'
+  entityType: 'substance' | 'claim' | 'case' | 'endpoint' | 'expert'
 ): Promise<CrossGardenLink[]> {
   const { data, error } = await supabaseTox
     .from('cross_garden_links')
@@ -307,7 +307,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
   if (!q) return [];
   const like = `%${q}%`;
 
-  const [subs, alias, claims, sources, cases] = await Promise.all([
+  const [subs, alias, claims, sources, cases, caseDocs, caseEvents, caseParties] = await Promise.all([
     supabaseTox.from('substances').select('id, name, description').ilike('name', like).limit(8),
     supabaseTox
       .from('substances')
@@ -331,6 +331,24 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
       .select('id, short_name, name, description')
       .or(`name.ilike.${like},description.ilike.${like},short_name.ilike.${like}`)
       .limit(8),
+    // Case documents — Sky Valley corpus (52 docs)
+    supabaseTox
+      .from('case_documents')
+      .select('id, case_id, title, notes, doc_type, document_date, source_url')
+      .or(`title.ilike.${like},notes.ilike.${like},doc_type.ilike.${like}`)
+      .limit(12),
+    // Case events — timeline entries (13 events for Sky Valley)
+    supabaseTox
+      .from('case_events')
+      .select('id, case_id, event_type, event_date, description')
+      .or(`description.ilike.${like},event_type.ilike.${like}`)
+      .limit(12),
+    // Case parties — plaintiffs, defendants, counsel, experts (13 parties for Sky Valley)
+    supabaseTox
+      .from('case_parties')
+      .select('id, case_id, name, role, notes')
+      .or(`name.ilike.${like},role.ilike.${like},notes.ilike.${like}`)
+      .limit(12),
   ]);
 
   const results: SearchResult[] = [];
@@ -348,6 +366,42 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const c of (cases.data ?? []) as any[])
     results.push({ type: 'case', id: c.id, title: c.name, snippet: c.description, link: `/case/${slug(c.short_name)}` });
+
+  // Case documents — all currently belong to Sky Valley; deep-link with the query pre-applied so the case page can scroll/filter.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const d of (caseDocs.data ?? []) as any[]) {
+    const year = d.document_date ? new Date(d.document_date).getFullYear() : '';
+    const snippet = d.notes ?? (year ? `${d.doc_type} · ${year}` : d.doc_type);
+    results.push({
+      type: 'document',
+      id: d.id,
+      title: d.title,
+      snippet,
+      link: `/case/sky-valley?q=${encodeURIComponent(q)}#doc-${d.id}`,
+    });
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const e of (caseEvents.data ?? []) as any[]) {
+    const year = e.event_date ? new Date(e.event_date).getFullYear() : '';
+    results.push({
+      type: 'event',
+      id: e.id,
+      title: year ? `${e.event_type} · ${year}` : e.event_type,
+      snippet: e.description,
+      link: `/case/sky-valley?q=${encodeURIComponent(q)}#event-${e.id}`,
+    });
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const p of (caseParties.data ?? []) as any[]) {
+    const snippet = p.role ? (p.notes ? `${p.role} · ${p.notes}` : p.role) : (p.notes ?? null);
+    results.push({
+      type: 'party',
+      id: p.id,
+      title: p.name,
+      snippet,
+      link: `/case/sky-valley?q=${encodeURIComponent(q)}`,
+    });
+  }
 
   return results;
 }
@@ -537,6 +591,50 @@ export async function getReferenceTermsByAliases(aliases: string[]): Promise<Ref
     .from('reference_terms')
     .select('*')
     .or(aliases.map((a) => `aliases.cs.{${a}}`).join(','))
+    .order('name');
+  if (error) throw error;
+  return (data ?? []) as ReferenceTerm[];
+}
+
+/* =============================================================================
+   Expert workbench queries — documents, publications, reference contributions
+   ============================================================================= */
+
+/** Get documents linked to an expert's cases. */
+export async function getExpertDocuments(expertId: string): Promise<CaseDocument[]> {
+  const cases = await getExpertCases(expertId);
+  if (cases.length === 0) return [];
+  const caseIds = cases.map((c) => c.id);
+  const { data, error } = await supabaseTox
+    .from('case_documents')
+    .select('*')
+    .in('case_id', caseIds)
+    .order('document_date', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as CaseDocument[];
+}
+
+/** Get evidence sources authored by or mentioning an expert (by last name). */
+export async function getExpertPublications(expertLastName: string): Promise<EvidenceSource[]> {
+  const { data, error } = await supabaseTox
+    .from('evidence_sources')
+    .select('*')
+    .or(`authors.cs.{${expertLastName}},authors.cs.{${expertLastName.toLowerCase()}},authors.cs.{${expertLastName.charAt(0).toUpperCase() + expertLastName.slice(1).toLowerCase()}}`)
+    .order('year', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as EvidenceSource[];
+}
+
+/** Get reference terms mentioning an expert by name in key fields. */
+export async function getExpertReferenceContributions(expertLastName: string): Promise<ReferenceTerm[]> {
+  const { data, error } = await supabaseTox
+    .from('reference_terms')
+    .select('*')
+    .or(
+      `lawyer_angle.ilike.%${expertLastName}%,` +
+      `daubert_relevance.ilike.%${expertLastName}%,` +
+      `deep_explanation_md.ilike.%${expertLastName}%`
+    )
     .order('name');
   if (error) throw error;
   return (data ?? []) as ReferenceTerm[];

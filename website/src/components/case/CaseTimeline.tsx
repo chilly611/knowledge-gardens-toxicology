@@ -54,7 +54,8 @@ export default function CaseTimeline({
         return (
           <div
             key={event.id}
-            className="relative pl-20 transition-opacity duration-500"
+            id={`event-${event.id}`}
+            className="relative pl-20 transition-opacity duration-500 scroll-mt-24"
             style={{ opacity: isRevealed ? 1 : 0.3 }}
           >
             {/* Timeline dot */}
