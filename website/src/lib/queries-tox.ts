@@ -98,10 +98,19 @@ export async function getSubstance(slug: string): Promise<{
       .eq('source_entity_id', substance.id),
   ]);
 
+  // Normalize each claim: the `certified_claims_with_evidence` view returns
+  // `sources` as NULL (not '[]') for zero-evidence claims. Default to [] so
+  // every downstream consumer can safely .filter()/.flatMap() without crashing.
+  const normalizedClaims = ((claimsRes.data ?? []) as CertifiedClaimRow[]).map((c) => ({
+    ...c,
+    sources: (c.sources ?? []) as CertifiedClaimRow['sources'],
+    source_count: c.source_count ?? 0,
+  }));
+
   return {
     substance,
     aliases: aliasArray.map((a) => ({ alias: a, alias_type: 'common' })) as SubstanceAlias[],
-    claims:  (claimsRes.data ?? []) as CertifiedClaimRow[],
+    claims:  normalizedClaims,
     cross_garden_links: (linksRes.data ?? []) as CrossGardenLink[],
   };
 }
@@ -126,7 +135,13 @@ export async function getCertifiedClaims(filters?: {
   if (filters?.substance_id)      q = q.eq('substance_id', filters.substance_id);
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as CertifiedClaimRow[];
+  // Normalize: the view returns sources=NULL for zero-evidence claims; default
+  // to [] so .filter()/groupSourcesByTier() can't crash downstream.
+  return ((data ?? []) as CertifiedClaimRow[]).map((c) => ({
+    ...c,
+    sources: (c.sources ?? []) as CertifiedClaimRow['sources'],
+    source_count: c.source_count ?? 0,
+  }));
 }
 
 export async function getClaimWithEvidence(claimId: string): Promise<CertifiedClaimRow | null> {
@@ -145,7 +160,7 @@ export async function getClaimWithEvidence(claimId: string): Promise<CertifiedCl
 
 export async function getCrossGardenLinks(
   entityId: string,
-  entityType: 'substance' | 'claim' | 'case' | 'endpoint'
+  entityType: 'substance' | 'claim' | 'case' | 'endpoint' | 'expert'
 ): Promise<CrossGardenLink[]> {
   const { data, error } = await supabaseTox
     .from('cross_garden_links')
@@ -170,36 +185,30 @@ export async function getCases(): Promise<LegalCase[]> {
 }
 
 export async function getCase(shortNameOrId: string): Promise<CaseDetail | null> {
-  // Look up the case by short_name first, then by full name.
-  // The prior implementation used `.or()` with `encodeURIComponent` wrapped
-  // around the ilike pattern. That double-encoded the `%` wildcards into
-  // `%25`, so PostgREST searched for the literal text `%25...%25` and matched
-  // nothing — which is why `/case/sky-valley` had been silently 404ing in
-  // production. Split into two sequential `.ilike()` queries instead; the
-  // Supabase SDK handles URL encoding internally so the wildcards survive.
-  let legalCase: LegalCase | null = null;
-
-  const byShortName = await supabaseTox
+  // 1) Exact slug match — the canonical lookup (e.g. 'sky-valley').
+  let { data: c, error } = await supabaseTox
     .from('legal_cases')
     .select('*')
-    .ilike('short_name', `%${shortNameOrId}%`)
-    .limit(1)
+    .eq('slug', shortNameOrId)
     .maybeSingle();
-  if (byShortName.error) throw byShortName.error;
-  legalCase = (byShortName.data as LegalCase | null);
+  if (error) throw error;
 
-  if (!legalCase) {
-    const byName = await supabaseTox
+  // 2) Fallback: fuzzy match on short_name / name (hyphens -> spaces).
+  //    Do NOT encodeURIComponent the filter value — the PostgREST client
+  //    encodes it itself; manual encoding double-encodes spaces (%2520) and
+  //    the ILIKE never matches. (See tasks.lessons.md.)
+  if (!c) {
+    const term = shortNameOrId.replace(/-/g, ' ').trim();
+    const res = await supabaseTox
       .from('legal_cases')
       .select('*')
-      .ilike('name', `%${shortNameOrId}%`)
-      .limit(1)
+      .or(`short_name.ilike.%${term}%,name.ilike.%${term}%`)
       .maybeSingle();
-    if (byName.error) throw byName.error;
-    legalCase = (byName.data as LegalCase | null);
+    if (res.error) throw res.error;
+    c = res.data;
   }
-
-  if (!legalCase) return null;
+  if (!c) return null;
+  const legalCase = c as LegalCase;
 
   const [partiesRes, docsRes, eventsRes, casSubRes, leadExpertRes] = await Promise.all([
     supabaseTox.from('case_parties').select('*').eq('case_id', legalCase.id),
@@ -504,7 +513,8 @@ export function quoteOrPending(quote: string | null | undefined): { text: string
 /** Group an evidence source list by tier (1..4). */
 export function groupSourcesByTier(sources: EvidenceSource[]): Record<1 | 2 | 3 | 4, EvidenceSource[]> {
   const out: Record<1 | 2 | 3 | 4, EvidenceSource[]> = { 1: [], 2: [], 3: [], 4: [] };
-  for (const s of sources) {
+  for (const s of (sources ?? [])) {
+    if (!s) continue; // guard against null entries from zero-evidence claims
     const tier = (s.tier ?? 4) as 1 | 2 | 3 | 4;
     out[tier].push(s);
   }

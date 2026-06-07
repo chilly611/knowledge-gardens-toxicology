@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getReferenceTerm, listReferenceTerms } from '@/lib/queries-tox';
 import { markdownToJsx } from '@/lib/markdown-to-jsx';
@@ -384,15 +384,17 @@ function ReferenceTermContent({ slug }: { slug: string }) {
   );
 }
 
-export default async function ReferenceTermPage({
+export default function ReferenceTermPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const resolvedParams = await params;
+  // Next.js 16: params is a Promise. Unwrap with the React `use` hook — this
+  // is a 'use client' component, so the export must NOT be async.
+  const { slug } = use(params);
   return (
     <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
-      <ReferenceTermContent slug={resolvedParams.slug} />
+      <ReferenceTermContent slug={slug} />
     </Suspense>
   );
 }

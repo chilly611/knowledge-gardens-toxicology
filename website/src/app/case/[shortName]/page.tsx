@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { getCase, getCrossGardenLinks, slug } from '@/lib/queries-tox';
 import type { CaseDetail, CrossGardenLink } from '@/lib/types-tox';
 import Emblem from '@/components/shared/Emblem';
@@ -16,8 +16,11 @@ import { useViewportReveal } from '@/lib/animations';
 export default function CaseDetailPage({
   params,
 }: {
-  params: { shortName: string };
+  params: Promise<{ shortName: string }>;
 }) {
+  // Next.js 16: params is a Promise — unwrap before use (previously read
+  // synchronously, causing `undefined.replace` and a "Case not found" page).
+  const { shortName } = use(params);
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
   const [crossGardenLinks, setCrossGardenLinks] = useState<CrossGardenLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,9 +30,9 @@ export default function CaseDetailPage({
     const loadCase = async () => {
       try {
         setLoading(true);
-        // Convert slug back to name: sky-valley -> Sky Valley PCB Case
-        const name = params.shortName.replace(/-/g, ' ');
-        const data = await getCase(name);
+        // getCase resolves by slug first (e.g. 'sky-valley'), then falls back
+        // to a fuzzy short_name/name match — pass the raw route segment.
+        const data = await getCase(shortName);
         if (data) {
           setCaseData(data);
           setNotFound(false);
@@ -48,7 +51,7 @@ export default function CaseDetailPage({
     };
 
     loadCase();
-  }, [params.shortName]);
+  }, [shortName]);
 
   if (loading) {
     return (
@@ -214,7 +217,7 @@ export default function CaseDetailPage({
                 Pre-load this case in the Counsel flow — frame, assemble, argue, witness, file.
               </p>
               <a
-                href={`/flow/counsel?case=${params.shortName}`}
+                href={`/flow/counsel?case=${shortName}`}
                 className="cta-pill cta-pill-lg cta-pill-primary inline-block"
               >
                 Open flow
