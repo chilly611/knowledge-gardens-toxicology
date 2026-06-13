@@ -1,1541 +1,361 @@
 'use client';
 
 /**
- * /compound/[slug] — The SHOWPIECE compound detail page.
- * The Stratigraph surface: geological core-sample drill-down through
- * one substance end-to-end. Four layers, each a tier of knowledge.
+ * /compound/[slug] — the Compound, as a specimen plate.
  *
- * Design reference: design-references/stratigraph.png + READ_FIRST.md
- * Voice: bold sans-serif for headlines, Inter for body, Space Mono for technical.
- * ANIMATIONS: layered card reveals with stagger, depth marker pulses, surface pill slides.
+ * Rebuilt to the design system's tabbed entity (Claude Design handoff bundle):
+ * an entity header with the compound name in Cormorant italic teal + verified/
+ * status badges, a Dreamer/Pro reading toggle, and four clickable tabs —
+ * Hazard · Profile · Response · Citations — each a single panel (no
+ * scroll-through layers). A Poison Control safety bar and a JSON-LD
+ * machine-endpoint footer close the plate. Real claim + source data drives it.
  */
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getSubstance, quoteOrPending, groupSourcesByTier, filterClaimsForLane, prioritizeTiersForLane } from '@/lib/queries-tox';
+import { getSubstance, quoteOrPending, groupSourcesByTier } from '@/lib/queries-tox';
 import type { Substance, CertifiedClaimRow, EvidenceSource } from '@/lib/types-tox';
-import type { Lane, LaneTier } from '@/lib/queries-tox';
-import ScrollReveal from '@/components/home/ScrollReveal';
-import SegmentedPills from '@/components/shared/SegmentedPills';
-import DimensionLine from '@/components/shared/DimensionLine';
-import CornerBrackets from '@/components/shared/CornerBrackets';
 
-type Props = {
-  params: Promise<{ slug: string }>;
+type Props = { params: Promise<{ slug: string }> };
+type Tab = 'hazard' | 'profile' | 'response' | 'citations';
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'hazard', label: 'Hazard' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'response', label: 'Response' },
+  { id: 'citations', label: 'Citations' },
+];
+
+/* ---- illustrative substance copy (preserved from the prior page) ---- */
+const lc = (s: string) => s.toLowerCase();
+function hazardHeadline(name: string) {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return 'Detected in >80% of US urine samples — found in oats, wheat, and many tap-water systems.';
+  if (n === 'microplastics') return 'Ubiquitous in modern food chains — from bottled water to seafood to the air we breathe.';
+  if (n.includes('pcb')) return 'Persistent legacy pollutant found in sediment, wildlife, and human adipose tissue decades after production ceased.';
+  return 'Widely used in food packaging — emerging evidence on thermal leaching into beverages and fatty foods.';
+}
+function hazardChips(name: string): string[] {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return ['Found in oats', 'Detected in tap water', 'Trace in most people'];
+  if (n === 'microplastics') return ['In seafood', 'In drinking water', 'Airborne particles'];
+  if (n.includes('pcb')) return ['Sediment bound', 'Bioaccumulative', 'Ubiquitous legacy'];
+  return ['In PET bottles', 'Thermal leaching', 'Emerging concern'];
+}
+function mechanismHeadline(name: string) {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return 'EPSP synthase inhibitor; gut microbiome disruption under study.';
+  if (n === 'microplastics') return 'Particulate translocation across epithelial barriers; inflammatory markers elevated in some populations.';
+  if (n.includes('pcb')) return 'Persistent organochlorine; binds to fatty tissues; multiple mechanism pathways (AhR, nuclear receptor).';
+  return 'Thermal hydrolysis releases monomer; endocrine-active at low doses; accumulates in adipose.';
+}
+function mechanismDetail(name: string) {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return 'Herbicide blocks aromatic amino acid synthesis via inhibition of EPSP synthase. Human relevance through altered gut microbiota composition and potential immunological shifts.';
+  if (n === 'microplastics') return 'Small particle size allows crossing of mucous membranes; can reach systemic circulation; inflammatory cascade activation observed in vitro and in animal models.';
+  if (n.includes('pcb')) return "Cl substitution pattern determines biological activity (Cl at 2,2',4,4' positions most toxic). AhR activation triggers CYP450 induction and altered estrogen metabolism.";
+  return 'BPA leaching increases with temperature, pH, and fatty food contact. Binds estrogen receptors at low nanomolar concentrations in cell culture.';
+}
+function biomarkers(name: string): string[] {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return ['urinary_glyphosate', 'urinary_AMPA', 'serum_GLP-1'];
+  if (n === 'microplastics') return ['plastic_particles_serum', 'inflammatory_markers', 'oxidative_stress'];
+  if (n.includes('pcb')) return ['serum_PCB_congeners', 'liver_enzymes', 'thyroid_hormone'];
+  return ['BPA_urine', 'BPA_serum', 'estrogen_receptor_activity'];
+}
+function responseHeadline(name: string) {
+  const n = lc(name);
+  if (n.includes('glyphosate')) return 'IARC 2A vs EPA "not likely" — an active disagreement.';
+  if (n === 'microplastics') return 'Regulatory absent; evidence accelerating; precautionary principle applied.';
+  if (n.includes('pcb')) return 'Banned globally; persistent in the environment; legacy liability cases ongoing.';
+  return 'FDA approval maintained; industry studies vs. independent research diverge.';
+}
+
+const MONO_EYEBROW: React.CSSProperties = {
+  fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.2em',
+  textTransform: 'uppercase', color: 'var(--ink-mute)', fontWeight: 700,
 };
+
+function Badge({ color, bg, border, children }: { color: string; bg: string; border: string; children: React.ReactNode }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color, background: bg, border: `1px solid ${border}`, borderRadius: 999, padding: '4px 11px' }}>
+      {children}
+    </span>
+  );
+}
 
 function CompoundDetailContent({ slug }: { slug: string }) {
   const [substance, setSubstance] = useState<Substance | null>(null);
   const [claims, setClaims] = useState<CertifiedClaimRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lane, setLane] = useState<Lane>('consumer');
+  const [tab, setTab] = useState<Tab>('hazard');
+  const [pro, setPro] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const data = await getSubstance(slug);
-        if (data) {
-          setSubstance(data.substance);
-          setClaims(data.claims);
-        }
-      } finally {
-        setLoading(false);
-      }
+        if (data) { setSubstance(data.substance); setClaims(data.claims); }
+      } finally { setLoading(false); }
     })();
   }, [slug]);
 
   if (loading) {
     return (
-      <main data-surface="tkg" className="min-h-screen flex items-center justify-center">
-        <div style={{ color: 'var(--ink-mute)' }}>Loading…</div>
+      <main data-surface="tkg" className="flex min-h-screen items-center justify-center" style={{ background: 'var(--paper)' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.75rem' }}>loading specimen…</div>
       </main>
     );
   }
 
   if (!substance) {
     return (
-      <main data-surface="tkg" className="min-h-screen flex flex-col items-center justify-center px-6">
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', color: 'var(--ink)' }}>
-          Substance not found
-        </h1>
-        <p style={{ color: 'var(--ink-soft)', marginTop: '1rem' }}>
-          Try: glyphosate, microplastics, pcbs, or pet.
-        </p>
-        <Link href="/compound" style={{ color: 'var(--teal-deep)', marginTop: '2rem', display: 'block' }}>
-          Back to substances
-        </Link>
+      <main data-surface="tkg" className="flex min-h-screen flex-col items-center justify-center px-6" style={{ background: 'var(--paper)' }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '2.4rem', color: 'var(--teal-deep)' }}>Specimen not found</h1>
+        <p style={{ color: 'var(--ink-soft)', marginTop: '1rem' }}>Try: glyphosate, microplastics, pcbs, or pet.</p>
+        <Link href="/compound" style={{ color: 'var(--teal-deep)', marginTop: '1.5rem' }}>‹ Back to compounds</Link>
       </main>
     );
   }
 
-  const tierColors = {
-    hazard: 'var(--teal)',
-    profile: 'var(--peach)',
-    response: 'var(--crimson)',
-    citations: 'var(--ink-mute)',
+  const certified = claims.filter((c) => c.status === 'certified').length;
+  const contested = claims.filter((c) => c.status === 'contested').length;
+  const provisional = claims.filter((c) => c.status === 'provisional').length;
+  const totalSources = claims.reduce((n, c) => n + (c.sources?.length ?? c.source_count ?? 0), 0);
+
+  const accent: Record<Tab, string> = {
+    hazard: 'var(--teal)', profile: 'var(--copper-orn)', response: 'var(--crimson)', citations: 'var(--brass-aged)',
   };
 
-  const tierNames = {
-    hazard: 'SURFACE · CONSUMER · WHAT YOU\'D WANT TO KNOW',
-    profile: 'CLINICAL · BIOMARKERS & MECHANISM',
-    response: 'REGULATORY · CONTESTED',
-    citations: 'PRIMARY EVIDENCE',
+  const allSources = claims.flatMap((c) => c.sources ?? []);
+  const supportingSources = allSources.filter((s) => s.supports).length;
+  const contradictingSources = allSources.filter((s) => !s.supports).length;
+  const sourcesByTier = groupSourcesByTier(allSources);
+  const tierLabels: Record<number, string> = { 1: 'Regulatory', 2: 'Systematic review', 3: 'Peer-reviewed', 4: 'Industry / news' };
+
+  const panelShell: React.CSSProperties = {
+    background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderTop: `3px solid ${accent[tab]}`,
+    borderRadius: 4, boxShadow: '0 1px 0 var(--paper-line), 0 6px 16px rgba(90,59,31,0.08)', padding: '32px',
   };
 
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      {/* ================================================================
-          STICKY HEADER
-          ================================================================ */}
-      <header className="sticky top-0 z-20 border-b border-[var(--paper-line)] bg-[var(--paper)] backdrop-blur-sm py-6">
-        <div className="rail-default">
-          {/* Eyebrow + Lane pills */}
-          <div className="mb-6 flex items-baseline justify-between">
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: 'var(--copper-orn-deep)',
-                animation: 'letter-rise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-              }}
-            >
-              CORE SAMPLE · DEPTH 0—460mm · 4 LAYERS
-            </div>
-            <SegmentedPills
-              label={<span style={{ fontSize: '0.9rem' }}>Viewing as:</span>}
-              options={[
-                { value: 'consumer', label: 'Consumer' },
-                { value: 'clinician', label: 'Clinician' },
-                { value: 'counsel', label: 'Counsel' },
-                { value: 'hygienist', label: 'Hygienist' },
-                { value: 'inspector', label: 'Inspector' },
-              ]}
-              value={lane}
-              onChange={(v) => setLane(v as Lane)}
-              variant="light"
-              className="ml-auto"
-            />
-          </div>
+    <main data-surface="tkg" className="min-h-screen" style={{ background: 'var(--paper)' }}>
+      {/* ENTITY HEADER */}
+      <header className="border-b" style={{ borderColor: 'var(--paper-line)', background: 'var(--paper)' }}>
+        <div className="rail-default py-10">
+          <div style={MONO_EYEBROW}>Compound · specimen plate{substance.cas_number ? ` · CAS ${substance.cas_number}` : ''}</div>
 
-          {/* Lane mode notice */}
-          <div className="mb-6 flex items-center justify-between gap-4 py-2 px-3 rounded-lg" style={{ background: 'var(--paper-warm)', borderLeft: '3px solid var(--copper-orn-deep)' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: 'var(--copper-orn-deep)',
-              }}
-            >
-              {lane === 'consumer' && 'Plain-language summary. Certified claims only. Switch to Clinician for mechanism, or Counsel for Daubert posture.'}
-              {lane === 'clinician' && 'Mechanism-first. Includes provisional + contested claims with peer-review tier flags.'}
-              {lane === 'counsel' && 'Daubert posture. Contested claims surfaced. Verbatim quotes wrapped via citation tier.'}
-              {(lane === 'hygienist' || lane === 'inspector') && 'Coming soon -- this lane is in development. Defaulting to clinician view.'}
-            </div>
-            {(lane === 'hygienist' || lane === 'inspector') && (
-              <button
-                onClick={() => setLane('clinician')}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.65rem',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  padding: '0.5rem 1rem',
-                  background: 'var(--teal)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 200ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--teal-deep)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--teal)';
-                }}
-              >
-                View as clinician
-              </button>
-            )}
-          </div>
-
-          {/* Substance name + CAS */}
-          <div className="flex items-baseline justify-between gap-8">
-            <h1
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 'clamp(3rem, 6.5vw, 5rem)',
-                fontWeight: 600,
-                lineHeight: 1.03,
-                letterSpacing: '-0.01em',
-                color: 'var(--teal-deep)',
-                maxWidth: '60vw',
-                animation: 'layer-rise 1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-              }}
-            >
-              {substance.name}
-            </h1>
-            {lane !== 'consumer' && substance.cas_number && (
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.85rem',
-                  color: 'var(--ink-mute)',
-                  whiteSpace: 'nowrap',
-                  marginTop: '1rem',
-                  animation: 'layer-rise 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                }}
-              >
-                CAS {substance.cas_number}
+          <div className="mt-3 flex flex-wrap items-start justify-between gap-6">
+            <div className="min-w-0">
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(2.8rem, 6vw, 4.6rem)', lineHeight: 1.02, letterSpacing: '-0.01em', color: 'var(--teal-deep)', margin: 0 }}>
+                {substance.name}
+              </h1>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {totalSources >= 3 && (
+                  <Badge color="#3E5638" bg="rgba(94,122,86,0.14)" border="var(--sage)">
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--sage)', display: 'inline-block' }} />3-source verified
+                  </Badge>
+                )}
+                {certified > 0 && <Badge color="#3E5638" bg="rgba(94,122,86,0.10)" border="var(--sage)">{certified} certified</Badge>}
+                {contested > 0 && <Badge color="var(--crimson-deep)" bg="rgba(165,58,45,0.10)" border="var(--crimson)">{contested} contested</Badge>}
+                {provisional > 0 && <Badge color="var(--peach-deep)" bg="rgba(198,138,61,0.12)" border="var(--peach)">{provisional} provisional</Badge>}
               </div>
+            </div>
+
+            {/* Reading-mode toggle */}
+            <div className="text-right">
+              <div style={{ ...MONO_EYEBROW, marginBottom: 6 }}>Reading mode</div>
+              <div className="inline-flex overflow-hidden" style={{ border: '1px solid var(--tox)', borderRadius: 999, background: 'var(--paper)' }}>
+                {([['Dreamer', false], ['Pro', true]] as const).map(([label, val]) => (
+                  <button key={label} onClick={() => setPro(val)} style={{
+                    fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.85rem', padding: '7px 18px', cursor: 'pointer', border: 'none',
+                    background: pro === val ? 'var(--tox-deep)' : 'transparent', color: pro === val ? 'var(--paper)' : 'var(--tox-deep)',
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Reading-mode readout */}
+          <div className="mt-6" style={{ background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderRadius: 4, padding: '16px 20px' }}>
+            {pro ? (
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--ink)', margin: 0 }}>{mechanismDetail(substance.name)}</p>
+            ) : (
+              <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '1.3rem', lineHeight: 1.45, color: 'var(--ink-soft)', margin: 0 }}>
+                {substance.description || hazardHeadline(substance.name)}
+              </p>
             )}
           </div>
 
-          {/* Scroll-to-layer strip */}
-          <nav className="mt-8 border-t border-[var(--paper-line)] pt-6 flex gap-4 flex-wrap">
-            {(['hazard', 'profile', 'response', 'citations'] as const).map((tier, idx) => (
-              <a
-                key={tier}
-                href={`#tier-${tier}`}
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.8rem',
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: 'var(--ink-soft)',
-                  textDecoration: 'none',
-                  transition: 'color 200ms',
-                  animation: 'layer-rise 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                  animationDelay: `${idx * 100}ms`,
-                }}
-                className="hover:text-[var(--ink)]"
-              >
-                {tier.charAt(0).toUpperCase() + tier.slice(1)}
-              </a>
-            ))}
-          </nav>
+          {/* Tabs */}
+          <div className="mt-7 flex gap-1" style={{ borderBottom: '1px solid var(--paper-line)' }}>
+            {TABS.map((t) => {
+              const on = tab === t.id;
+              return (
+                <button key={t.id} onClick={() => setTab(t.id)} style={{
+                  position: 'relative', border: 'none', background: 'transparent', cursor: 'pointer',
+                  fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.95rem',
+                  color: on ? 'var(--ink)' : 'var(--ink-mute)', padding: '10px 18px',
+                }}>
+                  {t.label}
+                  {on && <span style={{ position: 'absolute', left: 10, right: 10, bottom: -1, height: 2, background: accent[t.id] }} />}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
-      {/* ================================================================
-          CORE SAMPLE LAYERS
-          ================================================================ */}
-      <section className="py-20">
-        <div className="rail-default stagger">
-          {prioritizeTiersForLane(lane).map((tier, idx) => {
-            const filteredClaims = filterClaimsForLane(claims, lane);
-            const tierSpecificClaims =
-              tier === 'hazard' ? filteredClaims.filter((c) => c.status === 'certified') :
-              tier === 'profile' ? filteredClaims.filter((c) => c.endpoint_category === 'biomarker' || c.endpoint_category === 'mechanism') :
-              tier === 'response' ? filteredClaims.filter((c) => c.status === 'contested') :
-              filteredClaims;
-
-            const depths = { hazard: '0mm', profile: '120mm', response: '240mm', citations: '360mm' };
-
-            return (
-              <div key={tier} className="anim-layer-rise">
-                <ScrollReveal delay={idx * 150}>
-                  <LayerCard
-                    id={tier}
-                    tier={tier}
-                    eyebrow={tier === 'citations' ? `${tierNames.citations} · ${tierSpecificClaims.reduce((sum, c) => sum + c.source_count, 0)} SOURCES` : tierNames[tier]}
-                    color={tierColors[tier]}
-                    depth={depths[tier]}
-                    substance={substance}
-                    claims={tierSpecificClaims}
-                    lane={lane}
-                    allClaims={filteredClaims}
-                  />
-                </ScrollReveal>
+      {/* PANEL */}
+      <section className="rail-default py-12">
+        <div style={panelShell}>
+          {tab === 'hazard' && (
+            <div>
+              <div style={{ ...MONO_EYEBROW, color: accent.hazard }}>What you&rsquo;d want to know</div>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.7rem', lineHeight: 1.2, color: 'var(--ink)', margin: '12px 0 14px' }}>{hazardHeadline(substance.name)}</h2>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', lineHeight: 1.7, color: 'var(--ink-soft)', maxWidth: '62ch' }}>{substance.description || 'A complex environmental and health substance with multiple claim dimensions.'}</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {hazardChips(substance.name).map((chip) => (
+                  <span key={chip} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--teal-deep)', background: 'var(--paper)', border: '1px solid var(--paper-line)', borderRadius: 3, padding: '5px 11px' }}>{chip}</span>
+                ))}
               </div>
-            );
-          })}
+              {/* Evidence gauges from real claim data */}
+              <div className="mt-8 flex flex-wrap gap-4">
+                {([['certified', certified, 'var(--sage)'], ['contested', contested, 'var(--crimson)'], ['provisional', provisional, 'var(--peach-deep)']] as const).map(([label, n, col]) => (
+                  <div key={label} style={{ textAlign: 'center', width: 104, height: 104, borderRadius: '50%', border: `1px solid ${col}`, background: 'var(--paper)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '2rem', color: col, lineHeight: 1 }}>{n}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginTop: 4 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 'profile' && (
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <div style={{ ...MONO_EYEBROW, color: accent.profile }}>Identity</div>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 12 }}>
+                  <tbody>
+                    {[['Name', substance.name], ['CAS', substance.cas_number || '—']].map(([k, v]) => (
+                      <tr key={k} style={{ borderBottom: '1px solid var(--paper-deep)' }}>
+                        <td style={{ padding: '8px 0', color: 'var(--ink-mute)' }}>{k}</td>
+                        <td style={{ padding: '8px 0', color: 'var(--ink)', textAlign: 'right' }}>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="mt-6">
+                  <div style={{ ...MONO_EYEBROW }}>Biomarkers</div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {biomarkers(substance.name).map((b) => (
+                      <span key={b} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink)', background: 'var(--paper)', border: '1px solid var(--paper-line)', borderRadius: 3, padding: '4px 9px' }}>{b}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style={{ ...MONO_EYEBROW, color: accent.profile }}>Toxicology profile</div>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.35rem', lineHeight: 1.25, color: 'var(--ink)', margin: '12px 0 10px' }}>{mechanismHeadline(substance.name)}</h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--ink-soft)' }}>{mechanismDetail(substance.name)}</p>
+              </div>
+            </div>
+          )}
+
+          {tab === 'response' && (
+            <div>
+              <div style={{ ...MONO_EYEBROW, color: accent.response }}>Regulatory posture</div>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.6rem', lineHeight: 1.25, color: 'var(--ink)', margin: '12px 0 18px' }}>{responseHeadline(substance.name)}</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div style={{ background: 'var(--paper)', border: '1px solid var(--sage)', borderRadius: 3, padding: 18 }}>
+                  <div style={{ ...MONO_EYEBROW, color: '#3E5638' }}>Supporting</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--ink-soft)', marginTop: 8 }}>{supportingSources} source{supportingSources === 1 ? '' : 's'} back the concern</div>
+                </div>
+                <div style={{ background: 'var(--paper)', border: '1px solid var(--crimson)', borderRadius: 3, padding: 18 }}>
+                  <div style={{ ...MONO_EYEBROW, color: 'var(--crimson-deep)' }}>Contradicting</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--ink-soft)', marginTop: 8 }}>{contradictingSources} source{contradictingSources === 1 ? '' : 's'} contest the claim</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'citations' && (
+            <div>
+              <div style={{ ...MONO_EYEBROW, color: accent.citations }}>Citation chain · assertion → source → primary literature</div>
+              <div className="mt-5 space-y-6">
+                {(Object.entries(sourcesByTier) as Array<[string, EvidenceSource[]]>).map(([tierNum, srcs]) => {
+                  if (!srcs.length) return null;
+                  const tn = parseInt(tierNum, 10);
+                  return (
+                    <div key={tierNum}>
+                      <div style={{ ...MONO_EYEBROW }}>Tier {tn} — {tierLabels[tn] ?? 'Other'} ({srcs.length})</div>
+                      <div className="mt-3 space-y-3">
+                        {srcs.map((src, i) => {
+                          const q = quoteOrPending(src.quote);
+                          return (
+                            <div key={i} style={{ borderLeft: '2px solid var(--paper-line)', paddingLeft: 14 }}>
+                              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.95rem', color: 'var(--ink)' }}>{src.title}</div>
+                              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--ink-mute)', marginTop: 2 }}>
+                                {src.publisher} · {src.year || 'n.d.'}
+                                {src.doi && <> · <a href={`https://doi.org/${src.doi}`} target="_blank" rel="noreferrer" style={{ color: 'var(--teal-deep)' }}>DOI</a></>}
+                              </div>
+                              {q.verified && q.text ? (
+                                <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--ink-soft)', marginTop: 6, lineHeight: 1.6 }}>&ldquo;{q.text}&rdquo;</div>
+                              ) : (
+                                <span style={{ display: 'inline-block', marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-mute)', background: 'var(--paper)', border: '1px solid var(--paper-line)', borderRadius: 3, padding: '2px 7px' }}>pending verbatim</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+                {allSources.length === 0 && (
+                  <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--ink-mute)' }}>No sources loaded for this specimen yet.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Poison Control safety bar */}
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2" style={{ background: 'var(--crimson)', borderRadius: 4, padding: '14px 22px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--paper)', fontWeight: 700 }}>U.S. Poison Control</span>
+          <span style={{ fontFamily: 'var(--font-serif)', fontWeight: 700, fontSize: '1.5rem', color: 'var(--paper)', letterSpacing: '0.02em' }}>1-800-222-1222</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--paper)', opacity: 0.9 }}>Not medical advice — call for any suspected exposure.</span>
+        </div>
+
+        {/* Continue exploring */}
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          {[
+            { href: '/flow/clinician', title: 'Open in Clinician lane', sub: 'Biomarker, differential, decision-support' },
+            { href: '/flow/counsel?case=sky-valley', title: 'Open in Counsel lane', sub: 'Sky Valley case with evidence dossier' },
+            { href: '/compound', title: 'Back to compounds', sub: 'Browse every substance' },
+          ].map((c) => (
+            <Link key={c.href} href={c.href} className="no-underline transition-transform hover:-translate-y-0.5" style={{ background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderRadius: 4, padding: '20px 22px' }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '1.05rem', color: 'var(--ink)' }}>{c.title}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: 4 }}>{c.sub}</div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* ================================================================
-          CONTINUE EXPLORING CTA STRIP
-          ================================================================ */}
-      <section className="bg-[var(--paper-warm)] py-16">
-        <div className="rail-default">
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'var(--copper-orn-deep)',
-              marginBottom: '2rem',
-            }}
-          >
-            Continue exploring
-          </div>
-          <div className="tile-grid-3">
-            {lane === 'consumer' ? (
-              <>
-                <CornerBrackets>
-                  <a
-                    href={`/compound/${substance.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}#tier-citations`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Where this came from
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Primary sources and citations
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/flow/clinician`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Open in Clinician lane
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Biomarker, differential, decision-support
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Back to Loom
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      View all substances & endpoints
-                    </div>
-                  </a>
-                </CornerBrackets>
-              </>
-            ) : lane === 'counsel' ? (
-              <>
-                <CornerBrackets>
-                  <a
-                    href={`/flow/counsel?case=sky-valley`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Open in Counsel lane
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Sky Valley case with evidence dossier
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/flow/clinician`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Open in Clinician lane
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Biomarker, differential, decision-support
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Back to Loom
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      View all substances & endpoints
-                    </div>
-                  </a>
-                </CornerBrackets>
-              </>
-            ) : (
-              <>
-                <CornerBrackets>
-                  <a
-                    href={`/flow/counsel?case=sky-valley`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Open in Counsel lane
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Sky Valley case with evidence dossier
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/flow/clinician`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Open in Clinician lane
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      Biomarker, differential, decision-support
-                    </div>
-                  </a>
-                </CornerBrackets>
-
-                <CornerBrackets>
-                  <a
-                    href={`/`}
-                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
-                  >
-                    <div
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontStyle: 'normal',
-                        fontWeight: 600,
-                        fontSize: '1.2rem',
-                        color: 'var(--ink)',
-                        marginBottom: '0.5rem',
-                      }}
-                    >
-                      Back to Loom
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                      View all substances & endpoints
-                    </div>
-                  </a>
-                </CornerBrackets>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-[var(--paper-line)] bg-[var(--paper)] py-8 text-center">
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--ink-mute)' }}>
-          Toxicology Knowledge Garden · 2026
+      {/* JSON-LD machine endpoint footer */}
+      <footer className="border-t" style={{ borderColor: 'var(--paper-line)', background: 'var(--paper-warm)' }}>
+        <div className="rail-default flex flex-wrap items-center justify-between gap-3 py-5">
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-mute)' }}>
+            toxicology.theknowledgegardens.com/compound/{slug}<span style={{ color: 'var(--copper-orn)' }}>.json</span>
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--tox-deep)' }}>JSON-LD · schema.org/ChemicalSubstance · machine endpoint adjacent to every page</span>
         </div>
       </footer>
     </main>
   );
 }
 
-/* ============================================================================
-   LAYER CARD — reusable tier component
-   ============================================================================ */
-function LayerCard({
-  id,
-  tier,
-  eyebrow,
-  color,
-  depth,
-  substance,
-  claims,
-  lane,
-  allClaims,
-}: {
-  id: string;
-  tier: LaneTier;
-  eyebrow: string;
-  color: string;
-  depth: string;
-  substance: Substance;
-  claims: CertifiedClaimRow[];
-  lane: Lane;
-  allClaims: CertifiedClaimRow[];
-}) {
-  // Hide profile, response, citations in consumer lane
-  if (lane === 'consumer' && (tier === 'profile' || tier === 'response' || tier === 'citations')) {
-    return null;
-  }
-
-  const layerBackgrounds = {
-    hazard: 'radial-gradient(circle, rgba(46, 164, 163, 0.02) 2px, transparent 2px)',
-    profile: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 177, 102, 0.04) 10px, rgba(255, 177, 102, 0.04) 20px)',
-    response: 'repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(232, 55, 89, 0.03) 8px, rgba(232, 55, 89, 0.03) 16px)',
-    citations: 'repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(107, 115, 136, 0.04) 6px, rgba(107, 115, 136, 0.04) 12px)',
-  };
-
-  const layerBackgroundSize = {
-    hazard: '20px 20px',
-    profile: undefined,
-    response: undefined,
-    citations: undefined,
-  };
-
-  // Hazard layer content
-  if (tier === 'hazard') {
-    return (
-      <div id={`tier-${id}`} className="mb-12 relative pl-16 scroll-mt-24 anim-layer-rise">
-        {/* Depth marker */}
-        <div className="absolute left-0 top-0 flex flex-col items-center">
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: color,
-              marginBottom: '0.5rem',
-              animation: 'depth-pulse 2.4s ease-in-out infinite',
-            }}
-          />
-          <div style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.65rem',
-            color: 'var(--ink-mute)',
-            animation: 'depth-pulse 2.4s ease-in-out infinite',
-            animationDelay: '0.3s',
-          }}>
-            {depth}
-          </div>
-          <div
-            style={{
-              width: '1px',
-              height: '120px',
-              background: `${color}40`,
-              marginTop: '0.5rem',
-            }}
-          />
-        </div>
-
-        {/* Card */}
-        <div
-          className="tile overflow-hidden bg-[var(--paper-raised)]"
-          style={{
-            boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
-          }}
-        >
-          {/* Top accent stripe */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 3,
-              background: `linear-gradient(90deg, ${color}, ${color}40)`,
-            }}
-          />
-
-          {/* Content area with texture */}
-          <div
-            style={{
-              background: layerBackgrounds[tier],
-              backgroundSize: layerBackgroundSize[tier] || 'auto',
-              borderRadius: '8px',
-              padding: '1.5rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: color,
-                marginBottom: '1rem',
-              }}
-            >
-              {eyebrow}
-            </div>
-
-            <h2
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontStyle: 'normal',
-                fontWeight: 600,
-                fontSize: '1.4rem',
-                color: 'var(--ink)',
-                marginBottom: '1rem',
-              }}
-            >
-              {substance.name.toLowerCase().includes('glyphosate')
-                ? 'Detected in >80% of US urine samples — found in oats, wheat, and many tap-water systems.'
-                : substance.name.toLowerCase() === 'microplastics'
-                ? 'Ubiquitous in modern food chains — from bottled water to seafood to the air we breathe.'
-                : substance.name.toLowerCase().includes('pcb')
-                ? 'Persistent legacy pollutant found in sediment, wildlife, and human adipose tissue decades after production ceased.'
-                : 'Widely used in food packaging — emerging evidence on thermal leaching into beverages and fatty foods.'}
-            </h2>
-
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1rem',
-                lineHeight: 1.7,
-                color: 'var(--ink-soft)',
-              }}
-            >
-              {substance.description || 'A complex environmental and health substance with multiple claim dimensions.'}
-            </p>
-
-            {lane === 'consumer' && claims.length === 0 && (
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontStyle: 'italic',
-                  fontSize: '0.95rem',
-                  lineHeight: 1.7,
-                  color: 'var(--ink-soft)',
-                  marginTop: '1rem',
-                }}
-              >
-                No certified claims yet for this lane. Switch to Clinician to see emerging evidence.
-              </p>
-            )}
-
-            {/* Quick-take chips / pills */}
-            <div className="mt-6 flex flex-wrap gap-3">
-              {tier === 'hazard' &&
-                (substance.name.toLowerCase().includes('glyphosate')
-                  ? ['Found in oats', 'Detected in tap water', 'Trace in most people']
-                  : substance.name.toLowerCase() === 'microplastics'
-                  ? ['In seafood', 'In drinking water', 'Airborne particles']
-                  : substance.name.toLowerCase().includes('pcb')
-                  ? ['Sediment bound', 'Bioaccumulative', 'Ubiquitous legacy']
-                  : ['In PET bottles', 'Thermal leaching', 'Emerging concern']
-                ).map((chip, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center rounded-full"
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      padding: '0.65rem 1.25rem',
-                      background: `linear-gradient(135deg, ${color}15, ${color}08)`,
-                      color: 'var(--ink)',
-                      border: `1.5px solid ${color}30`,
-                      animation: 'anim-slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                      animationDelay: `${idx * 120}ms`,
-                      transition: 'all 200ms ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = `0 8px 16px ${color}20`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    {chip}
-                  </span>
-                ))}
-            </div>
-          </div>
-
-          {/* Right-side info bubble */}
-          <div className="flex justify-between items-start gap-6">
-            <div style={{ flex: 1 }} />
-            <CornerBrackets size={12} thickness={1} color={color} inset={2}>
-              <div
-                className="rounded-lg p-4"
-                style={{
-                  background: `${color}08`,
-                  border: `1px solid ${color}20`,
-                  minWidth: '200px',
-                }}
-              >
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: color, marginBottom: '0.75rem' }}>
-                  CLAIM COUNTS
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    color: 'var(--ink)',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <div>{allClaims.filter((c) => c.status === 'certified').length} certified</div>
-                  <div style={{ color: 'var(--crimson)' }}>
-                    {allClaims.filter((c) => c.status === 'contested').length} contested
-                  </div>
-                  <div style={{ color: 'var(--peach-deep)' }}>
-                    {allClaims.filter((c) => c.status === 'provisional').length} provisional
-                  </div>
-                </div>
-                {lane === 'counsel' && (
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.7rem',
-                      color: 'var(--ink-soft)',
-                      marginTop: '0.75rem',
-                      paddingTop: '0.75rem',
-                      borderTop: `1px solid ${color}20`,
-                    }}
-                  >
-                    <div>Daubert: {allClaims.filter((c) => c.status === 'certified').length} certified, {allClaims.filter((c) => c.status === 'contested').length} contested</div>
-                  </div>
-                )}
-              </div>
-            </CornerBrackets>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Profile layer content
-  if (tier === 'profile') {
-    return (
-      <div id={`tier-${id}`} className="mb-12 relative pl-16 scroll-mt-24 anim-layer-rise">
-        {/* Depth marker */}
-        <div className="absolute left-0 top-0 flex flex-col items-center">
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: color,
-              marginBottom: '0.5rem',
-              animation: 'depth-pulse 2.4s ease-in-out infinite',
-              animationDelay: '0.1s',
-            }}
-          />
-          <div style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.65rem',
-            color: 'var(--ink-mute)',
-            animation: 'depth-pulse 2.4s ease-in-out infinite',
-            animationDelay: '0.4s',
-          }}>
-            {depth}
-          </div>
-          <div
-            style={{
-              width: '1px',
-              height: '120px',
-              background: `${color}40`,
-              marginTop: '0.5rem',
-            }}
-          />
-        </div>
-
-        {/* Card */}
-        <div
-          className="tile overflow-hidden bg-[var(--paper-raised)]"
-          style={{
-            boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
-          }}
-        >
-          {/* Top accent stripe */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 3,
-              background: `linear-gradient(90deg, ${color}, ${color}40)`,
-            }}
-          />
-
-          {/* Content area with texture */}
-          <div
-            style={{
-              background: layerBackgrounds[tier],
-              borderRadius: '8px',
-              padding: '1.5rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: color,
-                marginBottom: '1rem',
-              }}
-            >
-              {eyebrow}
-            </div>
-
-            <h2
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontStyle: 'normal',
-                fontWeight: 600,
-                fontSize: '1.4rem',
-                color: 'var(--ink)',
-                marginBottom: '1rem',
-              }}
-            >
-              {substance.name.toLowerCase().includes('glyphosate')
-                ? 'EPSP synthase inhibitor; gut microbiome disruption under study.'
-                : substance.name.toLowerCase() === 'microplastics'
-                ? 'Particulate translocation across epithelial barriers; inflammatory response markers elevated in some populations.'
-                : substance.name.toLowerCase().includes('pcb')
-                ? 'Persistent organochlorine; binds to fatty tissues; multiple mechanism pathways (AhR, nuclear receptor).'
-                : 'Thermal hydrolysis releases monomer; endocrine-active at low doses; accumulates in adipose.'}
-            </h2>
-
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1rem',
-                lineHeight: 1.7,
-                color: 'var(--ink-soft)',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {substance.name.toLowerCase().includes('glyphosate')
-                ? 'Mechanism: herbicide blocks aromatic amino acid synthesis via inhibition of EPSP synthase. Human relevance through altered gut microbiota composition and potential immunological shifts.'
-                : substance.name.toLowerCase() === 'microplastics'
-                ? 'Mechanism: small particle size allows crossing of mucous membranes; can reach systemic circulation; inflammatory cascade activation observed in vitro and in animal models.'
-                : substance.name.toLowerCase().includes('pcb')
-                ? 'Mechanism: Cl substitution pattern determines biological activity (Cl at 2,2\',4,4\' positions most toxic). AhR activation triggers CYP450 induction and altered estrogen metabolism.'
-                : 'Mechanism: BPA leaching increases with temperature, pH, and fatty food contact. Binds estrogen receptors at low nanomolar concentrations in cell culture.'}
-            </p>
-
-            {/* Biomarker panel */}
-            <div style={{ marginTop: '1.5rem' }}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: 'var(--ink-mute)',
-                  marginBottom: '0.75rem',
-                }}
-              >
-                Biomarkers
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {substance.name.toLowerCase().includes('glyphosate')
-                  ? ['urinary_glyphosate', 'urinary_AMPA', 'serum_GLP-1'].map((b, idx) => (
-                      <span
-                        key={b}
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          fontStyle: 'normal',
-                          background: `${color}12`,
-                          border: `1px solid ${color}30`,
-                          color: 'var(--ink)',
-                          animation: 'anim-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                          animationDelay: `${idx * 80}ms`,
-                        }}
-                      >
-                        {b}
-                      </span>
-                    ))
-                  : substance.name.toLowerCase() === 'microplastics'
-                  ? ['plastic_particles_serum', 'inflammatory_markers', 'oxidative_stress'].map((b, idx) => (
-                      <span
-                        key={b}
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          fontStyle: 'normal',
-                          background: `${color}12`,
-                          border: `1px solid ${color}30`,
-                          color: 'var(--ink)',
-                          animation: 'anim-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                          animationDelay: `${idx * 80}ms`,
-                        }}
-                      >
-                        {b}
-                      </span>
-                    ))
-                  : substance.name.toLowerCase().includes('pcb')
-                  ? ['serum_PCB_congeners', 'liver_enzymes', 'thyroid_hormone'].map((b, idx) => (
-                      <span
-                        key={b}
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          fontStyle: 'normal',
-                          background: `${color}12`,
-                          border: `1px solid ${color}30`,
-                          color: 'var(--ink)',
-                          animation: 'anim-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                          animationDelay: `${idx * 80}ms`,
-                        }}
-                      >
-                        {b}
-                      </span>
-                    ))
-                  : ['BPA_urine', 'BPA_serum', 'estrogen_receptor_activity'].map((b, idx) => (
-                      <span
-                        key={b}
-                        className="px-3 py-1 rounded-full text-xs"
-                        style={{
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          fontStyle: 'normal',
-                          background: `${color}12`,
-                          border: `1px solid ${color}30`,
-                          color: 'var(--ink)',
-                          animation: 'anim-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                          animationDelay: `${idx * 80}ms`,
-                        }}
-                      >
-                        {b}
-                      </span>
-                    ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right-side info bubble */}
-          <div className="flex justify-between items-start gap-6">
-            <div style={{ flex: 1 }} />
-            <CornerBrackets size={12} thickness={1} color={color} inset={2}>
-              <div
-                className="rounded-lg p-4"
-                style={{
-                  background: `${color}08`,
-                  border: `1px solid ${color}20`,
-                  minWidth: '200px',
-                }}
-              >
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: color, marginBottom: '0.75rem' }}>
-                  SOURCE TIERS
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    color: 'var(--ink)',
-                    lineHeight: 1.8,
-                  }}
-                >
-                  <div>Regulatory: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 1).length, 0)}</div>
-                  <div>Systematic: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 2).length, 0)}</div>
-                  <div>Peer-reviewed: {allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.tier === 3).length, 0)}</div>
-                </div>
-              </div>
-            </CornerBrackets>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Response layer content
-  if (tier === 'response') {
-    const supportingClaims = claims.filter((c) => (c.sources ?? []).some((s) => s.supports));
-    const contradictingClaims = claims.filter((c) => (c.sources ?? []).some((s) => !s.supports));
-
-    // Real SOURCE counts across this lane's claims. (BUG 5: these previously
-    // counted contested *claims* in this tier — which is empty for substances
-    // with no contested claims — so the strip always read 0.)
-    const supportingSourceCount = allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => s.supports).length, 0);
-    const contradictingSourceCount = allClaims.reduce((n, c) => n + (c.sources ?? []).filter((s) => !s.supports).length, 0);
-
-    return (
-      <div id={`tier-${id}`} className="mb-12 relative pl-16 scroll-mt-24 anim-layer-rise">
-        {/* Depth marker */}
-        <div className="absolute left-0 top-0 flex flex-col items-center">
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: color,
-              marginBottom: '0.5rem',
-              animation: 'depth-pulse 2.4s ease-in-out infinite',
-              animationDelay: '0.2s',
-            }}
-          />
-          <div style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.65rem',
-            color: 'var(--ink-mute)',
-            animation: 'depth-pulse 2.4s ease-in-out infinite',
-            animationDelay: '0.5s',
-          }}>
-            {depth}
-          </div>
-          <div
-            style={{
-              width: '1px',
-              height: '120px',
-              background: `${color}40`,
-              marginTop: '0.5rem',
-            }}
-          />
-        </div>
-
-        {/* Card */}
-        <div
-          className="tile overflow-hidden bg-[var(--paper-raised)]"
-          style={{
-            boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
-          }}
-        >
-          {/* Top accent stripe */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 3,
-              background: `linear-gradient(90deg, ${color}, ${color}40)`,
-            }}
-          />
-
-          {/* Content area with texture */}
-          <div
-            style={{
-              background: layerBackgrounds[tier],
-              borderRadius: '8px',
-              padding: '1.5rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.65rem',
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: color,
-                marginBottom: '1rem',
-              }}
-            >
-              {eyebrow}
-            </div>
-
-            <h2
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontStyle: 'normal',
-                fontWeight: 600,
-                fontSize: '1.4rem',
-                color: 'var(--ink)',
-                marginBottom: '1rem',
-              }}
-            >
-              {substance.name.toLowerCase().includes('glyphosate')
-                ? 'IARC 2A vs EPA "not likely" — active disagreement.'
-                : substance.name.toLowerCase() === 'microplastics'
-                ? 'Regulatory absent; evidence accelerating; precautionary principle applied.'
-                : substance.name.toLowerCase().includes('pcb')
-                ? 'Banned globally; persistent in environment; legacy liability cases ongoing.'
-                : 'FDA approval maintained; industry studies vs independent research divergence.'}
-            </h2>
-
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1rem',
-                lineHeight: 1.7,
-                color: 'var(--ink-soft)',
-                marginBottom: '1.5rem',
-              }}
-            >
-              {substance.name.toLowerCase().includes('glyphosate')
-                ? 'Contested classification between IARC (carcinogenic 2A) and EPA (not likely carcinogenic). Primary disagreement on epidemiological weight and mechanistic pathway specificity.'
-                : substance.name.toLowerCase() === 'microplastics'
-                ? 'No binding regulatory classification; scientific evidence outpacing policy. Most countries applying precaution in specific use categories (single-use plastic, microbeads).'
-                : substance.name.toLowerCase().includes('pcb')
-                ? 'Banned under Stockholm Convention; U.S. TSCA ban 2006. Persistent in global food chains and human tissue.'
-                : 'EPA and FDA maintain safety margin for BPA. European Union classifies as of high concern; restricted use in certain applications.'}
-            </p>
-
-            {/* Supporting vs Contradicting split */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div
-                className="border-l-4 rounded-lg p-4"
-                style={{
-                  borderColor: 'var(--teal)',
-                  background: 'rgba(46, 164, 163, 0.05)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: 'var(--teal)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Supporting
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  {supportingSourceCount} sources back the concern
-                </div>
-              </div>
-
-              <div
-                className="border-l-4 rounded-lg p-4"
-                style={{
-                  borderColor: 'var(--crimson)',
-                  background: 'rgba(232, 55, 89, 0.05)',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: 'var(--crimson)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  Contradicting
-                </div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-                  {contradictingSourceCount} sources contest the claim
-                </div>
-              </div>
-            </div>
-
-            {lane === 'counsel' && contradictingClaims.length > 0 && (
-              <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--paper-line)' }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: 'var(--ink-mute)',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  Verbatim Evidence
-                </div>
-                {contradictingClaims.map((claim, idx) => {
-                  const contestedSource = claim.sources.find((s) => !s.supports);
-                  if (!contestedSource) return null;
-                  const qResult = quoteOrPending(contestedSource.quote);
-                  if (!qResult.verified || !qResult.text) return null;
-                  return (
-                    <div key={idx} style={{ marginBottom: '1rem' }}>
-                      <div
-                        style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: '0.85rem',
-                          fontStyle: 'italic',
-                          color: 'var(--ink-soft)',
-                          lineHeight: 1.6,
-                        }}
-                      >
-                        "{qResult.text}"
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          fontSize: '0.7rem',
-                          color: 'var(--ink-mute)',
-                          marginTop: '0.25rem',
-                        }}
-                      >
-                        — {contestedSource.title}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Right-side info bubble */}
-          <div className="flex justify-between items-start gap-6">
-            <div style={{ flex: 1 }} />
-            <CornerBrackets size={12} thickness={1} color={color} inset={2}>
-              <div
-                className="rounded-lg p-4"
-                style={{
-                  background: `${color}08`,
-                  border: `1px solid ${color}20`,
-                  minWidth: '200px',
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontStyle: 'normal',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: 'var(--crimson)',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  CONTESTED
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.8rem',
-                    color: 'var(--ink-soft)',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {substance.name.toLowerCase().includes('glyphosate') && 'IARC Monograph 112 (2015) · Zhang et al. 2019 (meta-analysis)'}
-                  {substance.name.toLowerCase() === 'microplastics' && 'Marfella et al. 2024 · Ragusa et al. 2021'}
-                  {substance.name.toLowerCase().includes('pcb') && 'Grimm et al. 2016 · Hansen 2001'}
-                  {substance.name.toLowerCase().includes('polyethylene terephthalate') && 'Rochester et al. 2018 · Vandenberg et al. 2010'}
-                </div>
-              </div>
-            </CornerBrackets>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Citations layer content
-  const sourcesByTier = groupSourcesByTier(
-    claims.flatMap((c) => c.sources ?? [])
-  );
-
-  const tierLabels = {
-    1: 'Regulatory',
-    2: 'Systematic Review',
-    3: 'Peer-Reviewed',
-    4: 'Industry / News',
-  };
-
-  return (
-    <div id={`tier-${id}`} className="mb-12 relative pl-16 scroll-mt-24 anim-layer-rise">
-      {/* Depth marker */}
-      <div className="absolute left-0 top-0 flex flex-col items-center">
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: color,
-            marginBottom: '0.5rem',
-            animation: 'depth-pulse 2.4s ease-in-out infinite',
-            animationDelay: '0.3s',
-          }}
-        />
-        <div style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '0.65rem',
-          color: 'var(--ink-mute)',
-          animation: 'depth-pulse 2.4s ease-in-out infinite',
-          animationDelay: '0.6s',
-        }}>
-          {depth}
-        </div>
-        <div
-          style={{
-            width: '1px',
-            height: '120px',
-            background: `${color}40`,
-            marginTop: '0.5rem',
-          }}
-        />
-      </div>
-
-      {/* Card */}
-      <div
-        className="rounded-xl border border-[var(--paper-line)] overflow-hidden bg-[var(--paper-raised)] p-8 md:p-10"
-        style={{
-          boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
-        }}
-      >
-        {/* Top accent stripe */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 3,
-            background: `linear-gradient(90deg, ${color}, ${color}40)`,
-          }}
-        />
-
-        {/* Content area with texture */}
-        <div
-          style={{
-            background: layerBackgrounds[tier],
-            borderRadius: '8px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: color,
-              marginBottom: '1rem',
-            }}
-          >
-            {eyebrow}
-          </div>
-
-          <h2
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontStyle: 'normal',
-              fontWeight: 600,
-              fontSize: '1.4rem',
-              color: 'var(--ink)',
-              marginBottom: '1rem',
-            }}
-          >
-            The bedrock.
-          </h2>
-
-          <p
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '1rem',
-              lineHeight: 1.7,
-              color: 'var(--ink-soft)',
-              marginBottom: '1.5rem',
-            }}
-          >
-            Primary sources backing every claim. Organized by evidence tier from regulatory (highest) through industry/news (lowest).
-          </p>
-
-          {/* Source list by tier */}
-          <div className="space-y-6">
-            {(Object.entries(sourcesByTier) as Array<[string, EvidenceSource[]]>).map(([tierNum, srcs]) => {
-              const tier = parseInt(tierNum) as 1 | 2 | 3 | 4;
-              if (srcs.length === 0) return null;
-
-              return (
-                <div key={tier}>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '0.7rem',
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
-                      color: 'var(--ink-mute)',
-                      marginBottom: '0.75rem',
-                    }}
-                  >
-                    Tier {tier} — {tierLabels[tier]} ({srcs.length})
-                  </div>
-
-                  <div className="space-y-3">
-                    {srcs.map((src, idx) => {
-                      const qResult = quoteOrPending(src.quote);
-                      return (
-                        <div key={idx} className="border-l-2 border-[var(--paper-line)] pl-4 pb-3">
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-sans)',
-                              fontStyle: 'normal',
-                              fontWeight: 600,
-                              fontSize: '0.95rem',
-                              color: 'var(--ink)',
-                              marginBottom: '0.25rem',
-                            }}
-                          >
-                            {src.title}
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '0.8rem',
-                              color: 'var(--ink-mute)',
-                              marginBottom: '0.5rem',
-                            }}
-                          >
-                            {src.publisher} · {src.year || 'n.d.'}
-                            {src.doi && (
-                              <>
-                                {' · '}
-                                <a
-                                  href={`https://doi.org/${src.doi}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: 'var(--teal)', textDecoration: 'underline' }}
-                                >
-                                  DOI
-                                </a>
-                              </>
-                            )}
-                          </div>
-                          {qResult.verified && qResult.text && (
-                            <div
-                              style={{
-                                fontFamily: 'var(--font-body)',
-                                fontSize: '0.85rem',
-                                color: 'var(--ink-soft)',
-                                fontStyle: 'italic',
-                                lineHeight: 1.6,
-                              }}
-                            >
-                              "{qResult.text}"
-                            </div>
-                          )}
-                          {!qResult.verified && (
-                            <div
-                              className="inline-flex items-center rounded-full px-2 py-1 text-xs"
-                              style={{
-                                fontFamily: 'var(--font-mono)',
-                                fontSize: '0.7rem',
-                                background: 'var(--paper-warm)',
-                                color: 'var(--ink-mute)',
-                              }}
-                            >
-                              pending verbatim verification
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right-side info bubble */}
-        <div className="flex justify-between items-start gap-6">
-          <div style={{ flex: 1 }} />
-          <CornerBrackets size={12} thickness={1} color={color} inset={2}>
-            <div
-              className="rounded-lg p-4"
-              style={{
-                background: `${color}08`,
-                border: `1px solid ${color}20`,
-                minWidth: '200px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontStyle: 'normal',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  color: 'var(--ink)',
-                  lineHeight: 1.8,
-                }}
-              >
-                {Object.entries(sourcesByTier).map(([tier, srcs]) => (
-                  <div key={tier}>
-                    <span style={{ color: 'var(--ink-mute)' }}>T{tier}:</span> {srcs.length}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CornerBrackets>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function CompoundDetailPage({ params }: Props) {
   const [slug, setSlug] = useState<string>('');
-
-  useEffect(() => {
-    params.then((p) => setSlug(p.slug));
-  }, [params]);
-
+  useEffect(() => { params.then((p) => setSlug(p.slug)); }, [params]);
   if (!slug) return null;
-
   return <CompoundDetailContent slug={slug} />;
 }
