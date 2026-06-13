@@ -168,13 +168,14 @@ function CompoundDetailContent({ slug }: { slug: string }) {
           <div className="flex items-baseline justify-between gap-8">
             <h1
               style={{
-                fontFamily: 'var(--font-sans)',
-                fontStyle: 'normal',
-                fontSize: 'clamp(2.8rem, 6vw, 4.5rem)',
-                fontWeight: 800,
-                lineHeight: 1.1,
-                color: 'var(--ink)',
-                maxWidth: '50vw',
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: 'clamp(3rem, 6.5vw, 5rem)',
+                fontWeight: 600,
+                lineHeight: 1.03,
+                letterSpacing: '-0.01em',
+                color: 'var(--teal-deep)',
+                maxWidth: '60vw',
                 animation: 'layer-rise 1s cubic-bezier(0.34, 1.56, 0.64, 1) both',
               }}
             >
@@ -281,7 +282,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/compound/${substance.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}#tier-citations`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -304,7 +305,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/flow/clinician`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -327,7 +328,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -352,7 +353,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/flow/counsel?case=sky-valley`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -375,7 +376,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/flow/clinician`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -398,7 +399,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -423,7 +424,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/flow/counsel?case=sky-valley`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -446,7 +447,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/flow/clinician`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -469,7 +470,7 @@ function CompoundDetailContent({ slug }: { slug: string }) {
                 <CornerBrackets>
                   <a
                     href={`/`}
-                    className="tile block bg-white hover:bg-[var(--paper-warm)] transition"
+                    className="tile block bg-[var(--paper-raised)] hover:bg-[var(--paper-warm)] transition"
                   >
                     <div
                       style={{
@@ -584,7 +585,7 @@ function LayerCard({
 
         {/* Card */}
         <div
-          className="tile overflow-hidden bg-white"
+          className="tile overflow-hidden bg-[var(--paper-raised)]"
           style={{
             boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
           }}
@@ -673,12 +674,12 @@ function LayerCard({
             <div className="mt-6 flex flex-wrap gap-3">
               {tier === 'hazard' &&
                 (substance.name.toLowerCase().includes('glyphosate')
-                  ? ['🥣 Found in oats', '💧 Detected in tap water', '👶 Trace in most people']
+                  ? ['Found in oats', 'Detected in tap water', 'Trace in most people']
                   : substance.name.toLowerCase() === 'microplastics'
-                  ? ['🦪 In seafood', '🌊 In drinking water', '💨 Airborne particles']
+                  ? ['In seafood', 'In drinking water', 'Airborne particles']
                   : substance.name.toLowerCase().includes('pcb')
-                  ? ['🪨 Sediment bound', '🐟 Bioaccumulative', '🔬 Ubiquitous legacy']
-                  : ['🍼 In PET bottles', '☕ Thermal leaching', '🔬 Emerging concern']
+                  ? ['Sediment bound', 'Bioaccumulative', 'Ubiquitous legacy']
+                  : ['In PET bottles', 'Thermal leaching', 'Emerging concern']
                 ).map((chip, idx) => (
                   <span
                     key={idx}
@@ -803,7 +804,7 @@ function LayerCard({
 
         {/* Card */}
         <div
-          className="tile overflow-hidden bg-white"
+          className="tile overflow-hidden bg-[var(--paper-raised)]"
           style={{
             boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
           }}
@@ -1061,7 +1062,7 @@ function LayerCard({
 
         {/* Card */}
         <div
-          className="tile overflow-hidden bg-white"
+          className="tile overflow-hidden bg-[var(--paper-raised)]"
           style={{
             boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
           }}
@@ -1330,7 +1331,7 @@ function LayerCard({
 
       {/* Card */}
       <div
-        className="rounded-xl border border-[var(--paper-line)] overflow-hidden bg-white p-8 md:p-10"
+        className="rounded-xl border border-[var(--paper-line)] overflow-hidden bg-[var(--paper-raised)] p-8 md:p-10"
         style={{
           boxShadow: '0 2px 8px rgba(26, 36, 51, 0.08)',
         }}
