@@ -1,0 +1,14 @@
+# Vercel CLI upload ignore.
+# Vercel builds with Root Directory = website, so the CLI must run from the
+# repo root — but the upload otherwise sweeps in the entire working tree,
+# including the 19 GB local "sky valley case" corpus (gitignored, not needed
+# to build). Keep the upload to the website/ app + its lockfile.
+#
+# Leading "/" anchors to the repo root so we don't match e.g. website/src/app/api.
+
+/sky valley case/
+.git
+node_modules
+.next
+.vercel
+.DS_Store
