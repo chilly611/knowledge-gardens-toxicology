@@ -107,12 +107,13 @@ function ReferenceListContent() {
           <h1
             className="mb-8 max-w-2xl"
             style={{
-              fontFamily: 'var(--font-body)',
-              fontStyle: 'normal',
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: 800,
-              color: 'var(--ink)',
-              lineHeight: 1.2,
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)',
+              fontWeight: 600,
+              color: 'var(--teal-deep)',
+              lineHeight: 1.08,
+              letterSpacing: '-0.01em',
             }}
           >
             The frameworks behind every claim

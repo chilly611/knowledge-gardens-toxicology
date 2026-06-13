@@ -76,11 +76,13 @@ export default function CompoundIndexPage() {
             <h1
               className="mx-auto mt-5 max-w-[20ch]"
               style={{
-                fontFamily: 'var(--font-body)',
-                fontWeight: 700,
-                fontSize: 'clamp(2.4rem, 6vw, 5rem)',
-                lineHeight: 1.05,
-                color: 'var(--ink)',
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontWeight: 600,
+                fontSize: 'clamp(2.6rem, 6vw, 5rem)',
+                lineHeight: 1.02,
+                letterSpacing: '-0.01em',
+                color: 'var(--teal-deep)',
               }}
             >
               Four substances. Ten claims. Twenty-six sources.
@@ -97,7 +99,7 @@ export default function CompoundIndexPage() {
                   color: 'var(--ink-soft)',
                 }}
               >
-                Each one drilled into Hazard / Profile / Response / Citations. Three sources behind every claim. This is the Stratigraph surface — the core-sample experience where evidence is layered, color-coded, and depth-marked like geological strata.
+                Each one opens as a specimen plate — Hazard, Profile, Response, Citations — with at least three sources behind every claim and a machine-readable JSON-LD endpoint beside the page.
               </p>
             </div>
           </ScrollReveal>
