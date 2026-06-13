@@ -15,10 +15,9 @@ import AudienceInvitations from './AudienceInvitations';
 export default function AudienceInvitationsSection() {
   return (
     <section
-      className="relative isolate flex items-center py-24"
+      className="relative isolate py-28"
       data-mode="dark"
       style={{
-        minHeight: '100vh',
         background: `
           radial-gradient(80% 60% at 50% 30%, rgba(60, 122, 138, 0.30) 0%, rgba(35, 76, 90, 0.92) 60%, #1d3d47 100%),
           linear-gradient(180deg, #234C5A 0%, #1f424e 50%, #1a3540 100%)

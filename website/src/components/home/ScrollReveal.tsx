@@ -1,52 +1,31 @@
 'use client';
 
 /**
- * ScrollReveal — wrapper component using useViewportReveal() from @/lib/animations.
- * Renders child content with initial opacity 0 and translateY(40px).
- * When revealed === true, transitions to opacity 1 and translate(0) over 800ms.
- * Honors prefers-reduced-motion via useViewportReveal.
+ * ScrollReveal — a gentle, CSS-driven entrance.
+ *
+ * Rewritten: the old version gated opacity on a JS `revealed` flag from an
+ * IntersectionObserver, so content stayed invisible until JS ran (and stuck
+ * blank if hydration lagged). This version uses a pure CSS keyframe
+ * (`tkgReveal` in globals.css) with `animation-fill-mode: both` — it always
+ * completes and content always ends visible, with no dependency on hydration.
+ * Honors prefers-reduced-motion (see globals.css).
  */
-
-import { useViewportReveal } from '@/lib/animations';
 import React from 'react';
 
 type ScrollRevealProps = {
   children: React.ReactNode;
-  delay?: number; // ms, default 0
-  direction?: 'up' | 'left' | 'right'; // default 'up'
-  as?: 'div' | 'section' | 'header'; // default 'div'
+  delay?: number; // ms, capped so nothing stays hidden long
+  direction?: 'up' | 'left' | 'right';
+  as?: 'div' | 'section' | 'header';
 };
 
-export default function ScrollReveal({
-  children,
-  delay = 0,
-  direction = 'up',
-  as: Component = 'div',
-}: ScrollRevealProps) {
-  const { ref, revealed } = useViewportReveal<HTMLDivElement>();
-
-  // Determine initial transform based on direction
-  const getTransform = (isRevealed: boolean) => {
-    if (isRevealed) return 'translate(0)';
-    switch (direction) {
-      case 'left':
-        return 'translateX(-40px)';
-      case 'right':
-        return 'translateX(40px)';
-      case 'up':
-      default:
-        return 'translateY(40px)';
-    }
-  };
-
+export default function ScrollReveal({ children, delay = 0, as: Component = 'div' }: ScrollRevealProps) {
   return (
     <Component
-      ref={ref}
+      data-tkg-reveal
       style={{
-        opacity: revealed ? 1 : 0,
-        transform: getTransform(revealed),
-        transition: `opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1)`,
-        transitionDelay: `${delay}ms`,
+        animation: 'tkgReveal 620ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        animationDelay: `${Math.min(Math.max(delay, 0), 360)}ms`,
       }}
     >
       {children}

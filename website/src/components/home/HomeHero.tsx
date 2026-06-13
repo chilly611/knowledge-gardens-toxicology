@@ -21,7 +21,7 @@ import { searchEverything, slug } from '@/lib/queries-tox';
 export default function HomeHero() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(true); // visible by default — never blank-flash before JS
   const [searching, setSearching] = useState(false);
   const [focused, setFocused] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);

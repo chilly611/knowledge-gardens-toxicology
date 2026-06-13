@@ -537,6 +537,16 @@ h1, h2, h3, h4, h5, h6 {
 .animate-fade-in  { animation: fadeIn 0.5s ease forwards; }
 .animate-slide-in { animation: slideIn 0.4s ease forwards; }
 
+/* Reliable entrance — CSS-driven (never JS-gated), content always ends visible.
+   Used by ScrollReveal across the homepage. */
+@keyframes tkgReveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-tkg-reveal] { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
 /* Motion is the brand. Reduced-motion is intentionally NOT honored — Chilly's
    directive: attention spans are short, motion everywhere. If a future
    accessibility audit forces this back on, swap in the standard block here. */
