@@ -45,6 +45,8 @@ export default function DocumentRegister({ documents }: { documents: CaseDocumen
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
+              // date-only value: render the stored calendar date, not UTC-shifted local.
+              timeZone: 'UTC',
             })
           : 'N/A';
 

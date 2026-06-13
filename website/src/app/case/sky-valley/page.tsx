@@ -214,7 +214,7 @@ export default function SkyValleyCasePage() {
               color: 'var(--copper-orn-deep)',
             }}
           >
-            Search this case · {caseData.documents.length} documents · {caseData.events.length} events · {caseData.experts.length} experts
+            Search this case · {caseData.documents.length} {caseData.documents.length === 1 ? 'document' : 'documents'} · {caseData.events.length} {caseData.events.length === 1 ? 'event' : 'events'} · {caseData.experts.length} {caseData.experts.length === 1 ? 'expert' : 'experts'}
           </div>
           <div className="relative">
             <input

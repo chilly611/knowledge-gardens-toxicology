@@ -46,6 +46,9 @@ export default function CaseTimeline({
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
+              // event_date is a date-only value; render the stored calendar date
+              // (without UTC, US locales render the prior day — e.g. 2025-10-30 -> 10/29).
+              timeZone: 'UTC',
             })
           : 'N/A';
 

@@ -370,7 +370,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
   // Case documents — all currently belong to Sky Valley; deep-link with the query pre-applied so the case page can scroll/filter.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const d of (caseDocs.data ?? []) as any[]) {
-    const year = d.document_date ? new Date(d.document_date).getFullYear() : '';
+    const year = d.document_date ? new Date(d.document_date).getUTCFullYear() : '';
     const snippet = d.notes ?? (year ? `${d.doc_type} · ${year}` : d.doc_type);
     results.push({
       type: 'document',
@@ -382,7 +382,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const e of (caseEvents.data ?? []) as any[]) {
-    const year = e.event_date ? new Date(e.event_date).getFullYear() : '';
+    const year = e.event_date ? new Date(e.event_date).getUTCFullYear() : '';
     results.push({
       type: 'event',
       id: e.id,
