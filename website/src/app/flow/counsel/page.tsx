@@ -65,12 +65,12 @@ async function streamAsk(
       if (!line.startsWith('data:')) continue;
       const payload = line.slice(5).trim();
       if (payload === '[DONE]') return;
-      try {
-        const evt = JSON.parse(payload);
-        if (evt.type === 'text_delta') onDelta(evt.delta as string);
-        else if (evt.type === 'metadata') onMeta(evt);
-        else if (evt.type === 'error') throw new Error(evt.message);
-      } catch { /* ignore partial frames */ }
+      let evt: { type?: string; delta?: string; message?: string; citations?: Citation[]; confidence?: string } | null = null;
+      try { evt = JSON.parse(payload); } catch { continue; /* partial frame */ }
+      if (!evt) continue;
+      if (evt.type === 'text_delta') onDelta(evt.delta ?? '');
+      else if (evt.type === 'metadata') onMeta(evt);
+      else if (evt.type === 'error') throw new Error(evt.message || 'The garden hit an error generating this.');
     }
   }
 }
@@ -112,8 +112,8 @@ export default function CounselKillerApp() {
         if (m.citations) setCitations(m.citations);
         if (m.confidence) setConfidence(m.confidence);
       });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'The garden could not reach Claude. Confirm ANTHROPIC_API_KEY on the deployment.');
+    } catch {
+      setError('The garden could not generate this take right now — the AI service is unavailable. If this persists on the live site, the deployment is missing a valid ANTHROPIC_API_KEY.');
     } finally {
       setStreaming(false);
     }
