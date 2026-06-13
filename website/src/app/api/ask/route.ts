@@ -56,8 +56,20 @@ interface AskRequest {
 /**
  * Build the grounding context: search, fetch enriched rows, structure them.
  */
+const STOPWORDS = new Set(['give','your','read','the','for','and','with','what','that','this','from','into','over','their','should','could','would','have','has','are','was','were','will','about','tell','show','build','draft','list','name','single','biggest','strongest','weakest','each','its','first','tightly','cover','posture','context','lane','counsel','clinician','consumer','garden','evidence','claim','claims','prioritize','vulnerability','table','chain','injury','mechanism','exposure','lead','expert']);
+
 async function buildGrounding(question: string): Promise<GroundingPayload> {
-  const searchResults = await searchEverything(question);
+  // searchEverything matches the whole query string (ilike %q%), so a prose
+  // question never matches an entity name. Tokenize and search each salient
+  // term too, then merge — this grounds prose prompts (the killer-app AI TAKE
+  // and "Ask the Garden") on the real substances/claims, not just a regex
+  // special-case for a single expert.
+  const terms = Array.from(
+    new Set((question.toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) ?? []).filter((t) => !STOPWORDS.has(t)))
+  ).slice(0, 6);
+  const searchResults = (
+    await Promise.all([question, ...terms].map((t) => searchEverything(t).catch(() => [])))
+  ).flat();
 
   const substances = new Map<string, Substance>();
   const claims = new Map<string, CertifiedClaimRow>();
