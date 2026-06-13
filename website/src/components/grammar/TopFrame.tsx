@@ -57,11 +57,10 @@ export default function TopFrame({
       <header
         className="sticky top-0 z-40 border-b"
         style={{
-          background: 'rgba(245, 240, 232, 0.94)',
+          background: 'rgba(242, 233, 210, 0.97)',
           borderColor: 'var(--paper-line)',
-          backdropFilter: 'blur(14px)',
           // Copper hairline accent at the bottom
-          boxShadow: 'inset 0 -1px 0 0 rgba(184, 115, 51, 0.18)',
+          boxShadow: 'inset 0 -1px 0 0 rgba(184, 115, 51, 0.22)',
         }}
       >
         <div className="rail-wide flex items-center justify-between gap-6 py-4">
@@ -83,12 +82,12 @@ export default function TopFrame({
                 <span
                   className="transition-colors group-hover:text-[var(--tox-deep)]"
                   style={{
-                    fontFamily: 'var(--font-body)',
-                    fontStyle: 'normal',
-                    fontSize: '2.1rem',
-                    fontWeight: 800,
-                    color: 'var(--ink)',
-                    letterSpacing: '-0.02em',
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    fontSize: '1.65rem',
+                    fontWeight: 600,
+                    color: 'var(--teal-deep)',
+                    letterSpacing: '-0.01em',
                     lineHeight: 1.0,
                   }}
                 >

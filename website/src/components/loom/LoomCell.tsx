@@ -17,13 +17,13 @@ const TINT: Record<string, { bg: string; pillBg: string; pillText: string; borde
   certified: {
     bg:       '#e3efe5',
     pillBg:   'rgba(31, 126, 125, 0.13)',
-    pillText: '#1f7e7d',
+    pillText: '#234C5A',
     border:   '#c8dccc',
   },
   contested: {
     bg:       '#f5dadd',
     pillBg:   'rgba(184, 36, 63, 0.13)',
-    pillText: '#b8243f',
+    pillText: '#6E2419',
     border:   '#e3bcc1',
   },
   provisional: {

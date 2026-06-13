@@ -84,7 +84,7 @@ export default function AnimatedBackdrop({
         </defs>
 
         {particles.map((p, i) => {
-          const stroke = '#7AAFC0';
+          const stroke = '#6B7E9A';
           const common = {
             opacity: p.opacity,
             filter: 'url(#glow)',

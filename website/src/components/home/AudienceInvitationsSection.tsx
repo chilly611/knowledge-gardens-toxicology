@@ -20,8 +20,8 @@ export default function AudienceInvitationsSection() {
       style={{
         minHeight: '100vh',
         background: `
-          radial-gradient(80% 60% at 50% 30%, rgba(59, 79, 107, 0.25) 0%, rgba(14, 24, 39, 0.85) 60%, #060c16 100%),
-          linear-gradient(180deg, #060c16 0%, #0a1422 50%, #0e1827 100%)
+          radial-gradient(80% 60% at 50% 30%, rgba(60, 122, 138, 0.30) 0%, rgba(35, 76, 90, 0.92) 60%, #1d3d47 100%),
+          linear-gradient(180deg, #234C5A 0%, #1f424e 50%, #1a3540 100%)
         `,
       }}
     >
@@ -30,7 +30,7 @@ export default function AudienceInvitationsSection() {
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.5) 1px, transparent 0)',
+            'radial-gradient(circle at 1px 1px, rgba(242, 233, 210, 0.4) 1px, transparent 0)',
           backgroundSize: '4px 4px',
         }}
         aria-hidden
@@ -46,7 +46,7 @@ export default function AudienceInvitationsSection() {
                 fontSize: '0.7rem',
                 letterSpacing: '0.32em',
                 textTransform: 'uppercase',
-                color: 'rgba(157, 182, 204, 0.85)',
+                color: 'var(--teal-pale)',
               }}
             >
               who is this for
@@ -62,7 +62,7 @@ export default function AudienceInvitationsSection() {
                 fontSize: 'clamp(2.4rem, 6vw, 4.8rem)',
                 lineHeight: 1.05,
                 letterSpacing: '-0.02em',
-                color: '#FFFFFF',
+                color: 'var(--paper)',
               }}
             >
               Three audiences.{' '}
@@ -71,7 +71,7 @@ export default function AudienceInvitationsSection() {
                   fontFamily: 'var(--font-serif)',
                   fontStyle: 'italic',
                   fontWeight: 500,
-                  color: '#F2C994',
+                  color: '#C68A3D',
                 }}
               >
                 One garden.
@@ -88,7 +88,7 @@ export default function AudienceInvitationsSection() {
                   fontWeight: 400,
                   fontSize: 'clamp(1.05rem, 1.5vw, 1.2rem)',
                   lineHeight: 1.55,
-                  color: 'rgba(200, 212, 226, 0.92)',
+                  color: 'rgba(242, 233, 210, 0.88)',
                 }}
               >
                 Pick the lane that matches what you&rsquo;re trying to do. Each one ends in a deliverable

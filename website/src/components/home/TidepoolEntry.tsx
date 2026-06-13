@@ -45,7 +45,7 @@ export default function TidepoolEntry() {
               className="text-xs uppercase tracking-wider"
               style={{
                 fontFamily: 'var(--font-mono)',
-                color: '#9DB6CC',
+                color: '#C4CEDC',
                 fontSize: '0.65rem',
                 letterSpacing: '0.22em',
               }}
@@ -97,7 +97,7 @@ export default function TidepoolEntry() {
             href="/welcome"
             className="cta-pill cta-pill-lg cta-pill-primary inline-flex items-center justify-center"
             style={{
-              background: '#2eA4A3',
+              background: '#3C7A8A',
               color: 'white',
               gap: '0.5rem',
             }}
@@ -136,7 +136,7 @@ export default function TidepoolEntry() {
                     fontSize: '0.8rem',
                     letterSpacing: '0.16em',
                     textTransform: 'uppercase',
-                    color: '#C8D4E2',
+                    color: '#DEE3EB',
                     fontWeight: 700,
                   }}
                 >

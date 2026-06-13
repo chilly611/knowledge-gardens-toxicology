@@ -37,7 +37,7 @@ const BEATS: Beat[] = [
       'Consumer, Clinician, Counsel — each gets their own lane. Same canonical claims underneath. Three sources required behind every claim, and contested claims are surfaced both ways.',
     ctaLabel: 'See the matrix',
     ctaHref: '/',
-    accent: '#2ea4a3',
+    accent: '#3C7A8A',
     accentSoft: 'rgba(46, 164, 163, 0.18)',
   },
   {
@@ -57,7 +57,7 @@ const BEATS: Beat[] = [
       'Walk seven stages — Identify → Assess → Plan → Act → Adapt → Resolve → Reflect. End with a 3–5 page exhibit packet. Theory of harm, source matrix, expert pack, timeline.',
     ctaLabel: 'Open the Counsel lane',
     ctaHref: '/flow/counsel?case=sky-valley',
-    accent: '#e83759',
+    accent: '#A53A2D',
     accentSoft: 'rgba(232, 55, 89, 0.18)',
   },
 ];

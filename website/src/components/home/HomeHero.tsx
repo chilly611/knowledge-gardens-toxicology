@@ -1,29 +1,21 @@
 'use client';
 
 /**
- * HomeHero — full-bleed cinematic hero. Inspired by The Plastic Detox /
- * Unplastic Your Life landing page (opsociety.org/theplasticdetox/...) —
- * dramatic typography that dominates the screen, clear primary CTA pill,
- * subdued ambient backdrop that supports rather than competes with the
- * message.
+ * HomeHero — the herbarium masthead.
  *
- * Layout philosophy:
- *   - One message dominates this screen — "What is this, really?"
- *   - High-contrast WHITE on deep slate
- *   - Headline goes huge — clamp(3rem, 9vw, 7rem)
- *   - Subhead constrained to max-w-2xl so it never sprawls
- *   - One primary CTA + one secondary CTA, both visible above the fold
- *   - Caduceus is small and decorative, NOT the focal point — the words are
- *   - Scroll-down hint at bottom
+ * Rebuilt to the Toxicology Knowledge Garden design system (handoff bundle):
+ * Victorian botanical plate, cream paper, sepia/teal ink — NOT a dark
+ * cinematic hero. Big italic Cormorant "Toxicology" wordmark, the living
+ * teal-ink caduceus in a copper-bracketed specimen plate, slate-blue garden
+ * accent. No pure white, no dark mode, no glassmorphism.
  *
- * Typography: Inter for the dominant headline + CTAs; Cormorant italic for
- * the accent word ("really") that gives the brand its voice.
+ * Functionality preserved from the previous hero: the search field routes to
+ * a single substance, an exact alias match, or the /search page; quick chips
+ * deep-link to signature compounds.
  */
 import { useEffect, useRef, useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import AnimatedBackdrop from './AnimatedBackdrop';
 import { searchEverything, slug } from '@/lib/queries-tox';
 
 export default function HomeHero() {
@@ -31,22 +23,13 @@ export default function HomeHero() {
   const [query, setQuery] = useState('');
   const [revealed, setRevealed] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [chipsRevealed, setChipsRevealed] = useState(false);
+  const [focused, setFocused] = useState(false);
   const heroRef = useRef<HTMLDivElement | null>(null);
 
-  // Mount-trigger reveal — the hero is always above the fold, so reveal on mount
-  // (not on scroll into view).
   useEffect(() => {
     const t = setTimeout(() => setRevealed(true), 80);
     return () => clearTimeout(t);
   }, []);
-
-  // Chips appear 100ms after input is visible
-  useEffect(() => {
-    if (!revealed) return;
-    const t = setTimeout(() => setChipsRevealed(true), 100);
-    return () => clearTimeout(t);
-  }, [revealed]);
 
   const submit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
@@ -57,7 +40,6 @@ export default function HomeHero() {
     try {
       const results = await searchEverything(q);
 
-      // Rule a: exactly one substance with no other types
       const substanceResults = results.filter((r) => r.type === 'substance');
       const otherResults = results.filter((r) => r.type !== 'substance');
       if (substanceResults.length === 1 && otherResults.length === 0) {
@@ -65,7 +47,6 @@ export default function HomeHero() {
         return;
       }
 
-      // Rule b: exact alias match (requires extra lookup)
       const { data: subs } = await (await import('@/lib/supabase-tox')).supabaseTox
         .from('substances')
         .select('id, name, aliases')
@@ -83,314 +64,241 @@ export default function HomeHero() {
         }
       }
 
-      // Rule c: fallback to search page
       router.push(`/search?q=${encodeURIComponent(q)}`);
     } finally {
       setSearching(false);
     }
   };
 
+  const ease = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+  const rise = (delay: number) => ({
+    opacity: revealed ? 1 : 0,
+    transform: revealed ? 'translateY(0)' : 'translateY(18px)',
+    transition: `opacity 700ms ${ease} ${delay}ms, transform 700ms ${ease} ${delay}ms`,
+  });
+
   return (
     <section
       ref={heroRef}
       className="relative isolate overflow-hidden"
-      data-mode="dark"
-      style={{ minHeight: '100vh' }}
+      style={{
+        background: 'var(--paper)',
+        backgroundImage:
+          'linear-gradient(rgba(124,98,53,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(124,98,53,0.06) 1px, transparent 1px)',
+        backgroundSize: '40px 40px',
+        borderBottom: '1px solid var(--paper-line)',
+      }}
     >
-      {/* Backdrop — toned-down so the typography dominates */}
-      <AnimatedBackdrop />
-      {/* Extra darken layer so white text always reads */}
       <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(80% 60% at 50% 45%, rgba(6, 12, 22, 0.05) 0%, rgba(6, 12, 22, 0.55) 80%)',
-        }}
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, rgba(242,233,210,0) 0%, rgba(242,233,210,0.6) 100%)' }}
         aria-hidden
       />
 
-      <div
-        className="relative mx-auto flex min-h-screen max-w-screen-2xl flex-col items-center justify-center px-6 py-24 text-center sm:px-10 lg:px-16"
-      >
-        {/* Top eyebrow + caduceus row */}
-        <div
-          className="mb-12 flex flex-col items-center gap-5"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
-        >
-          <Image
-            src="/emblem-caduceus.png"
-            alt=""
-            width={180}
-            height={180}
-            priority
-            style={{ filter: 'drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45)) brightness(1.05)' }}
-          />
-          <div className="flex items-center gap-3">
-            <span className="h-px w-8" style={{ background: 'rgba(255, 255, 255, 0.35)' }} />
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.7rem',
-                letterSpacing: '0.32em',
-                textTransform: 'uppercase',
-                color: 'rgba(232, 240, 250, 0.8)',
-              }}
-            >
-              toxicology knowledge garden · 2026
-            </span>
-            <span className="h-px w-8" style={{ background: 'rgba(255, 255, 255, 0.35)' }} />
-          </div>
-        </div>
-
-        {/* MASSIVE dominant headline */}
-        <h1
-          className="mb-8 max-w-[18ch]"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontWeight: 700,
-            fontSize: 'clamp(2.8rem, 9vw, 7rem)',
-            lineHeight: 0.98,
-            letterSpacing: '-0.025em',
-            color: '#FFFFFF',
-            textShadow: '0 6px 40px rgba(0, 0, 0, 0.6)',
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(30px)',
-            transition: 'opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1) 200ms, transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) 200ms',
-          }}
-        >
-          What is this,{' '}
-          <span
+      <div className="rail-wide relative grid items-center gap-12 py-20 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:py-28">
+        {/* LEFT — wordmark, thesis, search */}
+        <div>
+          <div
+            className="flex items-center gap-3"
             style={{
+              ...rise(0),
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.7rem',
+              letterSpacing: '0.24em',
+              textTransform: 'uppercase',
+              color: 'var(--ink-mute)',
+              fontWeight: 700,
+            }}
+          >
+            <span style={{ width: 30, height: 1, background: 'var(--copper-orn)', display: 'block' }} />
+            Knowledge Gardens · Toxicology
+          </div>
+
+          <h1
+            className="mt-4"
+            style={{
+              ...rise(80),
               fontFamily: 'var(--font-serif)',
               fontStyle: 'italic',
-              fontWeight: 500,
-              color: '#F2C994',
-              letterSpacing: '-0.01em',
+              fontWeight: 600,
+              fontSize: 'clamp(3.4rem, 9vw, 6.5rem)',
+              lineHeight: 0.92,
+              letterSpacing: '-0.02em',
+              color: 'var(--teal-deep)',
             }}
           >
-            really
-          </span>
-          ?
-        </h1>
-
-        {/* Constrained subhead */}
-        <p
-          className="mb-12 max-w-2xl"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontWeight: 400,
-            fontSize: 'clamp(1.15rem, 1.8vw, 1.35rem)',
-            lineHeight: 1.7,
-            color: 'rgba(232, 240, 250, 0.9)',
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 400ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 400ms',
-          }}
-        >
-          A canonical, AI-citable evidence graph for chemical and biological hazards —
-          with workflow tools for the people who actually have to act on them.
-        </p>
-
-        {/* SEARCH INPUT */}
-        <form
-          onSubmit={submit}
-          className="mb-8 w-full max-w-[640px]"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 500ms, transform 800ms cubic-bezier(0.16, 1, 0.3, 1) 500ms',
-          }}
-        >
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search a chemical, an alias, or a CAS number"
-              className="w-full rounded-full transition-all"
-              style={{
-                background: 'var(--paper)',
-                border: query || searching ? '2px solid var(--copper-orn-deep)' : '2px solid rgba(255, 255, 255, 0.25)',
-                padding: 'clamp(0.85rem, 1.5vw, 1.1rem) 1.4rem',
-                paddingRight: '3.5rem',
-                fontFamily: 'var(--font-body)',
-                fontWeight: 500,
-                fontSize: 'clamp(1rem, 1.5vw, 1.15rem)',
-                color: '#0d0d0d',
-                boxShadow: query || searching ? '0 0 0 4px rgba(184, 115, 51, 0.18)' : 'none',
-              }}
-              aria-label="Search compounds"
-            />
-            <button
-              type="submit"
-              disabled={searching}
-              className="absolute right-2 flex items-center justify-center transition-all"
-              style={{
-                width: '2.5rem',
-                height: '2.5rem',
-                background: 'var(--copper-orn-deep)',
-                borderRadius: '50%',
-                color: '#FFF',
-                fontSize: '1.1rem',
-                opacity: searching ? 0.7 : 1,
-              }}
-              aria-label="Submit search"
-            >
-              {searching ? '...' : '↵'}
-            </button>
+            Toxicology
+          </h1>
+          <div
+            className="mt-1"
+            style={{
+              ...rise(120),
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'clamp(0.85rem, 1.4vw, 1.05rem)',
+              letterSpacing: '0.4em',
+              textTransform: 'uppercase',
+              color: 'var(--ink)',
+            }}
+          >
+            Knowledge&nbsp;&nbsp;Garden
           </div>
-        </form>
 
-        {/* CHIPS ROW */}
-        <div
-          className="mb-10 w-full max-w-[640px]"
-          style={{
-            opacity: chipsRevealed ? 1 : 0,
-            transform: chipsRevealed ? 'translateY(0)' : 'translateY(-10px)',
-            transition: 'opacity 400ms ease, transform 400ms ease',
-          }}
-        >
+          <p
+            className="mt-6 max-w-[30ch]"
+            style={{
+              ...rise(200),
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(1.25rem, 2vw, 1.6rem)',
+              lineHeight: 1.4,
+              color: 'var(--ink-script, #6B4A2A)',
+            }}
+          >
+            The canonical, AI-citable reference for chemical and biological hazards — and a
+            field guide for the people who have to act on them.
+          </p>
+
+          {/* search */}
+          <form onSubmit={submit} className="mt-8 w-full max-w-[560px]" style={rise(300)}>
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="Search a chemical, an alias, or a CAS number"
+                aria-label="Search compounds"
+                className="w-full"
+                style={{
+                  background: 'var(--paper-raised)',
+                  border: `1px solid ${focused || query ? 'var(--copper-orn)' : 'var(--paper-line)'}`,
+                  borderRadius: 3,
+                  padding: '0.95rem 3.4rem 0.95rem 1.1rem',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '1.02rem',
+                  color: 'var(--ink)',
+                  boxShadow: focused
+                    ? '0 0 0 3px color-mix(in oklab, var(--copper-orn) 25%, transparent)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.4)',
+                  outline: 'none',
+                  transition: 'border-color 160ms ease, box-shadow 160ms ease',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={searching}
+                aria-label="Submit search"
+                className="absolute right-2 flex items-center justify-center"
+                style={{
+                  width: '2.4rem',
+                  height: '2.4rem',
+                  background: 'var(--tox-deep)',
+                  borderRadius: 3,
+                  color: 'var(--paper)',
+                  fontSize: '1.05rem',
+                  opacity: searching ? 0.7 : 1,
+                }}
+              >
+                {searching ? '·' : '↵'}
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.62rem',
+                  letterSpacing: '0.2em',
+                  textTransform: 'uppercase',
+                  color: 'var(--ink-mute)',
+                }}
+              >
+                Or jump to
+              </span>
+              {[
+                { href: '/compound/pcbs', label: 'PCBs' },
+                { href: '/compound/dioxin', label: 'Dioxin' },
+                { href: '/compound/glyphosate', label: 'Glyphosate' },
+              ].map((c) => (
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className="inline-flex items-center transition-colors hover:text-[var(--crimson)]"
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.78rem',
+                    color: 'var(--teal-deep)',
+                    background: 'var(--paper-raised)',
+                    border: '1px solid var(--paper-line)',
+                    borderRadius: 3,
+                    padding: '0.3rem 0.7rem',
+                  }}
+                >
+                  {c.label}
+                </Link>
+              ))}
+            </div>
+          </form>
+
+          <p
+            className="mt-7"
+            style={{
+              ...rise(420),
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: '1.1rem',
+              color: 'var(--teal-deep)',
+            }}
+          >
+            Three sources behind every claim.
+          </p>
+        </div>
+
+        {/* RIGHT — the living mark in a copper-bracketed specimen plate */}
+        <div className="relative mx-auto w-full max-w-[440px]" style={{ ...rise(180), padding: 14 }}>
+          <span aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: 22, height: 22, borderTop: '2px solid var(--copper-orn)', borderLeft: '2px solid var(--copper-orn)' }} />
+          <span aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: 22, height: 22, borderTop: '2px solid var(--copper-orn)', borderRight: '2px solid var(--copper-orn)' }} />
+          <span aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, width: 22, height: 22, borderBottom: '2px solid var(--copper-orn)', borderLeft: '2px solid var(--copper-orn)' }} />
+          <span aria-hidden style={{ position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderBottom: '2px solid var(--copper-orn)', borderRight: '2px solid var(--copper-orn)' }} />
           <div
             style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.32em',
-              textTransform: 'uppercase',
-              color: 'rgba(232, 240, 250, 0.5)',
-              marginBottom: '0.8rem',
+              border: '1px solid var(--paper-line)',
+              background: 'var(--paper-raised)',
+              boxShadow: '0 1px 0 var(--paper-line), 0 10px 28px rgba(90,59,31,0.16)',
+              overflow: 'hidden',
+              borderRadius: 2,
+              animation: 'tkgHeroBreathe 7s ease-in-out infinite',
             }}
           >
-            Or jump directly to
+            <video
+              src="/emblem-caduceus.mp4"
+              poster="/emblem-caduceus.png"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              style={{ width: '100%', display: 'block', mixBlendMode: 'multiply' }}
+            />
           </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Link
-              href="/compound/pcbs"
-              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
-              style={{
-                background: 'rgba(245, 240, 232, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                color: '#FFF',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.2)';
-                el.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.12)';
-                el.style.transform = 'translateY(0)';
-              }}
-            >
-              PCBs
-            </Link>
-            <Link
-              href="/compound/dioxin"
-              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
-              style={{
-                background: 'rgba(245, 240, 232, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                color: '#FFF',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.2)';
-                el.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.12)';
-                el.style.transform = 'translateY(0)';
-              }}
-            >
-              Dioxin
-            </Link>
-            <Link
-              href="/compound/glyphosate"
-              className="group inline-flex items-center rounded-full px-4 py-2 transition-all"
-              style={{
-                background: 'rgba(245, 240, 232, 0.12)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                color: '#FFF',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.2)';
-                el.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = 'rgba(245, 240, 232, 0.12)';
-                el.style.transform = 'translateY(0)';
-              }}
-            >
-              Glyphosate
-            </Link>
-          </div>
-        </div>
-
-        {/* Secondary lookup wizard link */}
-        <div
-          className="mb-10"
-          style={{
-            opacity: revealed ? 1 : 0,
-            transition: 'opacity 800ms cubic-bezier(0.16, 1, 0.3, 1) 700ms',
-          }}
-        >
-          <Link
-            href="/workflow/identify/compound-lookup"
-            className="group inline-flex items-center text-sm transition-all"
-            style={{
-              color: 'rgba(232, 240, 250, 0.7)',
-              fontFamily: 'var(--font-body)',
-            }}
-          >
-            Or use the lookup wizard
-            <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
-          </Link>
-        </div>
-
-        {/* Tagline */}
-        <p
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-            fontSize: '1.1rem',
-            color: '#F2C994',
-            opacity: revealed ? 1 : 0,
-            transition: 'opacity 800ms ease 800ms',
-          }}
-        >
-          Three sources behind every claim.
-        </p>
-
-        {/* Scroll hint */}
-        <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60"
-          style={{
-            transition: 'opacity 800ms ease 1000ms',
-            opacity: revealed ? 0.6 : 0,
-          }}
-        >
-          <span
+          <div
+            className="mt-3 text-center"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.6rem',
-              letterSpacing: '0.32em',
+              fontSize: '0.62rem',
+              letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              color: 'rgba(232, 240, 250, 0.85)',
+              color: 'var(--ink-mute)',
             }}
           >
-            scroll to explore
-          </span>
-          <span aria-hidden className="animate-bounce" style={{ color: 'rgba(232, 240, 250, 0.85)' }}>↓</span>
+            The living mark · teal-ink caduceus, branched &amp; rooted
+          </div>
         </div>
       </div>
 
+      <style>{`
+        @keyframes tkgHeroBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+      `}</style>
     </section>
   );
 }

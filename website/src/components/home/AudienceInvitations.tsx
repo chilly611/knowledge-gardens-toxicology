@@ -32,8 +32,8 @@ const INVITATIONS: Invitation[] = [
     cta: 'Open the consumer lane',
     href: '/flow/consumer',
     deliverable: 'Personal Toxicity Briefing — 1–2 pages',
-    accent: '#5BC0BE',
-    accentDeep: '#1F7E7D',
+    accent: '#3C7A8A',
+    accentDeep: '#234C5A',
     icon: '○',
   },
   {
@@ -43,7 +43,7 @@ const INVITATIONS: Invitation[] = [
     cta: 'Open the clinician lane',
     href: '/flow/clinician',
     deliverable: 'Clinical Exposure Brief — 2–3 pages',
-    accent: '#7AAFC0',
+    accent: '#6B7E9A',
     accentDeep: '#3B4F6B',
     icon: '◇',
   },
@@ -66,7 +66,7 @@ export default function AudienceInvitations() {
       <div className="rail-wide">
         <div className="mb-6 flex items-center justify-center">
           <span
-            className="text-[#9DB6CC]"
+            className="text-[#C4CEDC]"
             style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.28em', textTransform: 'uppercase' }}
           >
             choose your lane
@@ -128,7 +128,7 @@ export default function AudienceInvitations() {
                   {inv.question}
                 </h3>
                 <p
-                  className="mb-6 text-[#C8D4E2]"
+                  className="mb-6 text-[#DEE3EB]"
                   style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', lineHeight: 1.55, fontWeight: 300 }}
                 >
                   {inv.body}
@@ -143,7 +143,7 @@ export default function AudienceInvitations() {
                 >
                   <span aria-hidden style={{ color: inv.accent }}>📄</span>
                   <span
-                    className="text-[#C8D4E2]"
+                    className="text-[#DEE3EB]"
                     style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.06em' }}
                   >
                     {inv.deliverable}

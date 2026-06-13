@@ -50,16 +50,16 @@ function generateNodePositions(count: number): Array<{ x: number; y: number }> {
 }
 
 const STATUS_COLORS: Record<string, { edge: string; glow: string }> = {
-  certified: { edge: '#2ea4a3', glow: 'rgba(46, 164, 163, 0.4)' },
-  provisional: { edge: '#d68843', glow: 'rgba(214, 136, 67, 0.4)' },
-  contested: { edge: '#e83759', glow: 'rgba(232, 55, 89, 0.4)' },
+  certified: { edge: '#3C7A8A', glow: 'rgba(46, 164, 163, 0.4)' },
+  provisional: { edge: '#8C5E22', glow: 'rgba(214, 136, 67, 0.4)' },
+  contested: { edge: '#A53A2D', glow: 'rgba(232, 55, 89, 0.4)' },
 };
 
 const NODE_COLORS = {
-  substance: '#2ea4a3', // bioluminescent teal (var(--teal))
-  endpoint: '#ffb166',   // peach (var(--peach))
+  substance: '#3C7A8A', // bioluminescent teal (var(--teal))
+  endpoint: '#C68A3D',   // peach (var(--peach))
   source: '#e8eae8',     // pale white (var(--ink) in dark theme is light)
-  case: '#d68843',       // peach-deep (var(--peach-deep))
+  case: '#8C5E22',       // peach-deep (var(--peach-deep))
 };
 
 export default function EvidenceGraph() {
@@ -317,16 +317,16 @@ export default function EvidenceGraph() {
         <defs>
           {/* Gradient definitions for edges */}
           <linearGradient id="grad-certified" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5BC0BE" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#5BC0BE" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#3C7A8A" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#3C7A8A" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient id="grad-provisional" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#E8A988" stopOpacity="0.6" />
             <stop offset="100%" stopColor="#E8A988" stopOpacity="0.2" />
           </linearGradient>
           <linearGradient id="grad-contested" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#E83759" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#E83759" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#A53A2D" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#A53A2D" stopOpacity="0.2" />
           </linearGradient>
 
           {/* Radial glow filters */}

@@ -17,26 +17,26 @@ export const tokens = {
   inkMute:      '#6b7388',
 
   /* jewel-tone accents */
-  teal:         '#2ea4a3',
-  tealDeep:     '#1f7e7d',
-  indigo:       '#553278',
-  indigoDeep:   '#3d2456',
-  crimson:      '#e83759',
-  crimsonDeep:  '#b8243f',
-  peach:        '#ffb166',
-  peachDeep:    '#d68843',
+  teal:         '#3C7A8A',
+  tealDeep:     '#234C5A',
+  indigo:       '#3B4F6B',
+  indigoDeep:   '#2A3A50',
+  crimson:      '#A53A2D',
+  crimsonDeep:  '#6E2419',
+  peach:        '#C68A3D',
+  peachDeep:    '#8C5E22',
   copper:       '#b87333',
   copperDeep:   '#8a5524',
 
   /* status semantics */
-  certified:    '#2ea4a3',
-  provisional:  '#d68843',
-  contested:    '#e83759',
+  certified:    '#3C7A8A',
+  provisional:  '#8C5E22',
+  contested:    '#A53A2D',
 
   /* audience accents */
-  audienceConsumer:  '#2ea4a3',
-  audienceClinician: '#553278',
-  audienceCounsel:   '#e83759',
+  audienceConsumer:  '#3C7A8A',
+  audienceClinician: '#3B4F6B',
+  audienceCounsel:   '#A53A2D',
 } as const;
 
 export type Token = keyof typeof tokens;
