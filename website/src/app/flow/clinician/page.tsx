@@ -11,6 +11,7 @@ export default function ClinicianKillerApp() {
     <SituationWorkspace
       config={{
         lane: 'clinician',
+        plate: '/plates/audience-clinicians.png',
         eyebrow: 'Clinician workspace · exposure consult',
         title: 'Workup a panel.',
         deliverable: 'Clinical Exposure Brief',

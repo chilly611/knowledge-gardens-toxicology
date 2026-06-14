@@ -15,6 +15,7 @@ import { streamAsk, type Citation, type AskLane } from '@/lib/ask-stream';
 export type Move = { key: string; title: string; sub: string; prompt: (situation: string) => string };
 export type WorkspaceConfig = {
   lane: AskLane;
+  plate?: string;
   eyebrow: string;
   title: string;
   deliverable: string;
@@ -72,7 +73,13 @@ export default function SituationWorkspace({ config }: { config: WorkspaceConfig
         <div className="rail-wide py-9">
           <div style={{ ...MONO, color: 'var(--ink-mute)' }}>{config.eyebrow}</div>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(2.6rem, 5.5vw, 4.2rem)', lineHeight: 1.02, letterSpacing: '-0.01em', color: 'var(--teal-deep)', margin: 0 }}>{config.title}</h1>
+            <div className="flex items-center gap-4">
+              {config.plate && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={config.plate} alt="" style={{ width: 76, height: 76, objectFit: 'cover', objectPosition: 'center 26%', borderRadius: 4, border: '1px solid var(--paper-line)', flexShrink: 0 }} />
+              )}
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(2.6rem, 5.5vw, 4.2rem)', lineHeight: 1.02, letterSpacing: '-0.01em', color: 'var(--teal-deep)', margin: 0 }}>{config.title}</h1>
+            </div>
             <div style={{ border: '1px solid var(--paper-line)', borderLeft: '3px solid var(--copper-orn)', background: 'var(--paper-raised)', borderRadius: 4, padding: '12px 16px', minWidth: 230 }}>
               <div style={{ ...MONO, color: 'var(--copper-orn-deep)' }}>Deliverable</div>
               <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.15rem', color: 'var(--ink)', marginTop: 2 }}>{config.deliverable}</div>

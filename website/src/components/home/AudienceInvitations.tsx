@@ -1,13 +1,9 @@
 'use client';
 
 /**
- * Choose your lane — three audience invitations rendered as light specimen
- * cards on the deep-teal band. Cream paper, sepia ink, lane-accent chrome.
- * No glassmorphism, no emoji (the design system bans both).
- *
- * Consumer  → "What's in my world?"  → Personal Toxicity Briefing
- * Clinician → "Workup a panel."      → Clinical Exposure Brief
- * Counsel   → "Prep a case."         → Case-Prep Exhibit Packet
+ * Choose your lane — three audience invitations as light specimen cards on the
+ * deep-teal band, each topped with its developed audience plate. No glass, no
+ * emoji. Cards link into the three killer apps.
  */
 import Link from 'next/link';
 
@@ -20,6 +16,7 @@ type Invitation = {
   deliverable: string;
   accent: string;
   accentDeep: string;
+  plate: string;
 };
 
 const INVITATIONS: Invitation[] = [
@@ -32,6 +29,7 @@ const INVITATIONS: Invitation[] = [
     deliverable: 'Personal Toxicity Briefing · 1–2 pp',
     accent: '#3C7A8A',
     accentDeep: '#234C5A',
+    plate: '/plates/audience-consumers.png',
   },
   {
     audience: 'clinician',
@@ -42,16 +40,18 @@ const INVITATIONS: Invitation[] = [
     deliverable: 'Clinical Exposure Brief · 2–3 pp',
     accent: '#3B4F6B',
     accentDeep: '#2A3A50',
+    plate: '/plates/audience-clinicians.png',
   },
   {
     audience: 'counsel',
     question: 'Prep a case.',
     body: 'From theory of harm to Daubert table to expert-witness pack. Sky Valley v. Monsanto is loaded as a worked sample.',
     cta: 'Open the counsel lane',
-    href: '/flow/counsel?case=sky-valley',
+    href: '/flow/counsel',
     deliverable: 'Case-Prep Exhibit Packet · 3–5 pp',
     accent: '#A53A2D',
     accentDeep: '#6E2419',
+    plate: '/plates/audience-legal.png',
   },
 ];
 
@@ -79,31 +79,37 @@ export default function AudienceInvitations() {
                 borderTop: `3px solid ${inv.accent}`,
                 borderRadius: 4,
                 boxShadow: '0 1px 0 var(--paper-line), 0 12px 30px rgba(18,38,44,0.30)',
-                padding: '26px 28px 24px',
+                overflow: 'hidden',
               }}
             >
-              <div className="mb-4 flex items-center gap-2">
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: inv.accentDeep, fontWeight: 700 }}>
-                  for {inv.audience}
-                </span>
-              </div>
+              {/* developed audience plate */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={inv.plate} alt="" loading="lazy" style={{ width: '100%', height: 170, objectFit: 'cover', objectPosition: 'center 26%', display: 'block', borderBottom: '1px solid var(--paper-line)', filter: 'saturate(0.96)' }} />
 
-              <h3 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.95rem', lineHeight: 1.08, color: 'var(--teal-deep)', margin: '0 0 10px' }}>
-                {inv.question}
-              </h3>
+              <div className="flex flex-1 flex-col" style={{ padding: '22px 26px 24px' }}>
+                <div className="mb-3">
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: inv.accentDeep, fontWeight: 700 }}>
+                    for {inv.audience}
+                  </span>
+                </div>
 
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--ink-soft)', margin: '0 0 22px', flex: 1 }}>
-                {inv.body}
-              </p>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.95rem', lineHeight: 1.08, color: 'var(--teal-deep)', margin: '0 0 10px' }}>
+                  {inv.question}
+                </h3>
 
-              <div className="mb-5 inline-flex items-center gap-2 self-start" style={{ border: '1px solid var(--paper-line)', borderRadius: 3, background: 'var(--paper)', padding: '6px 11px' }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: inv.accent, display: 'inline-block' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.03em', color: 'var(--ink-mute)' }}>{inv.deliverable}</span>
-              </div>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--ink-soft)', margin: '0 0 22px', flex: 1 }}>
+                  {inv.body}
+                </p>
 
-              <div className="flex items-center justify-between" style={{ background: inv.accentDeep, color: 'var(--paper)', borderRadius: 3, padding: '11px 16px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.95rem' }}>
-                <span>{inv.cta}</span>
-                <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                <div className="mb-5 inline-flex items-center gap-2 self-start" style={{ border: '1px solid var(--paper-line)', borderRadius: 3, background: 'var(--paper)', padding: '6px 11px' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: inv.accent, display: 'inline-block' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.03em', color: 'var(--ink-mute)' }}>{inv.deliverable}</span>
+                </div>
+
+                <div className="flex items-center justify-between" style={{ background: inv.accentDeep, color: 'var(--paper)', borderRadius: 3, padding: '11px 16px', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.95rem' }}>
+                  <span>{inv.cta}</span>
+                  <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                </div>
               </div>
             </Link>
           ))}

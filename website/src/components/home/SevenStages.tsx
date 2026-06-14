@@ -35,12 +35,14 @@ export default function SevenStages() {
         {/* Headline */}
         <ScrollReveal delay={100}>
           <h2
-            className="mx-auto mb-6 max-w-[22ch] text-center leading-tight text-[var(--ink)]"
+            className="mx-auto mb-6 max-w-[22ch] text-center leading-tight"
             style={{
-              fontFamily: 'var(--font-body)',
-              fontStyle: 'normal',
-              fontSize: 'clamp(2.4rem, 5vw, 4rem)',
-              fontWeight: 800,
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(2.6rem, 5vw, 4.2rem)',
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+              color: 'var(--teal-deep)',
             }}
           >
             Seven stages, one shape across every garden.
@@ -80,7 +82,7 @@ export default function SevenStages() {
                   <div
                     className="tile-inner flex flex-col items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.5)',
+                      background: 'var(--paper-raised)',
                     }}
                   >
                     {/* Large video player */}
@@ -173,7 +175,7 @@ export default function SevenStages() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="cta-pill cta-pill-secondary rounded-full border border-[var(--paper-line)] bg-white"
+                className="cta-pill cta-pill-secondary rounded-full border border-[var(--paper-line)]"
               >
                 <div
                   className="text-sm font-medium text-[var(--ink)]"

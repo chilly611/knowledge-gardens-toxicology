@@ -11,6 +11,7 @@ export default function ConsumerKillerApp() {
     <SituationWorkspace
       config={{
         lane: 'consumer',
+        plate: '/plates/audience-consumers.png',
         eyebrow: 'Consumer workspace · plain-language toxicology',
         title: "What's in my world?",
         deliverable: 'Personal Toxicity Briefing',

@@ -20,6 +20,7 @@ import { Suspense } from 'react';
 import HomeHero from '@/components/home/HomeHero';
 import AudienceInvitationsSection from '@/components/home/AudienceInvitationsSection';
 import BrowsePanel from '@/components/home/BrowsePanel';
+import SevenStages from '@/components/home/SevenStages';
 import TrustStrip from '@/components/home/TrustStrip';
 import FeaturedCase from '@/components/home/FeaturedCase';
 
@@ -29,6 +30,7 @@ export default function HomePage() {
       <HomeHero />
       <AudienceInvitationsSection />
       <BrowsePanel />
+      <SevenStages />
       <TrustStrip />
       <FeaturedCase />
     </Suspense>
