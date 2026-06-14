@@ -1,114 +1,41 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
-import StageStepper from '@/components/flow/StageStepper';
-import ConsumerFlow from '@/components/flow/ConsumerFlow';
-import { audienceColor } from '@/styles/tokens';
+/**
+ * /flow/consumer — the Consumer Killer App (plain-language exposure guide).
+ * The form-wizard is gone; this is the situation-driven workspace.
+ */
+import SituationWorkspace from '@/components/flow/SituationWorkspace';
 
-const STAGES = ['identify', 'discover', 'trace', 'decide', 'carry'];
-
-function ConsumerFlowPageInner() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const [stage, setStage] = useState('identify');
-  const [concern, setConcern] = useState<string>();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    const stageParam = searchParams.get('stage');
-    const concernParam = searchParams.get('concern');
-    const selectedParam = searchParams.get('selected');
-
-    if (stageParam && STAGES.includes(stageParam)) {
-      setStage(stageParam);
-    }
-    if (concernParam) {
-      setConcern(concernParam);
-    }
-    if (selectedParam) {
-      setSelectedIds(selectedParam.split(',').filter(Boolean));
-    }
-  }, [searchParams]);
-
-  const handleStageClick = (newStage: string) => {
-    setStage(newStage);
-    const params = new URLSearchParams(searchParams);
-    params.set('stage', newStage);
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleConcernChange = (newConcern: string) => {
-    setConcern(newConcern);
-    const params = new URLSearchParams(searchParams);
-    params.set('concern', newConcern);
-    router.push(`?${params.toString()}`);
-    // Auto-advance to discover
-    handleStageClick('discover');
-  };
-
-  const handleSelectedChange = (ids: string[]) => {
-    setSelectedIds(ids);
-    const params = new URLSearchParams(searchParams);
-    if (ids.length > 0) {
-      params.set('selected', ids.join(','));
-    } else {
-      params.delete('selected');
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleUserNameChange = (name: string) => {
-    setUserName(name);
-  };
-
-  const stageIndex = STAGES.indexOf(stage);
-  const handleNext = () => {
-    if (stageIndex < STAGES.length - 1) {
-      const nextStage = STAGES[stageIndex + 1];
-      handleStageClick(nextStage);
-    }
-  };
-
-  const handlePrev = () => {
-    if (stageIndex > 0) {
-      const prevStage = STAGES[stageIndex - 1];
-      handleStageClick(prevStage);
-    }
-  };
-
+export default function ConsumerKillerApp() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <div className="rail-default w-full py-12">
-        <div className="mb-8">
-          <StageStepper
-            stages={STAGES}
-            current={stage}
-            accent={audienceColor('consumer')}
-            onStageClick={handleStageClick}
-          />
-        </div>
-
-        <ConsumerFlow
-          stage={stage}
-          concern={concern}
-          selectedIds={selectedIds}
-          userName={userName}
-          onConcernChange={handleConcernChange}
-          onSelectedChange={handleSelectedChange}
-          onUserNameChange={handleUserNameChange}
-        />
-      </div>
-    </main>
-  );
-}
-
-export default function ConsumerFlowPage() {
-  return (
-    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
-      <ConsumerFlowPageInner />
-    </Suspense>
+    <SituationWorkspace
+      config={{
+        lane: 'consumer',
+        eyebrow: 'Consumer workspace · plain-language toxicology',
+        title: "What's in my world?",
+        deliverable: 'Personal Toxicity Briefing',
+        deliverableSub: 'A citable answer, not a vibe — one page, plain language',
+        inputLabel: 'Tell the garden about your situation',
+        placeholder: 'e.g., we just moved into a house near an old rail yard and want to know what we might be exposed to',
+        defaultSituation: 'We just moved into a house near a former industrial site / rail yard and want to know what we might be exposed to.',
+        takeLabel: 'AI take · plain language',
+        takePrompt: (s) =>
+          `PCBs, dioxins, glyphosate, microplastics, lead, exposure, drinking water, soil, food. Situation: ${s} In plain language, no jargon: what am I most likely being exposed to, how worried should I actually be, and what can I do about it? Keep it concrete and calm — real risk in proportion, not alarm and not false comfort.`,
+        presets: [
+          { label: 'Near an old rail yard', situation: 'We live near a former rail yard / industrial site and are worried about soil and dust contamination (PCBs, dioxins, lead).' },
+          { label: 'Plastics in our water', situation: "We're worried about microplastics and plastic chemicals in our drinking water and food." },
+          { label: 'Glyphosate in food', situation: 'We want to understand glyphosate / pesticide residue in the food we eat and how to reduce it.' },
+        ],
+        moves: [
+          { key: 'exposed', title: 'What am I exposed to?', sub: 'The likely culprits, named', prompt: (s) => `PCBs, dioxins, glyphosate, microplastics, lead. Situation: ${s} In plain language, what am I most likely being exposed to, and through what (water, soil, food, air)?` },
+          { key: 'worried', title: 'How worried should I be?', sub: 'Real risk, in proportion', prompt: (s) => `Situation: ${s} How worried should I actually be? Put the real risk in proportion, plainly — no alarm, no false comfort.` },
+          { key: 'today', title: 'What can I do today?', sub: 'Concrete steps that help', prompt: (s) => `Situation: ${s} Give me concrete steps I can take today to reduce exposure, most-effective first.` },
+          { key: 'swaps', title: 'Safer alternatives', sub: 'Swaps that actually matter', prompt: (s) => `Situation: ${s} Suggest safer alternatives and swaps that meaningfully reduce exposure for my situation.` },
+        ],
+        footerLinks: [
+          { href: '/compound', label: 'Browse compounds' },
+        ],
+      }}
+    />
   );
 }

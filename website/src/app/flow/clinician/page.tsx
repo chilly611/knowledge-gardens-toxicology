@@ -1,144 +1,42 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
-import StageStepper from '@/components/flow/StageStepper';
-import ClinicianFlow from '@/components/flow/ClinicianFlow';
-import { audienceColor } from '@/styles/tokens';
+/**
+ * /flow/clinician — the Clinician Killer App (AI tox consult).
+ * The form-wizard is gone; this is the situation-driven workspace.
+ */
+import SituationWorkspace from '@/components/flow/SituationWorkspace';
 
-const STAGES = ['triage', 'differential', 'test', 'interpret', 'brief'];
-
-function ClinicianFlowPageInner() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const [stage, setStage] = useState('triage');
-  const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [suspected, setSuspected] = useState<string>();
-  const [patient, setPatient] = useState('');
-  const [selectedClaims, setSelectedClaims] = useState<string[]>([]);
-
-  useEffect(() => {
-    const stageParam = searchParams.get('stage');
-    const symptomsParam = searchParams.get('symptoms');
-    const suspectedParam = searchParams.get('suspected');
-    const patientParam = searchParams.get('patient');
-    const claimsParam = searchParams.get('claims');
-
-    if (stageParam && STAGES.includes(stageParam)) {
-      setStage(stageParam);
-    }
-    if (symptomsParam) {
-      setSymptoms(symptomsParam.split(',').filter(Boolean));
-    }
-    if (suspectedParam) {
-      setSuspected(suspectedParam);
-    }
-    if (patientParam) {
-      setPatient(decodeURIComponent(patientParam));
-    }
-    if (claimsParam) {
-      setSelectedClaims(claimsParam.split(',').filter(Boolean));
-    }
-  }, [searchParams]);
-
-  const handleStageClick = (newStage: string) => {
-    setStage(newStage);
-    const params = new URLSearchParams(searchParams);
-    params.set('stage', newStage);
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleSymptomsChange = (newSymptoms: string[]) => {
-    setSymptoms(newSymptoms);
-    const params = new URLSearchParams(searchParams);
-    if (newSymptoms.length > 0) {
-      params.set('symptoms', newSymptoms.join(','));
-    } else {
-      params.delete('symptoms');
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleSuspectedChange = (newSuspected: string) => {
-    setSuspected(newSuspected);
-    const params = new URLSearchParams(searchParams);
-    params.set('suspected', newSuspected);
-    router.push(`?${params.toString()}`);
-  };
-
-  const handlePatientChange = (newPatient: string) => {
-    setPatient(newPatient);
-    const params = new URLSearchParams(searchParams);
-    if (newPatient) {
-      params.set('patient', encodeURIComponent(newPatient));
-    } else {
-      params.delete('patient');
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const handleSelectedClaimsChange = (ids: string[]) => {
-    setSelectedClaims(ids);
-    const params = new URLSearchParams(searchParams);
-    if (ids.length > 0) {
-      params.set('claims', ids.join(','));
-    } else {
-      params.delete('claims');
-    }
-    router.push(`?${params.toString()}`);
-  };
-
-  const stageIndex = STAGES.indexOf(stage);
-  const handleNext = () => {
-    if (stageIndex < STAGES.length - 1) {
-      const nextStage = STAGES[stageIndex + 1];
-      handleStageClick(nextStage);
-    }
-  };
-
-  const handlePrev = () => {
-    if (stageIndex > 0) {
-      const prevStage = STAGES[stageIndex - 1];
-      handleStageClick(prevStage);
-    }
-  };
-
+export default function ClinicianKillerApp() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <div className="rail-default w-full py-12">
-        <div className="mb-8">
-          <StageStepper
-            stages={STAGES}
-            current={stage}
-            accent={audienceColor('clinician')}
-            onStageClick={handleStageClick}
-          />
-        </div>
-
-        <ClinicianFlow
-          stage={stage}
-          symptoms={symptoms}
-          suspected={suspected}
-          patient={patient}
-          selectedClaims={selectedClaims}
-          onSymptomsChange={handleSymptomsChange}
-          onSuspectedChange={handleSuspectedChange}
-          onPatientChange={handlePatientChange}
-          onSelectedClaimsChange={handleSelectedClaimsChange}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          stages={STAGES}
-        />
-      </div>
-    </main>
-  );
-}
-
-export default function ClinicianFlowPage() {
-  return (
-    <Suspense fallback={<div style={{padding:'2rem',color:'var(--ink-mute)'}}>Loading...</div>}>
-      <ClinicianFlowPageInner />
-    </Suspense>
+    <SituationWorkspace
+      config={{
+        lane: 'clinician',
+        eyebrow: 'Clinician workspace · exposure consult',
+        title: 'Workup a panel.',
+        deliverable: 'Clinical Exposure Brief',
+        deliverableSub: 'Two pages, chart-ready — minutes vs. an afternoon in PubMed',
+        inputLabel: 'Describe the patient & suspected exposure',
+        placeholder: 'e.g., 58-y-o agricultural worker, chronic dermatitis + persistent GI symptoms, suspected glyphosate / pesticide exposure',
+        defaultSituation: 'A 58-year-old agricultural worker presents with chronic dermatitis and persistent GI symptoms; suspected glyphosate and pesticide exposure.',
+        takeLabel: 'AI take · clinician lane',
+        takePrompt: (s) =>
+          `Glyphosate, PCBs, dioxins, pesticides, biomarkers, non-Hodgkin lymphoma, mechanism. Clinical exposure consult. Patient: ${s} Give a tight read: the most likely exposure-linked differential, the biomarker panel to order, red flags and when to escalate, and where the evidence is contested vs. certified. Decision-support only — flag that it must be verified against primary sources.`,
+        presets: [
+          { label: 'Ag worker · dermatitis + GI', situation: 'Agricultural worker with chronic dermatitis and persistent GI symptoms; suspected glyphosate / pesticide exposure.' },
+          { label: 'NHL workup · PCB exposure', situation: 'Adult with non-Hodgkin lymphoma and a history of PCB / dioxin exposure near an industrial site.' },
+          { label: 'Pediatric neurodevelopment', situation: 'Pediatric patient with neurodevelopmental concerns; possible prenatal PCB / methylmercury exposure.' },
+        ],
+        moves: [
+          { key: 'differential', title: 'Differential by exposure', sub: 'Exposure-linked conditions, ranked', prompt: (s) => `Glyphosate, PCBs, dioxins, biomarkers, mechanism. For this patient — ${s} — give the exposure-linked differential, ranked, with the mechanism behind each.` },
+          { key: 'panel', title: 'Biomarker panel to order', sub: 'What to test, and why', prompt: (s) => `PCBs, glyphosate, biomarkers, serum congeners, urinary metabolites. For this patient — ${s} — list the biomarker panel to order, with the rationale and reference ranges where known.` },
+          { key: 'redflags', title: 'Red flags & escalation', sub: 'When this needs urgent action', prompt: (s) => `For this patient — ${s} — list the red-flag findings that warrant urgent escalation or specialist referral.` },
+          { key: 'contested', title: 'Both sides of contested claims', sub: 'Where the evidence disagrees', prompt: (s) => `PCBs, glyphosate, carcinogenicity, non-Hodgkin lymphoma. For this patient — ${s} — surface the contested claims: certified vs. contested, with the evidence tier on each side.` },
+        ],
+        footerLinks: [
+          { href: '/compound', label: 'Browse compounds' },
+          { href: '/reference', label: 'Reference frameworks' },
+        ],
+      }}
+    />
   );
 }
