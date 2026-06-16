@@ -1,54 +1,30 @@
 'use client';
 
-import Link from 'next/link';
-import ScrollReveal from '@/components/home/ScrollReveal';
+/**
+ * /workflow/resolve — Stage 06 · the real Resolve tool (structured wrap-up record).
+ */
+import StageWorkspace from '@/components/flow/StageWorkspace';
 
-export default function ResolveWorkflowPage() {
+export default function ResolveStage() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <section className="relative py-24 sm:py-32" style={{ minHeight: '70vh' }}>
-        <div className="rail-default">
-          <ScrollReveal>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.32em', textTransform: 'uppercase', color: 'var(--copper-orn-deep)' }}>
-              stage 6 of 7 · resolve workflows
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <h1 className="mx-auto mt-5 max-w-[20ch]" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2.4rem, 6vw, 5rem)', fontWeight: 500, lineHeight: 1.05, color: 'var(--ink)' }}>
-              Wrap it up
-            </h1>
-          </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <div className="prose-rail mt-6">
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.1rem', lineHeight: 1.6, color: 'var(--ink-soft)' }}>
-                Reporting and documentation workflows. Coming soon.
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={450}>
-            <div className="mt-10 flex justify-center">
-              <video poster="/icons/stage-resolve.png" autoPlay muted loop playsInline width={120} height={120} style={{ display: 'inline-block' }}>
-                <source src="/icons/stage-resolve.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-      <section className="bg-[var(--paper-warm)] py-20">
-        <div className="rail-default">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 500, color: 'var(--ink)', marginBottom: '2rem' }}>
-            Coming soon.
-          </h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--ink-soft)', maxWidth: '65ch' }}>
-            Reporting and resolution tools coming soon.
-          </p>
-        </div>
-      </section>
-      <section className="bg-[var(--paper)] py-16 text-center">
-        <Link href="/workflow" style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--teal-deep)', textDecoration: 'underline' }}>
-          ← Back to all stages
-        </Link>
-      </section>
-    </main>
+    <StageWorkspace
+      config={{
+        stage: 'resolve',
+        lane: 'counsel',
+        title: 'Resolve & document.',
+        tagline: 'Close it out with a structured, citable record you can hand to a partner, a clinician, or a court.',
+        inputLabel: 'Describe what happened and what was done',
+        placeholder: 'e.g., transformer-oil PCB exposure incident — workers monitored, controls upgraded, two cases referred',
+        defaultSubject: 'A PCB transformer-oil exposure incident: affected workers were monitored, controls were upgraded, and elevated cases were referred for clinical follow-up.',
+        presets: [
+          { label: 'Exposure incident', subject: 'A PCB transformer-oil exposure incident: affected workers were monitored, controls were upgraded, and elevated cases were referred for clinical follow-up.' },
+          { label: 'Remediation program', subject: 'A soil remediation program at a dioxin-contaminated residential site is wrapping up after eighteen months.' },
+          { label: 'Clinical follow-up', subject: 'A glyphosate-exposed agricultural cohort completed biomarker testing and clinical follow-up.' },
+        ],
+        prompt: (s) =>
+          `PCBs, dioxins, glyphosate, evidence tiers, certified, contested, IARC, EPA. Wrap-up: ${s} Produce a structured record: what happened, what the evidence shows (with tier and strength), what was done, and the residual risk and recommended follow-up. Write it as a documentation summary suitable for a report or hand-off.`,
+        outputLabel: 'Wrap-up record',
+      }}
+    />
   );
 }

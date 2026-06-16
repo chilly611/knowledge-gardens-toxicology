@@ -1,194 +1,137 @@
 'use client';
 
 /**
- * SevenStages — visual explainer of the 7-stage pattern.
- * One-message-per-screen (90vh min-height), focused on the lifecycle shape.
- * Large cinematic video players for each stage, horizontal rail of stage cards with workflow examples.
- * Deliverables below.
- * Paper-warm background with subtle dot grid (data-surface="tkg").
+ * SevenStages — the lifecycle, now seven WORKING tools.
+ *
+ * Each card is a full-bleed framed specimen that links to a real, AI-powered
+ * stage tool: identify (compound browser) → assess → plan → act → adapt →
+ * resolve → reflect. The stage tools chain (each carries its subject forward),
+ * so "one shape across every garden" is literal, not decorative.
  */
 
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { STAGES, WORKFLOWS_BY_STAGE } from '../grammar/stages';
+import { STAGES, type StageId } from '../grammar/stages';
 import ScrollReveal from './ScrollReveal';
-import StageBigPlayer from './StageBigPlayer';
+
+/** Where each stage card points. identify is the compound browser; the rest are the AI stage tools. */
+const STAGE_HREF: Record<StageId, string> = {
+  identify: '/compound',
+  assess: '/workflow/assess',
+  plan: '/workflow/plan',
+  act: '/workflow/act',
+  adapt: '/workflow/adapt',
+  resolve: '/workflow/resolve',
+  reflect: '/workflow/reflect',
+};
+
+/** Short action label per stage — what you actually do there. */
+const STAGE_ACTION: Record<StageId, string> = {
+  identify: 'Look up a compound',
+  assess: 'Read the risk',
+  plan: 'Build a plan',
+  act: 'First response',
+  adapt: 'Re-assess',
+  resolve: 'Document it',
+  reflect: 'Review evidence',
+};
+
+/** Full-bleed, cover-filled stage media so it fills its frame cleanly (no letterbox / offset). */
+function StageBanner({ id }: { id: StageId }) {
+  const [broken, setBroken] = useState(false);
+  const ref = useRef<HTMLVideoElement | null>(null);
+  const mediaStyle: React.CSSProperties = { width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'saturate(0.92)' };
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: 150, overflow: 'hidden', background: 'var(--paper-raised)', borderBottom: '1px solid var(--paper-line)' }}
+      onMouseEnter={() => { const v = ref.current; if (v) { try { v.currentTime = 0; } catch { /* ignore */ } v.play?.().catch(() => {}); } }}
+    >
+      {!broken ? (
+        <video ref={ref} poster={`/icons/stage-${id}.png`} autoPlay muted loop playsInline preload="metadata" style={mediaStyle} onError={() => setBroken(true)}>
+          <source src={`/icons/stage-${id}.mp4`} type="video/mp4" />
+        </video>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={`/icons/stage-${id}.png`} alt="" style={mediaStyle} />
+      )}
+      {/* ground the bottom edge into the card so mismatched image backgrounds read as one gallery */}
+      <span aria-hidden style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(242,233,210,0) 58%, rgba(42,38,32,0.12) 100%)', pointerEvents: 'none' }} />
+    </div>
+  );
+}
 
 export default function SevenStages() {
   return (
-    <section data-surface="tkg" className="relative min-h-[90vh] flex items-center" style={{ background: 'var(--paper-warm)' }}>
+    <section data-surface="tkg" className="relative py-20 sm:py-24" style={{ background: 'var(--paper-warm)' }}>
       <div className="rail-wide w-full">
         {/* Eyebrow */}
         <ScrollReveal delay={0}>
-          <div
-            className="mb-6 text-center text-xs uppercase tracking-wider"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--copper-orn-deep)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.22em',
-            }}
-          >
-            how the killer app works
+          <div className="mb-5 text-center" style={{ fontFamily: 'var(--font-mono)', color: 'var(--copper-orn-deep)', fontSize: '0.65rem', letterSpacing: '0.24em', textTransform: 'uppercase' }}>
+            one lifecycle · seven working tools
           </div>
         </ScrollReveal>
 
         {/* Headline */}
-        <ScrollReveal delay={100}>
-          <h2
-            className="mx-auto mb-6 max-w-[22ch] text-center leading-tight"
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontStyle: 'italic',
-              fontSize: 'clamp(2.6rem, 5vw, 4.2rem)',
-              fontWeight: 600,
-              letterSpacing: '-0.01em',
-              color: 'var(--teal-deep)',
-            }}
-          >
+        <ScrollReveal delay={80}>
+          <h2 className="mx-auto mb-5 max-w-[22ch] text-center leading-tight" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--teal-deep)' }}>
             Seven stages, one shape across every garden.
           </h2>
         </ScrollReveal>
 
         {/* Subheading */}
-        <ScrollReveal delay={100}>
-          <div className="prose-rail">
-            <p
-              className="mb-12 text-center leading-relaxed text-[var(--ink-soft)]"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '0.95rem',
-                lineHeight: 1.7,
-              }}
-            >
-              Builder's, Orchid, Health, NatureMark, Toxicology — every garden inherits the same lifecycle. Different work, same skeleton. Each stage ends in a deliverable.
-            </p>
-          </div>
+        <ScrollReveal delay={120}>
+          <p className="mx-auto mb-12 max-w-[62ch] text-center" style={{ fontFamily: 'var(--font-body)', fontSize: '0.98rem', lineHeight: 1.7, color: 'var(--ink-soft)' }}>
+            Different work, same skeleton. Start by identifying a substance, then follow <span style={{ color: 'var(--teal-deep)' }}>assess → plan → act → adapt → resolve → reflect</span>. Each stage is a real, grounded AI tool — and hands its subject to the next.
+          </p>
         </ScrollReveal>
 
-        {/* Stage cards — grid layout with cinematic video players */}
-        <div className="relative mb-16">
-          {/* Background connection line (copper arc) */}
-          <div className="absolute left-0 right-0 top-1/3 hidden h-px bg-gradient-to-r from-transparent via-[var(--copper-orn-deep)] to-transparent lg:block" />
-
-          {/* Grid container: 7 columns on desktop lg+, responsive on smaller screens */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 lg:gap-4">
-            {STAGES.map((stage, idx) => {
-              const workflows = WORKFLOWS_BY_STAGE[stage.id] || [];
-              const firstWorkflow = workflows[0];
-              const isLive = firstWorkflow?.status === 'live';
-
-              return (
-                <ScrollReveal key={stage.id} delay={80 * idx}>
-                  <div
-                    className="tile-inner flex flex-col items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                    style={{
-                      background: 'var(--paper-raised)',
-                    }}
-                  >
-                    {/* Large video player */}
-                    <StageBigPlayer
-                      id={stage.id}
-                      size={140}
-                      className="w-full max-w-[140px]"
-                    />
-
-                    {/* Stage number */}
-                    <div
-                      className="text-sm font-bold text-[var(--ink-mute)]"
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.08em',
-                      }}
-                    >
-                      {String(stage.number).padStart(2, '0')}
-                    </div>
-
-                    {/* Stage label */}
-                    <h3
-                      className="text-center font-medium text-[var(--ink)]"
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        fontStyle: 'normal',
-                        fontSize: '1rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {stage.label}
-                    </h3>
-
-                    {/* Caption */}
-                    <p
-                      className="text-center text-xs leading-tight text-[var(--ink-mute)]"
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        fontSize: '0.8rem',
-                        maxWidth: '140px',
-                      }}
-                    >
-                      {stage.caption}
-                    </p>
-
-                    {/* First workflow example */}
-                    {firstWorkflow && (
-                      <div
-                        className="mt-1 rounded px-2 py-1 text-center text-xs"
-                        style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: '0.75rem',
-                          background: 'rgba(26, 36, 51, 0.04)',
-                          color: 'var(--ink-soft)',
-                        }}
-                      >
-                        {firstWorkflow.title}
-                      </div>
-                    )}
-
-                    {/* Status badge */}
-                    <div
-                      className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium text-white"
-                      style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '0.65rem',
-                        letterSpacing: '0.08em',
-                        background: isLive ? 'var(--teal)' : 'var(--peach-deep)',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {isLive ? 'live' : 'soon'}
-                    </div>
-                  </div>
-                </ScrollReveal>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Deliverables section */}
-        <ScrollReveal delay={200}>
-          <div className="flex flex-wrap justify-center gap-4">
-            {[
-              { label: 'Personal Briefing', href: '/pdf-preview/consumer' },
-              { label: 'Clinical Brief', href: '/pdf-preview/clinician' },
-              { label: 'Case-Prep Packet', href: '/pdf-preview/counsel' },
-            ].map((item) => (
+        {/* Stage cards — full-bleed framed specimens, each a real tool */}
+        <div className="mb-14 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 lg:gap-4">
+          {STAGES.map((stage, idx) => (
+            <ScrollReveal key={stage.id} delay={70 * idx}>
               <Link
-                key={item.label}
-                href={item.href}
-                className="cta-pill cta-pill-secondary rounded-full border border-[var(--paper-line)]"
+                href={STAGE_HREF[stage.id]}
+                className="group flex h-full flex-col overflow-hidden no-underline transition-transform duration-200 hover:-translate-y-1"
+                style={{ background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderTop: '3px solid var(--copper-orn)', borderRadius: 5, boxShadow: '0 1px 0 var(--paper-line), 0 10px 24px rgba(18,38,44,0.10)' }}
               >
-                <div
-                  className="text-sm font-medium text-[var(--ink)]"
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontStyle: 'normal',
-                    fontWeight: 700,
-                  }}
-                >
-                  {item.label}
+                <StageBanner id={stage.id} />
+
+                <div className="flex flex-1 flex-col" style={{ padding: '14px 16px 16px' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', letterSpacing: '0.1em', color: 'var(--ink-mute)' }}>
+                    {String(stage.number).padStart(2, '0')} · <span style={{ color: 'var(--teal-deep)', fontWeight: 700 }}>{stage.label}</span>
+                  </div>
+
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', lineHeight: 1.4, color: 'var(--ink-soft)', margin: '6px 0 0', flex: 1 }}>
+                    {stage.caption}
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between gap-2" style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.85rem', color: 'var(--ink)' }}>
+                    <span>{STAGE_ACTION[stage.id]}</span>
+                    <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1" style={{ color: 'var(--copper-orn-deep)' }}>→</span>
+                  </div>
                 </div>
               </Link>
-            ))}
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* Deliverables — each lane's hand-off document */}
+        <ScrollReveal delay={160}>
+          <div className="flex flex-col items-center gap-4">
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
+              every lane ends in a deliverable
+            </div>
+            <div className="flex flex-wrap justify-center gap-4">
+              {[
+                { label: 'Personal Briefing', href: '/pdf-preview/consumer' },
+                { label: 'Clinical Brief', href: '/pdf-preview/clinician' },
+                { label: 'Case-Prep Packet', href: '/pdf-preview/counsel' },
+              ].map((item) => (
+                <Link key={item.label} href={item.href} className="no-underline" style={{ border: '1px solid var(--paper-line)', background: 'var(--paper-raised)', borderRadius: 999, padding: '10px 20px', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </ScrollReveal>
       </div>

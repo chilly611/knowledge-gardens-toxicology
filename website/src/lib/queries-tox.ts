@@ -85,6 +85,23 @@ export async function getSubstance(slug: string): Promise<{
     s = byAlias;
   }
 
+  // 3) Robust fallback: compare the URL slug against the slugified name/alias of
+  //    every substance. Handles slugs built from punctuated names such as
+  //    "2,3,7,8-Tetrachlorodibenzo-p-dioxin (TCDD)" -> "2-3-7-8-…-tcdd" and
+  //    "Polychlorinated biphenyls (PCBs)" -> "polychlorinated-biphenyls-pcbs",
+  //    which the ilike / alias passes miss because of the punctuation.
+  if (!s) {
+    const norm = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const { data: all } = await supabaseTox
+      .from('substances')
+      .select('id, name, cas_number, molecular_formula, description, aliases');
+    s =
+      (all ?? []).find(
+        (row: { name: string; aliases?: string[] | null }) =>
+          norm(row.name) === slug || (row.aliases ?? []).some((a) => norm(a) === slug)
+      ) ?? null;
+  }
+
   if (!s) return null;
   const substance = s as Substance;
   const aliasArray: string[] = ((s as { aliases?: string[] }).aliases) ?? [];
@@ -328,7 +345,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
       .limit(8),
     supabaseTox
       .from('legal_cases')
-      .select('id, short_name, name, description')
+      .select('id, slug, short_name, name, description')
       .or(`name.ilike.${like},description.ilike.${like},short_name.ilike.${like}`)
       .limit(8),
     // Case documents — Sky Valley corpus (52 docs)
@@ -365,7 +382,7 @@ export async function searchEverything(query: string): Promise<SearchResult[]> {
     results.push({ type: 'source', id: s.id, title: s.title, snippet: s.doi ?? s.url, link: s.url });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const c of (cases.data ?? []) as any[])
-    results.push({ type: 'case', id: c.id, title: c.name, snippet: c.description, link: `/case/${slug(c.short_name)}` });
+    results.push({ type: 'case', id: c.id, title: c.name, snippet: c.description, link: `/case/${c.slug ?? slug(c.short_name)}` });
 
   // Case documents — all currently belong to Sky Valley; deep-link with the query pre-applied so the case page can scroll/filter.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

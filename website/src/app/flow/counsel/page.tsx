@@ -19,24 +19,26 @@ const CASE_SLUG = 'sky-valley';
 /** The loaded sample case (identity is stable; live counts + the AI TAKE come from the graph). */
 const CASE = {
   name: 'Erickson v. Monsanto',
-  meta: 'Washington State · 2016 · toxic-tort',
-  thesis: 'PCB exposure → non-Hodgkin lymphoma',
+  meta: 'Washington State · King County Superior Court · teachers, first trial 2021',
+  thesis: 'PCB exposure → brain injury in the Sky Valley teachers',
   expert: 'James G. Dahlgren, M.D.',
-  substances: ['PCBs', 'Dioxins'],
+  substances: ['PCBs'],
 };
 const CTX = `${CASE.name} (${CASE.thesis})`;
-// Seed terms so the grounding search retrieves the PCB carcinogenicity claims + sources, not just the expert row.
-const SEED = 'PCBs, dioxins, carcinogenicity, non-Hodgkin lymphoma, IARC. ';
+// Seed terms so grounding retrieves the PCB NEUROTOXICITY evidence. This is a
+// brain-injury case — cognitive / neurological harm in the chronically exposed
+// teachers — NOT a cancer case. Do NOT seed carcinogenicity / lymphoma.
+const SEED = 'PCBs, neurotoxicity, cognitive impairment, neurobehavioral deficits, memory, learning, executive function, brain injury, thyroid disruption, dopamine, Sky Valley teachers. ';
 
 type Move = { key: string; title: string; sub: string; prompt: string };
 const MOVES: Move[] = [
-  { key: 'daubert', title: 'Build the Daubert table', sub: 'Certified vs. contested support, per claim', prompt: `${SEED}For ${CTX}, build the Daubert posture table: for each major causation claim, give the regulatory/tier-1 support, the peer-reviewed support, and any contested or contradicting sources, then rate admissibility risk (low/medium/high).` },
-  { key: 'theory', title: 'Draft the theory of harm', sub: 'Exposure → mechanism → injury chain', prompt: `${SEED}For ${CTX}, lay out the theory of harm as a causal chain — exposure pathway, then biological mechanism, then the diagnosed injury — and cite the strongest evidence at each link.` },
-  { key: 'depose', title: 'What to depose', sub: 'Highest-leverage questions for opposing experts', prompt: `${SEED}For ${CTX}, list the highest-leverage deposition questions to put to the opposing experts, each aimed at the weakest link in the defense's causation argument.` },
-  { key: 'evidence', title: 'Strongest & weakest evidence', sub: 'Where the case is solid — and exposed', prompt: `${SEED}For ${CTX}, name the single strongest piece of evidence and the single biggest evidentiary vulnerability, each with its source and tier.` },
+  { key: 'daubert', title: 'Build the Daubert table', sub: 'Certified vs. contested support, per claim', prompt: `${SEED}For ${CTX}, build the Daubert posture table for the NEUROLOGICAL causation claims: for each, give the regulatory / tier-1 support, the peer-reviewed support, and any contested or contradicting sources, then rate admissibility risk (low/medium/high).` },
+  { key: 'theory', title: 'Draft the theory of harm', sub: 'Exposure → neurotoxic mechanism → brain injury', prompt: `${SEED}For ${CTX}, lay out the theory of harm as a causal chain — PCB exposure pathway inside the school building, the neurotoxic mechanism, then the cognitive / neurological injury in the teachers — and cite the strongest evidence at each link. This is a brain-injury case, not a cancer case.` },
+  { key: 'depose', title: 'What to depose', sub: 'Highest-leverage questions for opposing experts', prompt: `${SEED}For ${CTX}, list the highest-leverage deposition questions for the defense experts, each aimed at the weakest link in the defense's argument against PCB neurotoxicity and brain-injury causation.` },
+  { key: 'evidence', title: 'Strongest & weakest evidence', sub: 'Where the case is solid — and exposed', prompt: `${SEED}For ${CTX}, name the single strongest piece of evidence and the single biggest evidentiary vulnerability for the neurological-injury theory, each with its source and tier.` },
 ];
 
-const TAKE_PROMPT = `${SEED}Give me your read on ${CTX} for ${CASE.expert} as lead expert. Cover, tightly: the theory of harm, the Daubert posture (what's certified vs. contested), the strongest piece of evidence and the biggest vulnerability, and what to prioritize first.`;
+const TAKE_PROMPT = `${SEED}Give me your read on ${CTX} for ${CASE.expert} as lead expert. The injury at issue is neurological / cognitive brain injury, NOT cancer. Cover, tightly: the theory of harm (PCB exposure → neurotoxic mechanism → cognitive / neurological injury in the exposed teachers), the Daubert posture (certified vs. contested), the strongest evidence and the biggest vulnerability, and what to prioritize first.`;
 
 type Citation = { entity_type: string; display_name: string; link: string };
 
@@ -129,20 +131,25 @@ export default function CounselKillerApp() {
         <div className="rail-wide py-9">
           <div style={{ ...MONO, color: 'var(--ink-mute)' }}>Counsel workspace · loaded sample case</div>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-6">
-            <div>
+            <div className="flex items-center gap-4">
+              {/* developed counsel plate — the balance-scale + flask specimen */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/plates/audience-legal.png" alt="" style={{ width: 76, height: 76, objectFit: 'cover', objectPosition: 'center 26%', borderRadius: 4, border: '1px solid var(--paper-line)', flexShrink: 0 }} />
+              <div>
               <h1 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(2.6rem, 5.5vw, 4.2rem)', lineHeight: 1.02, letterSpacing: '-0.01em', color: 'var(--teal-deep)', margin: 0 }}>
                 {CASE.name}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--ink-mute)' }}>
                 <span>{CASE.meta}</span><span style={{ opacity: 0.5 }}>·</span>
                 <span>Lead expert: {CASE.expert}</span>
-                {docs && (<><span style={{ opacity: 0.5 }}>·</span><span>{docs.d} documents · {docs.e} timeline events · {docs.x} experts</span></>)}
+                {docs && (<><span style={{ opacity: 0.5 }}>·</span><span>{docs.e} timeline events · {docs.x} expert{docs.x === 1 ? '' : 's'} · case file confidential</span></>)}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {CASE.substances.map((s) => (
                   <Link key={s} href={`/compound/${s.toLowerCase()}`} className="no-underline" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--teal-deep)', background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderRadius: 3, padding: '3px 9px' }}>{s}</Link>
                 ))}
               </div>
+            </div>
             </div>
             {/* Stakes */}
             <div style={{ border: '1px solid var(--paper-line)', borderLeft: '3px solid var(--copper-orn)', background: 'var(--paper-raised)', borderRadius: 4, padding: '12px 16px', minWidth: 230 }}>

@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { getCaseByShortName, slug } from '@/lib/queries-tox';
 import type { CaseDetail } from '@/lib/types-tox';
 import CaseTimeline from '@/components/case/CaseTimeline';
-import DocumentRegister from '@/components/case/DocumentRegister';
 
 export default function SkyValleyCasePage() {
   const [caseData, setCaseData] = useState<CaseDetail | null>(null);
@@ -134,7 +133,6 @@ export default function SkyValleyCasePage() {
         (d) => matchesText(d.title) || matchesText(d.notes) || matchesText(d.doc_type)
       );
   const filteredDocs = docsMatchingFilter.slice(0, DOC_DISPLAY_CAP);
-  const docsHidden = docsMatchingFilter.length - filteredDocs.length;
   const filteredEvents = !filterLower
     ? caseData.events
     : caseData.events.filter(
@@ -177,12 +175,13 @@ export default function SkyValleyCasePage() {
           <h1
             className="mb-8 max-w-3xl"
             style={{
-              fontFamily: 'var(--font-body)',
-              fontStyle: 'normal',
-              fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)',
-              fontWeight: 800,
-              color: 'var(--ink)',
-              lineHeight: 1.2,
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: 'clamp(2.6rem, 5vw, 4rem)',
+              fontWeight: 600,
+              color: 'var(--teal-deep)',
+              lineHeight: 1.05,
+              letterSpacing: '-0.01em',
             }}
           >
             {caseData.name}
@@ -214,7 +213,7 @@ export default function SkyValleyCasePage() {
               color: 'var(--copper-orn-deep)',
             }}
           >
-            Search this case · {caseData.documents.length} {caseData.documents.length === 1 ? 'document' : 'documents'} · {caseData.events.length} {caseData.events.length === 1 ? 'event' : 'events'} · {caseData.experts.length} {caseData.experts.length === 1 ? 'expert' : 'experts'}
+            Search this case · {caseData.events.length} {caseData.events.length === 1 ? 'event' : 'events'} · {caseData.substances.length} {caseData.substances.length === 1 ? 'substance' : 'substances'} · {caseData.experts.length} {caseData.experts.length === 1 ? 'expert' : 'experts'}
           </div>
           <div className="relative">
             <input
@@ -424,38 +423,66 @@ export default function SkyValleyCasePage() {
           </section>
         )}
 
-        {/* Document Register Section */}
-        {filteredDocs.length > 0 && (
-          <section className="mb-24">
-            <h2
-              className="mb-10"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontStyle: 'normal',
-                fontSize: '1.5rem',
-                fontWeight: 800,
-                color: 'var(--ink)',
-                lineHeight: 1.2,
-              }}
+        {/* Confidential Case File — the full corpus is gated (it contains protected
+            medical records + personal data) and is no longer publicly readable.
+            See migration `gate_case_documents_corpus_behind_auth`. We surface its
+            scale and composition honestly, but not its contents. */}
+        <section className="mb-24">
+          <h2
+            className="mb-8"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: '1.9rem',
+              fontWeight: 600,
+              color: 'var(--teal-deep)',
+              lineHeight: 1.1,
+            }}
+          >
+            The case file
+          </h2>
+          <div
+            className="rounded-lg border p-8 sm:p-10"
+            style={{ borderColor: 'var(--paper-line)', borderLeft: '3px solid var(--copper-orn)', background: 'var(--paper-warm)' }}
+          >
+            <div
+              className="mb-4"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--copper-orn-deep)' }}
             >
-              Documents
-            </h2>
-            {docsHidden > 0 && (
-              <p
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
-                  color: 'var(--ink-mute)',
-                  letterSpacing: '0.05em',
-                  marginBottom: '1.25rem',
-                }}
-              >
-                Showing first {filteredDocs.length} of {docsMatchingFilter.length} documents — type in the search above to narrow.
-              </p>
-            )}
-            <DocumentRegister documents={filteredDocs} />
-          </section>
-        )}
+              Confidential · access restricted
+            </div>
+            <p
+              className="mb-2 max-w-2xl"
+              style={{ fontFamily: 'var(--font-body)', fontSize: '1.02rem', color: 'var(--ink-soft)', lineHeight: 1.7 }}
+            >
+              The complete Sky Valley case file — <strong style={{ color: 'var(--ink)' }}>1,959 documents</strong> — is held in the garden but not published here. It spans the depositions, expert reports, exhibits, motions, and correspondence of the litigation alongside the scientific record. Because it also holds <strong style={{ color: 'var(--ink)' }}>protected medical records and personal data</strong>, access is restricted to authorized counsel and retained experts.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {([
+                ['347', 'depositions'],
+                ['96', 'expert reports'],
+                ['120', 'motions'],
+                ['78', 'exhibits'],
+                ['106', 'correspondence'],
+                ['1,212', 'reference & supporting'],
+              ] as [string, string][]).map(([n, label]) => (
+                <span
+                  key={label}
+                  style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--ink-soft)', background: 'var(--paper)', border: '1px solid var(--paper-line)', borderRadius: 3, padding: '4px 10px' }}
+                >
+                  <strong style={{ color: 'var(--teal-deep)' }}>{n}</strong> {label}
+                </span>
+              ))}
+            </div>
+            <Link
+              href="/vault"
+              className="mt-6 inline-flex items-center gap-2 no-underline"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--teal-deep)', border: '1px solid var(--paper-line)', background: 'var(--paper)', borderRadius: 3, padding: '7px 13px' }}
+            >
+              Authorized access — sign in to the case file →
+            </Link>
+          </div>
+        </section>
 
         {/* Call-to-Action Section */}
         <section

@@ -1,54 +1,30 @@
 'use client';
 
-import Link from 'next/link';
-import ScrollReveal from '@/components/home/ScrollReveal';
+/**
+ * /workflow/adapt — Stage 05 · the real Adapt tool (re-assess when conditions change).
+ */
+import StageWorkspace from '@/components/flow/StageWorkspace';
 
-export default function AdaptWorkflowPage() {
+export default function AdaptStage() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <section className="relative py-24 sm:py-32" style={{ minHeight: '70vh' }}>
-        <div className="rail-default">
-          <ScrollReveal>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.32em', textTransform: 'uppercase', color: 'var(--copper-orn-deep)' }}>
-              stage 5 of 7 · adapt workflows
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <h1 className="mx-auto mt-5 max-w-[20ch]" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2.4rem, 6vw, 5rem)', fontWeight: 500, lineHeight: 1.05, color: 'var(--ink)' }}>
-              Conditions changed
-            </h1>
-          </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <div className="prose-rail mt-6">
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.1rem', lineHeight: 1.6, color: 'var(--ink-soft)' }}>
-                Re-exposure assessment workflows. Coming soon.
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={450}>
-            <div className="mt-10 flex justify-center">
-              <video poster="/icons/stage-adapt.png" autoPlay muted loop playsInline width={120} height={120} style={{ display: 'inline-block' }}>
-                <source src="/icons/stage-adapt.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-      <section className="bg-[var(--paper-warm)] py-20">
-        <div className="rail-default">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 500, color: 'var(--ink)', marginBottom: '2rem' }}>
-            Coming soon.
-          </h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--ink-soft)', maxWidth: '65ch' }}>
-            Re-exposure assessment tools coming soon.
-          </p>
-        </div>
-      </section>
-      <section className="bg-[var(--paper)] py-16 text-center">
-        <Link href="/workflow" style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--teal-deep)', textDecoration: 'underline' }}>
-          ← Back to all stages
-        </Link>
-      </section>
-    </main>
+    <StageWorkspace
+      config={{
+        stage: 'adapt',
+        lane: 'clinician',
+        title: 'Adapt to change.',
+        tagline: 'Something shifted — a higher dose, new data, a new ruling. What do you adjust?',
+        inputLabel: 'Describe what changed',
+        placeholder: 'e.g., monitoring shows PCB serum levels still rising despite current controls',
+        defaultSubject: 'Monitoring shows worker PCB serum levels are still rising despite the current controls.',
+        presets: [
+          { label: 'Levels still rising', subject: 'Monitoring shows worker PCB serum levels are still rising despite the current controls.' },
+          { label: 'New study published', subject: 'A new peer-reviewed study links glyphosate to effects at lower doses than we assumed.' },
+          { label: 'Regulation tightened', subject: 'The regulatory exposure limit for this contaminant was just tightened.' },
+        ],
+        prompt: (s) =>
+          `PCBs, dioxins, glyphosate, biomarkers, exposure, re-assessment. Conditions changed: ${s} Re-assess what this changes about the risk and the response, and what specifically to adjust now — be concrete about what is different and what action follows.`,
+        outputLabel: 'Adjusted assessment',
+      }}
+    />
   );
 }

@@ -1,249 +1,51 @@
 'use client';
 
 /**
- * /workflow — Index page showing all 7 stages and their workflows.
+ * /workflow — the seven-stage lifecycle hub.
+ *
+ * Reuses the (now real, all-wired) SevenStages section so this view never
+ * drifts from the homepage, then offers the three lanes as the audience entry.
  */
 
 import Link from 'next/link';
-import ScrollReveal from '@/components/home/ScrollReveal';
+import SevenStages from '@/components/home/SevenStages';
 
-const STAGES_WITH_WORKFLOWS = [
-  {
-    id: 'identify',
-    label: 'Identify',
-    caption: 'What is this substance?',
-    emoji: '◎',
-    workflows: [
-      { slug: 'compound-lookup', title: 'Compound lookup', status: 'live' },
-      { slug: 'ghs-classifier', title: 'GHS classifier', status: 'soon' },
-      { slug: 'label-decoder', title: 'Label decoder', status: 'soon' },
-      { slug: 'sds-retrieval', title: 'SDS retrieval', status: 'soon' },
-    ],
-  },
-  {
-    id: 'assess',
-    label: 'Assess',
-    caption: 'How dangerous, in this scenario?',
-    emoji: '◇',
-    workflows: [
-      { slug: 'exposure-scenario', title: 'Exposure scenario builder', status: 'soon' },
-      { slug: 'dose-calculator', title: 'Dose calculator', status: 'soon' },
-    ],
-  },
-  {
-    id: 'plan',
-    label: 'Plan',
-    caption: 'What do we do about it?',
-    emoji: '△',
-    workflows: [
-      { slug: 'mitigation-plan', title: 'Mitigation plan', status: 'soon' },
-    ],
-  },
-  {
-    id: 'act',
-    label: 'Act',
-    caption: 'Execute response or daily handling',
-    emoji: '⌘',
-    workflows: [
-      { slug: 'incident-response', title: 'Incident response', status: 'soon' },
-    ],
-  },
-  {
-    id: 'adapt',
-    label: 'Adapt',
-    caption: 'Conditions changed',
-    emoji: '↻',
-    workflows: [
-      { slug: 'reexposure', title: 'Re-exposure assessment', status: 'soon' },
-    ],
-  },
-  {
-    id: 'resolve',
-    label: 'Resolve',
-    caption: 'Wrap up the incident or program',
-    emoji: '◉',
-    workflows: [
-      { slug: 'reporting-bundle', title: 'Reporting bundle', status: 'soon' },
-    ],
-  },
-  {
-    id: 'reflect',
-    label: 'Reflect',
-    caption: 'Learn from it',
-    emoji: '☐',
-    workflows: [
-      { slug: 'retrospective', title: 'Retrospective', status: 'soon' },
-    ],
-  },
+const LANES = [
+  { href: '/flow/consumer', label: 'Consumer', caption: "What's in my world?", accent: '#234C5A' },
+  { href: '/flow/clinician', label: 'Clinician', caption: 'Workup a panel.', accent: '#2A3A50' },
+  { href: '/flow/counsel', label: 'Counsel', caption: 'Prep a case.', accent: '#6E2419' },
 ];
 
 export default function WorkflowIndexPage() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      {/* Hero */}
-      <section className="relative py-24 sm:py-32" style={{ minHeight: '70vh' }}>
-        <div className="rail-default">
-          <ScrollReveal>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.7rem',
-                letterSpacing: '0.32em',
-                textTransform: 'uppercase',
-                color: 'var(--copper-orn-deep)',
-              }}
-            >
-              seven stages · one shape
-            </div>
-          </ScrollReveal>
+    <main data-surface="tkg" className="min-h-screen" style={{ background: 'var(--paper)' }}>
+      <SevenStages />
 
-          <ScrollReveal delay={150}>
-            <h1
-              className="mx-auto mt-5 max-w-[20ch]"
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontStyle: 'italic',
-                fontSize: 'clamp(2.4rem, 6vw, 5rem)',
-                fontWeight: 500,
-                lineHeight: 1.05,
-                color: 'var(--ink)',
-              }}
-            >
-              The killer-app pattern
-            </h1>
-          </ScrollReveal>
-
-          <ScrollReveal delay={300}>
-            <div className="prose-rail mt-6">
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '1.1rem',
-                  lineHeight: 1.6,
-                  color: 'var(--ink-soft)',
-                }}
-              >
-                Identify → Assess → Plan → Act → Adapt → Resolve → Reflect. Each stage has workflows. Each workflow ends in a deliverable.
-              </p>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal delay={450}>
-            <div className="mt-10 flex justify-center">
-              <video
-                poster="/icons/stage-identify.png"
-                autoPlay
-                muted
-                loop
-                playsInline
-                width={120}
-                height={120}
-                style={{ display: 'inline-block' }}
-              >
-                <source src="/icons/stage-identify.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Stages Grid */}
-      <section className="bg-[var(--paper-warm)] py-20">
-        <div className="rail-default">
-          {STAGES_WITH_WORKFLOWS.map((stage, stageIdx) => (
-            <ScrollReveal key={stage.id} delay={100 + stageIdx * 50}>
-              <div className="mb-16">
-                <div className="mb-6 flex items-center gap-4">
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '2rem',
-                      color: 'var(--copper-orn-deep)',
-                    }}
-                  >
-                    {stage.emoji}
-                  </div>
-                  <div>
-                    <h2
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontStyle: 'italic',
-                        fontSize: '1.6rem',
-                        fontWeight: 500,
-                        color: 'var(--ink)',
-                      }}
-                    >
-                      {stage.label}
-                    </h2>
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        fontSize: '0.9rem',
-                        color: 'var(--ink-soft)',
-                        marginTop: '0.25rem',
-                      }}
-                    >
-                      {stage.caption}
-                    </p>
-                  </div>
+      {/* Lanes — the audience entry. The seven stages run inside each. */}
+      <section className="border-t" style={{ borderColor: 'var(--paper-line)', background: 'var(--paper)' }}>
+        <div className="rail-wide py-16">
+          <div className="mb-2 text-center" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
+            or start from who you are
+          </div>
+          <h2 className="mx-auto mb-8 max-w-[20ch] text-center" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--teal-deep)' }}>
+            Pick a lane — it runs all seven for you.
+          </h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {LANES.map((l) => (
+              <Link key={l.href} href={l.href} className="group no-underline transition-transform duration-200 hover:-translate-y-1"
+                style={{ background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderTop: `3px solid ${l.accent}`, borderRadius: 5, padding: '20px 22px', boxShadow: '0 1px 0 var(--paper-line), 0 8px 20px rgba(18,38,44,0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: l.accent, fontWeight: 700 }}>{l.label}</div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.5rem', color: 'var(--teal-deep)' }}>{l.caption}</span>
+                  <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1" style={{ color: 'var(--copper-orn-deep)' }}>→</span>
                 </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  {stage.workflows.map((wf) => (
-                    <Link
-                      key={wf.slug}
-                      href={`/workflow/${stage.id}/${wf.slug}`}
-                      className="group tile-inner relative bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
-                      style={{ background: wf.status === 'live' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.3)' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3
-                          style={{
-                            fontFamily: 'var(--font-body)',
-                            fontSize: '0.95rem',
-                            fontWeight: 500,
-                            color: 'var(--ink)',
-                          }}
-                        >
-                          {wf.title}
-                        </h3>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.65rem',
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            color: wf.status === 'live' ? 'var(--teal-deep)' : 'var(--ink-mute)',
-                            background: wf.status === 'live' ? 'var(--paper-warm)' : 'var(--paper-line)',
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '0.25rem',
-                          }}
-                        >
-                          {wf.status}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link href="/" className="no-underline" style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--teal-deep)' }}>← Back to the garden</Link>
+          </div>
         </div>
-      </section>
-
-      {/* CTA Back */}
-      <section className="bg-[var(--paper)] py-16 text-center">
-        <Link
-          href="/"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.95rem',
-            color: 'var(--teal-deep)',
-            textDecoration: 'underline',
-          }}
-        >
-          ← Return to Loom
-        </Link>
       </section>
     </main>
   );

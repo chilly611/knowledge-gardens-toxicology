@@ -40,10 +40,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </main>
         <LiabilityStrip />
         <footer
-          className="border-t border-[var(--paper-line)]"
+          className="relative overflow-hidden border-t border-[var(--paper-line)]"
           style={{ background: 'var(--paper-warm)' }}
         >
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
+          {/* developed umbrella-bloom specimen — a soft herbarium watermark tying the
+              Toxicology Knowledge Garden to the wider Knowledge Gardens enterprise */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/umbrella-bloom.png"
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 select-none"
+            style={{ top: '50%', transform: 'translate(-50%, -48%)', width: 196, opacity: 0.28, mixBlendMode: 'multiply' }}
+          />
+          <div className="relative mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-14 sm:flex-row sm:px-6 lg:px-8">
             <div
               className="text-[var(--ink-mute)]"
               style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}

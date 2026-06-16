@@ -1,54 +1,31 @@
 'use client';
 
-import Link from 'next/link';
-import ScrollReveal from '@/components/home/ScrollReveal';
+/**
+ * /workflow/reflect — Stage 07 · the real Reflect tool (evidence retrospective).
+ * End of the lifecycle: what's settled, what's contested, what to watch.
+ */
+import StageWorkspace from '@/components/flow/StageWorkspace';
 
-export default function ReflectWorkflowPage() {
+export default function ReflectStage() {
   return (
-    <main data-surface="tkg" className="min-h-screen bg-[var(--paper)]">
-      <section className="relative py-24 sm:py-32" style={{ minHeight: '70vh' }}>
-        <div className="rail-default">
-          <ScrollReveal>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.32em', textTransform: 'uppercase', color: 'var(--copper-orn-deep)' }}>
-              stage 7 of 7 · reflect workflows
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={150}>
-            <h1 className="mx-auto mt-5 max-w-[20ch]" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2.4rem, 6vw, 5rem)', fontWeight: 500, lineHeight: 1.05, color: 'var(--ink)' }}>
-              Learn from it
-            </h1>
-          </ScrollReveal>
-          <ScrollReveal delay={300}>
-            <div className="prose-rail mt-6">
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '1.1rem', lineHeight: 1.6, color: 'var(--ink-soft)' }}>
-                Retrospective and learning workflows. Coming soon.
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={450}>
-            <div className="mt-10 flex justify-center">
-              <video poster="/icons/stage-reflect.png" autoPlay muted loop playsInline width={120} height={120} style={{ display: 'inline-block' }}>
-                <source src="/icons/stage-reflect.mp4" type="video/mp4" />
-              </video>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-      <section className="bg-[var(--paper-warm)] py-20">
-        <div className="rail-default">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 500, color: 'var(--ink)', marginBottom: '2rem' }}>
-            Coming soon.
-          </h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--ink-soft)', maxWidth: '65ch' }}>
-            Retrospective and learning tools coming soon.
-          </p>
-        </div>
-      </section>
-      <section className="bg-[var(--paper)] py-16 text-center">
-        <Link href="/workflow" style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'var(--teal-deep)', textDecoration: 'underline' }}>
-          ← Back to all stages
-        </Link>
-      </section>
-    </main>
+    <StageWorkspace
+      config={{
+        stage: 'reflect',
+        lane: 'counsel',
+        title: 'Reflect & learn.',
+        tagline: "What's settled, what's still contested, and what to watch as the evidence evolves.",
+        inputLabel: 'Name the substance or claim to review',
+        placeholder: 'e.g., PCB exposure and non-Hodgkin lymphoma — how settled is the causation?',
+        defaultSubject: 'PCB exposure and non-Hodgkin lymphoma — how settled is the causation, really?',
+        presets: [
+          { label: 'PCBs & lymphoma', subject: 'PCB exposure and non-Hodgkin lymphoma — how settled is the causation, really?' },
+          { label: 'Glyphosate & cancer', subject: 'Glyphosate and cancer risk — what is certified versus contested?' },
+          { label: 'Dioxin & immune effects', subject: 'Dioxin exposure and immune-system effects — where does the evidence stand?' },
+        ],
+        prompt: (s) =>
+          `PCBs, dioxins, glyphosate, non-Hodgkin lymphoma, carcinogenicity, certified, contested, IARC, evidence tiers, confidence. Retrospective on: ${s} Give an evidence retrospective: what is well-established (certified), what is still contested, where the real uncertainty lies, and what to monitor as new evidence arrives.`,
+        outputLabel: 'Evidence retrospective',
+      }}
+    />
   );
 }

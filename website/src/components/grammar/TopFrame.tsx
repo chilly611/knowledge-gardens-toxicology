@@ -93,6 +93,19 @@ export default function TopFrame({ backLink }: { backLink?: BackLink; currentSta
                 );
               })}
             </nav>
+            <Link
+              href="/vault"
+              title="Sign in to the confidential case file"
+              className="inline-flex items-center rounded-full px-4 py-2 transition-all hover:-translate-y-px"
+              style={{
+                fontFamily: 'var(--font-body)', fontSize: '0.92rem', fontWeight: 600, whiteSpace: 'nowrap',
+                color: pathname.startsWith('/vault') ? 'var(--paper)' : 'var(--teal-deep)',
+                background: pathname.startsWith('/vault') ? 'var(--tox-deep)' : 'transparent',
+                border: '1px solid var(--teal-deep)',
+              }}
+            >
+              Sign in
+            </Link>
             <span className="hidden h-6 w-px md:inline-block" style={{ background: 'var(--paper-line)' }} />
             <button
               type="button"

@@ -179,7 +179,7 @@ async function buildGrounding(question: string): Promise<GroundingPayload> {
       status: c.status,
       confidence_score: c.confidence_score,
       effect_summary: c.effect_summary,
-      sources: c.sources,
+      sources: c.sources ?? [],
       link: `/compound/${slug(c.substance_name)}#claim-${c.claim_id}`,
     })),
     cases: Array.from(cases.values()).map((c: any) => ({
@@ -323,9 +323,10 @@ Please answer the question using ONLY the grounding context above. Use inline [n
  * Determine confidence level from grounding.
  */
 function calculateConfidence(grounding: GroundingPayload): 'high' | 'medium' | 'low' {
-  const totalSources = grounding.claims.reduce((sum, c) => sum + c.sources.length, 0);
+  // Claims can come back with a null `sources` (no linked evidence rows) — guard every access.
+  const totalSources = grounding.claims.reduce((sum, c) => sum + (c.sources?.length ?? 0), 0);
   const uniqueSourceCount = new Set(
-    grounding.claims.flatMap((c) => c.sources.map((s) => s.url || s.doi || s.title))
+    grounding.claims.flatMap((c) => (c.sources ?? []).map((s) => s.url || s.doi || s.title))
   ).size;
 
   if (uniqueSourceCount >= 3 && grounding.claims.length >= 2) return 'high';

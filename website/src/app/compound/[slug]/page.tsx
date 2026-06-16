@@ -27,11 +27,13 @@ const TABS: { id: Tab; label: string }[] = [
 
 /* ---- illustrative substance copy (preserved from the prior page) ---- */
 const lc = (s: string) => s.toLowerCase();
+const isDioxin = (n: string) => n.includes('dioxin') || n.includes('tcdd') || n.includes('tetrachlorodibenzo');
 function hazardHeadline(name: string) {
   const n = lc(name);
   if (n.includes('glyphosate')) return 'Detected in >80% of US urine samples — found in oats, wheat, and many tap-water systems.';
   if (n === 'microplastics') return 'Ubiquitous in modern food chains — from bottled water to seafood to the air we breathe.';
   if (n.includes('pcb')) return 'Persistent legacy pollutant found in sediment, wildlife, and human adipose tissue decades after production ceased.';
+  if (isDioxin(n)) return 'The most toxic dioxin congener — a persistent byproduct of combustion and chlorine chemistry, concentrated up the food chain. IARC Group 1.';
   return 'Widely used in food packaging — emerging evidence on thermal leaching into beverages and fatty foods.';
 }
 function hazardChips(name: string): string[] {
@@ -39,6 +41,7 @@ function hazardChips(name: string): string[] {
   if (n.includes('glyphosate')) return ['Found in oats', 'Detected in tap water', 'Trace in most people'];
   if (n === 'microplastics') return ['In seafood', 'In drinking water', 'Airborne particles'];
   if (n.includes('pcb')) return ['Sediment bound', 'Bioaccumulative', 'Ubiquitous legacy'];
+  if (isDioxin(n)) return ['Combustion byproduct', 'Bioaccumulative', 'IARC Group 1'];
   return ['In PET bottles', 'Thermal leaching', 'Emerging concern'];
 }
 function mechanismHeadline(name: string) {
@@ -46,6 +49,7 @@ function mechanismHeadline(name: string) {
   if (n.includes('glyphosate')) return 'EPSP synthase inhibitor; gut microbiome disruption under study.';
   if (n === 'microplastics') return 'Particulate translocation across epithelial barriers; inflammatory markers elevated in some populations.';
   if (n.includes('pcb')) return 'Persistent organochlorine; binds to fatty tissues; multiple mechanism pathways (AhR, nuclear receptor).';
+  if (isDioxin(n)) return 'Potent aryl-hydrocarbon-receptor (AhR) agonist — the driver of dioxin-like toxicity.';
   return 'Thermal hydrolysis releases monomer; endocrine-active at low doses; accumulates in adipose.';
 }
 function mechanismDetail(name: string) {
@@ -53,6 +57,7 @@ function mechanismDetail(name: string) {
   if (n.includes('glyphosate')) return 'Herbicide blocks aromatic amino acid synthesis via inhibition of EPSP synthase. Human relevance through altered gut microbiota composition and potential immunological shifts.';
   if (n === 'microplastics') return 'Small particle size allows crossing of mucous membranes; can reach systemic circulation; inflammatory cascade activation observed in vitro and in animal models.';
   if (n.includes('pcb')) return "Cl substitution pattern determines biological activity (Cl at 2,2',4,4' positions most toxic). AhR activation triggers CYP450 induction and altered estrogen metabolism.";
+  if (isDioxin(n)) return 'TCDD binds the aryl hydrocarbon receptor (AhR) with very high affinity, inducing CYP1A1 and disrupting endocrine, immune, and developmental signaling. Extremely persistent — stored in adipose tissue with a half-life measured in years — and linked to chloracne, immunotoxicity, and cancer.';
   return 'BPA leaching increases with temperature, pH, and fatty food contact. Binds estrogen receptors at low nanomolar concentrations in cell culture.';
 }
 function biomarkers(name: string): string[] {
@@ -60,6 +65,7 @@ function biomarkers(name: string): string[] {
   if (n.includes('glyphosate')) return ['urinary_glyphosate', 'urinary_AMPA', 'serum_GLP-1'];
   if (n === 'microplastics') return ['plastic_particles_serum', 'inflammatory_markers', 'oxidative_stress'];
   if (n.includes('pcb')) return ['serum_PCB_congeners', 'liver_enzymes', 'thyroid_hormone'];
+  if (isDioxin(n)) return ['serum_TCDD', 'lipid_adjusted_TEQ', 'CYP1A1_induction'];
   return ['BPA_urine', 'BPA_serum', 'estrogen_receptor_activity'];
 }
 function responseHeadline(name: string) {
@@ -67,6 +73,7 @@ function responseHeadline(name: string) {
   if (n.includes('glyphosate')) return 'IARC 2A vs EPA "not likely" — an active disagreement.';
   if (n === 'microplastics') return 'Regulatory absent; evidence accelerating; precautionary principle applied.';
   if (n.includes('pcb')) return 'Banned globally; persistent in the environment; legacy liability cases ongoing.';
+  if (isDioxin(n)) return 'IARC Group 1 (known human carcinogen); tightly regulated; central to Agent Orange and Seveso litigation.';
   return 'FDA approval maintained; industry studies vs. independent research diverge.';
 }
 

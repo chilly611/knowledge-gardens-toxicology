@@ -79,34 +79,49 @@ function ExpertPageInner({ params }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    // Every query resolves defensively: a slow / failed / hung query must never
+    // leave the page stuck on "Loading…". Each resolves to a fallback within 7s
+    // and logs the culprit so a real fix can follow.
+    const safe = <T,>(label: string, p: Promise<T>, fallback: T): Promise<T> =>
+      Promise.race([
+        p.catch((e) => { console.warn(`[expert] ${label} failed`, e); return fallback; }),
+        new Promise<T>((r) => setTimeout(() => { console.warn(`[expert] ${label} timed out`); r(fallback); }, 7000)),
+      ]);
     (async () => {
-      const p = await params;
-      if (cancelled) return;
-      setSlugParam(p.slug);
-      const e = await getExpertBySlug(p.slug);
-      if (cancelled) return;
-      setExpert(e);
-      if (e) {
-        const lastNameMatch = e.name.match(/(\w+)$/);
-        const lastName = lastNameMatch ? lastNameMatch[1] : e.name;
-
-        const [cs, cls, docs, pubs, refs, links] = await Promise.all([
-          getExpertCases(e.id),
-          getExpertClaims(e.id),
-          getExpertDocuments(e.id),
-          getExpertPublications(lastName),
-          getExpertReferenceContributions(lastName),
-          getCrossGardenLinks(e.id, 'expert'),
-        ]);
+      try {
+        const p = await params;
         if (cancelled) return;
-        setCases(cs);
-        setClaims(cls);
-        setDocuments(docs);
-        setPublications(pubs);
-        setReferenceTerms(refs);
-        setCrossGardenLinks(links);
+        setSlugParam(p.slug);
+        const e = await safe('bySlug', getExpertBySlug(p.slug), null as Expert | null);
+        if (cancelled) return;
+        setExpert(e);
+        if (e) {
+          // Strip credential suffixes ("M.D.", ", Ph.D.") then take the surname.
+          // The old /(\w+)$/ grabbed "D" from "M.D." (or the whole comma-laden
+          // name), and that comma broke the PostgREST .or() filters downstream —
+          // which is what made getExpertReferenceContributions reject and hang the page.
+          const cleaned = e.name.replace(/,?\s*(M\.?D\.?|Ph\.?D\.?|Esq\.?|Jr\.?|Sr\.?|M\.?S\.?)\.?\s*$/i, '').trim();
+          const lastName = cleaned.split(/\s+/).pop() || cleaned;
+
+          const [cs, cls, docs, pubs, refs, links] = await Promise.all([
+            safe('cases', getExpertCases(e.id), [] as LegalCase[]),
+            safe('claims', getExpertClaims(e.id), [] as CertifiedClaimRow[]),
+            safe('documents', getExpertDocuments(e.id), [] as CaseDocument[]),
+            safe('publications', getExpertPublications(lastName), [] as EvidenceSource[]),
+            safe('referenceTerms', getExpertReferenceContributions(lastName), [] as ReferenceTerm[]),
+            safe('crossGardenLinks', getCrossGardenLinks(e.id, 'expert'), [] as CrossGardenLink[]),
+          ]);
+          if (cancelled) return;
+          setCases(cs);
+          setClaims(cls);
+          setDocuments(docs);
+          setPublications(pubs);
+          setReferenceTerms(refs);
+          setCrossGardenLinks(links);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     })();
     return () => {
       cancelled = true;
@@ -309,15 +324,15 @@ function ExpertPageInner({ params }: Props) {
                   Contact
                 </div>
                 <a
-                  href="mailto:chillyd@gmail.com"
+                  href="/flow/counsel"
                   style={{
-                    color: 'var(--crimson)',
+                    color: 'var(--teal-deep)',
                     fontFamily: 'var(--font-body)',
                     fontSize: '0.9rem',
                     textDecoration: 'underline',
                   }}
                 >
-                  chillyd@gmail.com
+                  Available for case work &rarr;
                 </a>
               </div>
             </div>
