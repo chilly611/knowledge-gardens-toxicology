@@ -1,9 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseUrl || !supabaseKey) {
+  // eslint-disable-next-line no-console
+  console.warn('[supabase] NEXT_PUBLIC_SUPABASE_URL or _ANON_KEY is missing');
+}
+
+// Fall back to a syntactically valid placeholder so module import doesn't throw
+// at build time (Next collects page data by importing route/page modules); any
+// real query against the placeholder host will still fail loudly at request time.
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseKey || 'placeholder-anon-key',
+);
 
 // ── Type definitions matching our Postgres schema ──
 

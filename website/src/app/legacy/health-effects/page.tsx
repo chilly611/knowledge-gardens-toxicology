@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   description: 'Browse health effects linked to drinking water contaminants — cancer, liver damage, endocrine disruption, and more.',
 };
 
+// Render on demand: this prod-backed legacy page must not fetch the DB at build
+// time (preview/CI builds may lack DB env vars or network egress).
+export const dynamic = 'force-dynamic';
+
 async function getEffectsWithCounts() {
   const effects = await getAllHealthEffects();
   const counts: Record<string, number> = {};

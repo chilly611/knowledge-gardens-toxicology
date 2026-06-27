@@ -18,9 +18,11 @@ import { createClient, type Session } from '@supabase/supabase-js';
 
 const DRIVE_FOLDER = 'https://drive.google.com/drive/folders/1I0iDhmvltPKeA52LaQI6YO8BZEP1XbYK';
 
+// Placeholder fallbacks keep module import from throwing at build time when the
+// env vars aren't present; real queries still fail loudly against the placeholder.
 const vault = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_TOX_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_TOX_ANON_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_TOX_URL || 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_TOX_ANON_KEY || 'placeholder-anon-key',
   { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'tkg-vault-auth' } }
 );
 

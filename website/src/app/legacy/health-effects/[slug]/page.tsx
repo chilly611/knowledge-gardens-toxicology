@@ -9,9 +9,12 @@ const EVIDENCE_COLORS: Record<string, string> = {
 function slugToName(slug: string) { return slug.replace(/-/g, ' '); }
 function effectSlug(name: string) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
 
+// Render on demand: this prod-backed legacy page must not fetch the DB at build
+// time (preview/CI builds may lack DB env vars or network egress).
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
-  const effects = await getAllHealthEffects();
-  return effects.map((e: any) => ({ slug: effectSlug(e.name) }));
+  return [];
 }
 
 interface Props { params: Promise<{ slug: string }>; }
