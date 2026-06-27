@@ -19,16 +19,25 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-const url  = process.env.NEXT_PUBLIC_SUPABASE_TOX_URL!;
-const key  = process.env.NEXT_PUBLIC_SUPABASE_TOX_ANON_KEY!;
+const url  = process.env.NEXT_PUBLIC_SUPABASE_TOX_URL;
+const key  = process.env.NEXT_PUBLIC_SUPABASE_TOX_ANON_KEY;
 
 if (!url || !key) {
-  // Don't throw at import time — let the actual query throw with a clearer
-  // message during dev. But warn loudly.
+  // Don't throw at import time — let the actual query fail with a clearer
+  // message at request time. But warn loudly.
+  //
+  // createClient() itself throws "supabaseUrl is required." when handed an
+  // undefined URL, which would crash module evaluation — and Next collects
+  // page data by importing route modules at build time, so a missing env var
+  // breaks the whole build (e.g. /api/ask) rather than just the request. Fall
+  // back to a syntactically valid placeholder so import succeeds; any real
+  // query will still fail loudly against the placeholder host.
   // eslint-disable-next-line no-console
   console.warn('[supabase-tox] NEXT_PUBLIC_SUPABASE_TOX_URL or _ANON_KEY is missing');
 }
 
-export const supabaseTox = createClient(url, key, {
-  auth: { persistSession: false },
-});
+export const supabaseTox = createClient(
+  url || 'https://placeholder.supabase.co',
+  key || 'placeholder-anon-key',
+  { auth: { persistSession: false } },
+);
