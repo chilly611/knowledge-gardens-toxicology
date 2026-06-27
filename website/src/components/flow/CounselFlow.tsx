@@ -12,6 +12,7 @@ const THEORIES = [
   { id: 'persistent_organic', name: 'Persistent Organic Pollution' },
   { id: 'cardiovascular_harm', name: 'Cardiovascular Harm' },
   { id: 'neurodevelopmental', name: 'Neurodevelopmental' },
+  { id: 'neurocognitive_decline', name: 'Neurocognitive Decline / Brain Injury' },
 ];
 
 const US_STATES = [
