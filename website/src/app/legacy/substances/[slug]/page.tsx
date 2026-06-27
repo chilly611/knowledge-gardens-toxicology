@@ -1,12 +1,10 @@
 import {
-  getAllSubstances,
   getSubstanceBySlug,
   getSubstanceHealthEffects,
   getSubstanceClassifications,
   getSubstanceRegulations,
   getSubstanceWaterData,
   getSubstanceAliases,
-  nameToSlug,
 } from '@/lib/supabase';
 import type { Metadata } from 'next';
 import SubstanceDetail from '@/components/SubstanceDetail';
@@ -15,9 +13,13 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// Render on demand: this prod-backed legacy page must not fetch the DB at build
+// time (preview/CI builds may lack DB env vars or network egress). Pages are
+// generated lazily on first request instead of pre-rendered at build.
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
-  const substances = await getAllSubstances();
-  return substances.map((s) => ({ slug: nameToSlug(s.name) }));
+  return [];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

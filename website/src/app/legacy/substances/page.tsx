@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   description: 'Explore 329 substances found in American drinking water — search by name, CAS number, or category.',
 };
 
+// Render on demand: this prod-backed legacy page must not fetch the DB at build
+// time (preview/CI builds may lack DB env vars or network egress).
+export const dynamic = 'force-dynamic';
+
 interface Props {
   searchParams: Promise<{ q?: string; class?: string }>;
 }
