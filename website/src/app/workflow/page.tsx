@@ -14,6 +14,7 @@ const LANES = [
   { href: '/flow/consumer', label: 'Consumer', caption: "What's in my world?", accent: '#234C5A' },
   { href: '/flow/clinician', label: 'Clinician', caption: 'Workup a panel.', accent: '#2A3A50' },
   { href: '/flow/counsel', label: 'Counsel', caption: 'Prep a case.', accent: '#6E2419' },
+  { href: '/flow/researcher', label: 'Researcher', caption: 'Map the evidence.', accent: '#3C7A8A' },
 ];
 
 export default function WorkflowIndexPage() {
@@ -30,7 +31,7 @@ export default function WorkflowIndexPage() {
           <h2 className="mx-auto mb-8 max-w-[20ch] text-center" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--teal-deep)' }}>
             Pick a lane — it runs all seven for you.
           </h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {LANES.map((l) => (
               <Link key={l.href} href={l.href} className="group no-underline transition-transform duration-200 hover:-translate-y-1"
                 style={{ background: 'var(--paper-raised)', border: '1px solid var(--paper-line)', borderTop: `3px solid ${l.accent}`, borderRadius: 5, padding: '20px 22px', boxShadow: '0 1px 0 var(--paper-line), 0 8px 20px rgba(18,38,44,0.08)' }}>

@@ -5,7 +5,7 @@
  * propagates (so callers can surface it instead of silently rendering empty).
  */
 export type Citation = { entity_type: string; display_name: string; link: string };
-export type AskLane = 'counsel' | 'clinician' | 'consumer';
+export type AskLane = 'counsel' | 'clinician' | 'consumer' | 'researcher';
 
 export async function streamAsk(
   question: string,

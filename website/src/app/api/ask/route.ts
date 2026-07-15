@@ -3,7 +3,7 @@ import { supabaseTox } from '@/lib/supabase-tox';
 import type { CertifiedClaimRow, EvidenceSource, LegalCase, Substance } from '@/lib/types-tox';
 import Anthropic from '@anthropic-ai/sdk';
 
-type Lane = 'consumer' | 'clinician' | 'counsel';
+type Lane = 'consumer' | 'clinician' | 'counsel' | 'researcher';
 
 interface GroundingPayload {
   substances: Array<{
@@ -246,6 +246,19 @@ CLINICIAN LANE:
 - Surface peer-review tier per claim (tier 1 = regulatory, 2 = systematic review, 3 = peer-reviewed, 4 = industry/news).
 - Flag contested vs. certified claims.
 - Mention cohort size and study years when available.`
+    );
+  }
+
+  if (lane === 'researcher') {
+    return (
+      basePrompt +
+      `
+
+RESEARCHER LANE:
+- Lead with mechanism of action and study design; name the assays, cohorts, exposure windows, and endpoints.
+- Stratify evidence by tier and weight the strongest designs (systematic reviews, prospective cohorts) over weaker ones; give effect sizes, dose-response, and confidence intervals where the grounding has them.
+- Be explicit about what is established, what is contested, and where the evidence GAPS are — name concrete open questions and the kind of study that would resolve each.
+- Flag heterogeneity, confounding, and limitations. Use precise scientific terminology.`
     );
   }
 
