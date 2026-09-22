@@ -1,0 +1,122 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Decision memo: the Daubert packet builder | Toxicology Knowledge Garden</title><meta name="description" content="Ten global decisions for the Toxicology Knowledge Garden&#x27;s Daubert packet builder, drawn from the September 2026 competitive landscape.">
+<meta property="og:title" content="Decision memo: the Daubert packet builder | Toxicology Knowledge Garden"><meta property="og:description" content="Ten global decisions for the Toxicology Knowledge Garden&#x27;s Daubert packet builder, drawn from the September 2026 competitive landscape."><meta property="og:type" content="article"><meta property="og:site_name" content="Toxicology Knowledge Garden">
+<meta name="robots" content="index,follow"><link rel="icon" href="/favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"><style>
+.tkgnav{background:#1A5C5C;color:#F5F0E8;font-family:'IBM Plex Sans',Arial,sans-serif;font-size:14px}
+.tkgnav .in{max-width:1240px;margin:0 auto;padding:10px clamp(16px,4vw,40px);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.tkgnav a{color:#F5F0E8;text-decoration:none;opacity:.85;padding:4px 0}
+.tkgnav a:hover,.tkgnav a[aria-current]{opacity:1;border-bottom:2px solid #C9A84C}
+.tkgnav .brand{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;opacity:1;margin-right:auto}
+.tkgnav .sep{opacity:.4}
+
+:root{--bg:#F5F0E8;--card:#FBF8F3;--ink:#1F2A2E;--ink2:#4A5559;--mute:#71797E;--teal:#1A5C5C;--copper:#B87333;--line:#D9D0BF}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',Arial,sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:40px clamp(16px,4vw,40px) 90px}
+.eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--copper);margin:0 0 10px}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,5vw,54px);font-weight:600;line-height:1.1;margin:0 0 14px;text-wrap:balance}
+h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:600;margin:44px 0 10px;line-height:1.15}
+h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:25px;font-weight:600;margin:28px 0 6px;color:var(--teal)}
+p,li{color:var(--ink2)}strong{color:var(--ink)}a{color:var(--teal)}
+hr{border:0;border-top:1px solid var(--line);margin:34px 0}
+ul,ol{padding-left:22px}li{margin:4px 0}
+code{font-family:'Space Mono',monospace;font-size:14px;background:var(--card);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:15px}td,th{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+blockquote{border-left:3px solid var(--copper);margin:0;padding:6px 16px;background:var(--card)}
+</style></head><body><nav class="tkgnav"><div class="in"><a class="brand" href="/">Toxicology Knowledge Garden</a><span class="sep">AI legal landscape</span><a href="/ai-legal-landscape/">Overview</a><a href="/ai-legal-landscape/deck/">The landscape in 18 slides</a><a href="/ai-legal-landscape/field-guide/">Field guide: real screens</a><a href="/ai-legal-landscape/memo/" aria-current="page">Decision memo</a></div></nav><div class="wrap"><p class="eyebrow">The Toxicology Knowledge Garden · Decision memo · September 21, 2026</p><h1>DAUBERT PACKET BUILDER — GLOBAL DECISIONS FROM THE COMPETITIVE LANDSCAPE</h1>
+<p><strong>Date:</strong> 2026-09-21
+<strong>Inputs:</strong> Five parallel research lanes (incumbent legal AI; expert-witness/Daubert tooling; evidence verification &amp; toxicology data; plaintiff/mass-tort startups; funding + Moonshots LIVE). Companions: the <a href="/ai-legal-landscape/deck/">landscape in 18 slides</a> and the <a href="/ai-legal-landscape/field-guide/">field guide of real screens</a>.
+<strong>Purpose:</strong> Lock the functionality, workflow, evidence-verification standard, platform posture and business model for the TKG legal-lane product before building the version the Sky Valley counsel will use on a new case.</p>
+<hr />
+<h2>1. The finding that drives everything</h2>
+<p>Nobody sells this. Across ~60 companies reviewed:</p>
+<ul>
+<li><strong>Incumbents (Harvey $15.5B, Legora $5.6B, Clio/vLex $5B, Thomson Reuters, LexisNexis) verify the law, not the science.</strong> KeyCite, Shepard's Verify, Westlaw's Litigation Document Analyzer and Legora's forthcoming AI-native citator (beta 2026-09-14) all validate legal citations against licensed legal corpora. None retrieves or version-pins IARC / ATSDR / EPA IRIS / cohort literature.</li>
+<li><strong>Every expert-witness product is procedural and defense-tilted.</strong> Daubert Tracker (256,642 case records), Expert Witness Profiler ($35–$625 reports), Lexis Context "Daubert scorecard", Westlaw Profiler, Expert Radar, Pre/Dicta answer "what happened to this expert before". None assesses whether the <em>current</em> opinion's sources are sound.</li>
+<li><strong>~$700M of plaintiff-side legal AI (EvenUp $2B+, Eve $1B+, Supio, Darrow, Finch) stops at the demand letter or at "exhibit assembly".</strong> Supio explicitly does not address Daubert or scientific literature.</li>
+<li><strong>The two scientifically serious neighbors are not tools.</strong> Justpoint ($95M, causation inference to originate its own cases) and Parambil ($6M seed, medical-record review with clinical-guideline retrieval). Neither does general-causation literature tiering, version pinning, both-sides, or an expert-reliability dossier.</li>
+<li><strong>Evidence verification in the market stops at Layer 1–2 (existence, good-law/retraction).</strong> Only Clearbrief (Dec 2025) and Filevine LOIS (Sep 2, 2026) attempt proposition support, both for case law only, both admitting human review is required. scite/Consensus are opaque classifiers or vote counts — not court-grade.</li>
+</ul>
+<p><strong>Positioning sentence:</strong> <em>They verify the law. We verify the science.</em></p>
+<hr />
+<h2>2. Decisions</h2>
+<h3>D1 — Product posture: an evidence layer, not another legal-AI chat</h3>
+<p>Ship the packet as an <strong>exportable exhibit object + MCP server</strong> that plugs into the tools the firm already pays for (Word, CoCounsel, Harvey, Everlaw, Supio, Eve, Filevine, Litify, SmartAdvocate). Do not compete for the research seat. Rationale: 99% of PI attorneys won't use unverifiable AI output (Supio/Thirdside, Jul 2026, n=207); firms already juggle ~18 live AI tools (Activant, Jun 2026); Harvey and Everlaw already consume external evidence via MCP; SmartAdvocate shipped an MCP server Aug 2026.</p>
+<h3>D2 — The verification standard (non-negotiable, and the moat)</h3>
+<p>Every claim in a packet is:
+1. <strong>Anchored to a version-pinned source</strong> — edition/volume/assessment date + DOI/PMID + Perma/WARC capture + content hash (IARC Monograph vol./year; ATSDR ToxProfile edition; IRIS assessment date; CompTox dataset version).
+2. <strong>Passage-quoted</strong> — page/section/paragraph locator and verbatim text for every support and contradiction link (this is what separated <em>Ferlito</em> (admitted) from <em>Kohls</em> (excluded)).
+3. <strong>Human-adjudicated for strength</strong> — T1/T2/T3 tier keyed to source class, with the adjudicator's identity and date recorded. Regulatory classification (IARC Group, IRIS RfD) is labeled separately from causation-at-dose evidence.
+4. <strong>Carrying a mandatory contrary-evidence record</strong> — both sides of every contested claim, including confounders and the authors' own caveats (directly answers the "cherry-picking" grounds in the Acetaminophen and Baby Food MDL exclusions).
+5. <strong>Re-checked at build time</strong> — existence + Crossref/Retraction Watch status for the source <em>and its own reference list</em> (1 in 277 new papers now contains a fabricated citation — Lancet, May 2026).
+6. <strong>Shipped with a machine-readable, signed Evidence Verification Report</strong> (JSON-LD + manifest) that opposing counsel or chambers can re-run.</p>
+<p>Reuse, don't rebuild: DOI/PMID/Crossref/Europe PMC resolution, Retraction Watch feed, Semantic Scholar/scite as candidate generators only, CompTox CTX + NTP NICE APIs, Perma.cc, and existing case-law cite-checkers.</p>
+<h3>D3 — Provenance &amp; disclosure log is a first-class export</h3>
+<p>After <em>Conservation Law Foundation v. Shell</em> (D. Conn. May 18, 2026) compelled production of an expert's AI prompts, and with proposed FRE 707 subjecting machine-generated evidence to Rule 702 scrutiny, the packet must carry an <strong>audit log of every source, version, human decision and generation step</strong>, plus a certification paragraph mapped to the judge's standing order (143 federal standing orders as of May 2026). Build the log first; it turns a liability into a feature.</p>
+<h3>D4 — Structure the packet the way judges already read</h3>
+<p>Organize exhibits around the <strong>Reference Manual on Scientific Evidence, 4th ed.</strong> (FJC/NAS, Dec 31, 2025 — free, no software wrapper exists) and the Rule 702 factors under the 2023 amendment's preponderance standard. The packet must demonstrate the ten things 2023–2026 exclusions demanded: realistic dose reconstruction; exposure–endpoint fidelity; systematic (not selective) literature review; named confounders; transparent Bradford Hill with temporality; plaintiff-specific differential etiology; independent (not counsel-built) method; everything disclosed in the report; tool/input provenance; regulatory-vs-causal distinction.</p>
+<h3>D5 — Dual standard output: Frye and Rule 702</h3>
+<p>Washington (Erickson) is Frye; federal MDLs are amended-702. Every packet renders both views and flags the delta. Build for the strict federal version. Note: cert in <em>Union Carbide v. Sommerville</em> (No. 25-919) was <strong>denied May 26, 2026</strong>, so the Fourth Circuit's softer weight-not-admissibility rule stands and the circuit split persists; the packet should flag the governing circuit.</p>
+<h3>D6 — Two buyers, one packet</h3>
+<p>Sell to the <strong>firm</strong> (per matter) and to the <strong>testifying toxicologist/epidemiologist</strong> (per expert credential + prior-testimony pack). Nobody sells to the expert today. Prior-testimony data is licensed in (Daubert Tracker, Exlitem, Steno/Lexitas transcripts), never rebuilt.</p>
+<h3>D7 — Business model</h3>
+<ul>
+<li><strong>Per-matter packet fee</strong> to the firm — it is approved as expert/consulting cost, not a software line item. Anchor against the human alternative (a defense-side ToxStrategies engagement is six figures [UNVERIFIED]) and above the EWP ladder ($35–$625 for procedural reports).</li>
+<li><strong>Expert seat</strong> for the credential/testimony pack.</li>
+<li><strong>Licensing out</strong> the curated, versioned claim layer to AI/legal/clinical platforms (Wiley: $49M FY26 AI licensing; OpenEvidence reached $12B by licensing NEJM/JAMA <em>in</em>). Curation density, not volume, is what gets paid for.</li>
+<li>Outcome-based pricing is absent across all surveyed legal AI — leave as an option for litigation funders (Legalist $415M fund) who need to price Daubert risk.</li>
+</ul>
+<h3>D8 — Beachhead</h3>
+<p>PCB / <em>Erickson v. Monsanto</em> (Sky Valley; $185M reinstated by the Washington Supreme Court Oct 30, 2025; ~$1.74B+ in SVEC verdicts) plus <strong>one federal MDL</strong> where causation is now the whole game after <em>Monsanto v. Durnell</em> (SCOTUS, Jun 25, 2026, FIFRA preemption of failure-to-warn): PFAS/AFFF (15,222 pending) or Roundup. 198,825 actions pending across 158 MDLs (Apr 2026); talc, PFAS, paraquat and Roundup are all toxicology-causation fights.</p>
+<h3>D9 — Revised counsel workflow (was Frame → Assemble → Argue → Witness → File)</h3>
+<ol>
+<li><strong>Frame</strong> — theory of harm; substance(s); exposure pathway; endpoints; jurisdiction (Frye/702 toggle).</li>
+<li><strong>Reconstruct</strong> — dose/exposure model with plaintiff-specific facts; flag counsel-supplied assumptions (the Baby Food "black box" failure).</li>
+<li><strong>Assemble</strong> — claim set from the TKG graph; T1/T2/T3 badges; version pins; retraction re-check.</li>
+<li><strong>Contest</strong> — for every contested claim, the defense's likely attack (Bradford Hill gaps, confounders, animal-to-human extrapolation, regulatory-vs-causal) and the counter-evidence, side by side.</li>
+<li><strong>Witness</strong> — expert credential + prior-testimony pack (licensed data), reliance-materials list, consistency check against the expert's own publications.</li>
+<li><strong>Certify</strong> — provenance log, standing-order certification paragraph, Evidence Verification Report.</li>
+<li><strong>File</strong> — chambers-ready PDF with exhibit tabs, citation appendix, version manifest; plus JSON-LD/MCP export into the firm's suite.</li>
+</ol>
+<h3>D10 — Competitive advantage that is real, not claimed</h3>
+<ol>
+<li>A <strong>named expert who has already been cross-examined</strong> curating the corpus (a database can be copied; a witness record cannot).</li>
+<li><strong>Claim-level provenance</strong> nobody else has productized for science.</li>
+<li><strong>Both-sides neutrality</strong> — the only packet a judge's chambers would accept as an aid rather than advocacy.</li>
+<li><strong>Expert-correction feedback loop</strong> — exactly the data moat investors say they fund (Activant, Jun 2026: "value accrues to whoever owns what a model cannot manufacture: … a proprietary data asset").</li>
+<li><strong>MCP-native</strong> distribution into every suite in the plaintiff stack.</li>
+<li><strong>A won proof case</strong> with a public appellate record.</li>
+</ol>
+<hr />
+<h2>3. Risks and fast followers to watch</h2>
+<ul>
+<li><strong>TR / LexisNexis</strong> bolting a scientific corpus onto Profiler / Context — they own the expert analytics and the citator.</li>
+<li><strong>Legora's</strong> editorially governed corpus + AI-native citator (GA Q4 2026) is the most extensible incumbent architecture.</li>
+<li><strong>CaseMark</strong> adding a "defend my expert" workflow (today it's a text-critique aimed at attacking experts).</li>
+<li><strong>Parambil</strong> adding a literature layer — approach as a build-with partner first.</li>
+<li><strong>Justpoint</strong> productizing its causation engine.</li>
+<li><strong><em>Sommerville</em></strong> split now persists (cert denied May 26, 2026): 4th Cir. matters are softer; do not assume one federal bar.</li>
+<li><strong>Proposed FRE 707</strong> — build the audit trail before it lands.</li>
+</ul>
+<h2>4. Partners and channels (not competitors)</h2>
+<p>SmartAdvocate (MCP server, 20k users) → Filevine (~6,000 firms, partner directory) → Litify (embeds Supio already) → Supio (exhibit assembly, TR Ventures) → Eve (1,400 firms) → Parambil → Daubert Tracker / Exlitem / Courtroom Insight (expert history) → Steno / Lexitas / Verbit (transcripts) → Legalist / Mustang (funder underwriting) → AAJ, MassTortNexus (where the buyers gather).</p>
+<h2>5. Knowledge Gardens business-plan implications</h2>
+<ul>
+<li>Lead with <strong>"the ground truth AI needs to survive"</strong> and the expert-correction loop; do not lead with "AI for lawyers".</li>
+<li>Every winner in the "one architecture, many verticals" set went <strong>deep first</strong> (OpenEvidence $12B single-vertical; Harvey deep-then-adjacent). TKG is the deep one; the other gardens are proof of pattern, said in one breath.</li>
+<li>Harvey ($550M raise, Sep 9, 2026) is now shipping its own model and benchmark — moving <em>down</em> toward ground truth. Line: "They're moving toward ground truth. We are the ground truth."</li>
+<li>Curated-science licensing to AI is real, recurring revenue (Wiley $49M FY26) and pays for scarcity — a versioned toxicology claim layer is scarce; raw ATSDR PDFs are not.</li>
+</ul>
+<h2>6. Moonshots LIVE — corrections and plan</h2>
+<ul>
+<li><strong>Main event is Friday, Sept 25, 2026, downtown Los Angeles</strong> (United Theater on Broadway + Belasco), organized by XPRIZE, hosted by Peter Diamandis, 1,500 attendees. <strong>Thursday, Sept 24 is the pre-event</strong> — Star Trek 60th-anniversary documentary premiere ("The Sixty-Year Mission") + 8:15 PM fireside with Diamandis, Rod Roddenberry and Star Trek cast (Shatner is not named on the site). Elevator pitches Thursday = red-carpet/hallway conversations.</li>
+<li><strong>No open attendee pitch slot.</strong> Both live competitions (Future Vision XPRIZE, Build with Gemini XPRIZE — judges Cathie Wood, Palmer Luckey, Mark Pincus, Anousheh Ansari, Logan Kilpatrick) have closed finalist slates. Best structured opening: Friday <strong>unconference tracks</strong> ("Moonshot startups", "AI investing" with Dave Blundin, "XPRIZE design" with Ansari) — propose a session.</li>
+<li>Room vocabulary: MTP, 6 Ds, 10x, "earned hope", "fiction shapes reality". Gemini rubric = real revenue, AI in production, category impact.</li>
+<li>Numbers to carry: 198,825 MDL actions; $185M reinstated; $1.74B+ SVEC verdicts; Harvey $15.5B; Wiley $49M (FY26, reported Jun 16, 2026); 2,046 hallucination decisions; 99% won't use unverifiable AI.</li>
+<li>Independent fact-check (Sept 21, 2026): 11 of 15 headline claims confirmed against primary sources; 4 corrected above (Shatner, 71% wording, Wiley date, Sommerville cert denied).</li>
+</ul>
+<h2>7. Open items to confirm before the lawyer sees anything</h2>
+<ul>
+<li>Dr. Dahlgren credential headline: "forty years" (brief) vs "50 years" (live site) — pick the CV-supported figure.</li>
+<li>"Survived Monsanto's motions to exclude" — verify against the record before stating.</li>
+<li>Hinkley/hexavalent chromium scope and the PCB case list — both flagged "verify" in the source doc.</li>
+</ul></div></body></html>

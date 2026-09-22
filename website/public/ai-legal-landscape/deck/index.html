@@ -1,0 +1,524 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The AI legal landscape in 18 slides | Toxicology Knowledge Garden</title><meta name="description" content="Who is functioning, selling and building in legal AI, what none of them do for scientific evidence, and the decisions that follow for a Daubert packet builder.">
+<meta property="og:title" content="The AI legal landscape in 18 slides | Toxicology Knowledge Garden"><meta property="og:description" content="Who is functioning, selling and building in legal AI, what none of them do for scientific evidence, and the decisions that follow for a Daubert packet builder."><meta property="og:type" content="article"><meta property="og:site_name" content="Toxicology Knowledge Garden">
+<meta name="robots" content="index,follow"><link rel="icon" href="/favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"><style>
+.tkgnav{background:#1A5C5C;color:#F5F0E8;font-family:'IBM Plex Sans',Arial,sans-serif;font-size:14px}
+.tkgnav .in{max-width:1240px;margin:0 auto;padding:10px clamp(16px,4vw,40px);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.tkgnav a{color:#F5F0E8;text-decoration:none;opacity:.85;padding:4px 0}
+.tkgnav a:hover,.tkgnav a[aria-current]{opacity:1;border-bottom:2px solid #C9A84C}
+.tkgnav .brand{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:600;opacity:1;margin-right:auto}
+.tkgnav .sep{opacity:.4}
+
+:root{--bg:#F5F0E8;--card:#FBF8F3;--ink:#1F2A2E;--ink2:#4A5559;--mute:#71797E;--teal:#1A5C5C;--copper:#B87333;--line:#D9D0BF}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',Arial,sans-serif}
+.wrap{max-width:1240px;margin:0 auto;padding:36px clamp(16px,4vw,40px) 80px}
+.eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--copper);margin:0 0 10px}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(34px,5vw,56px);font-weight:600;line-height:1.1;margin:0 0 12px}
+.lede{font-size:17px;color:var(--ink2);max-width:70ch;margin:0 0 18px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 26px}
+.btn{border:1px solid var(--teal);color:var(--teal);background:var(--card);border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer}
+.btn.primary{background:var(--teal);color:#F5F0E8}
+.hint{font-size:13px;color:var(--mute)}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.toc{position:static!important;display:none}}
+.toc{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;max-height:calc(100vh - 24px);overflow:auto}
+.toc a{display:block;color:var(--ink2);text-decoration:none;padding:6px 8px;border-radius:6px;line-height:1.3}
+.toc a:hover{background:var(--bg)}.toc a.on{background:var(--teal);color:#F5F0E8}
+.toc .n{font-family:'Space Mono',monospace;font-size:11px;color:var(--copper);margin-right:6px}
+.toc a.on .n{color:#C9A84C}
+.slide{margin:0 0 34px}
+.frame-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:10px;box-shadow:0 12px 34px rgba(31,42,46,.14);background:#17393A}
+.frame{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+.frame section{width:1920px;height:1080px;position:relative;overflow:hidden;margin:0}
+.frame h1,.frame h2,.frame h3,.frame p,.frame ul,.frame ol{margin:0}
+.frame table{border-collapse:collapse;width:100%}
+.frame td,.frame th{padding:.38em .6em;border-bottom:1px solid rgba(0,0,0,.14);vertical-align:top;text-align:left}
+.frame tr:last-child td{border-bottom:none}
+.frame b{font-weight:700}
+.meta{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin:10px 2px 6px;font-size:13px;color:var(--mute)}
+.meta .num{font-family:'Space Mono',monospace;color:var(--copper)}
+.notes{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--copper);border-radius:0 10px 10px 0;padding:12px 16px;font-size:15px;color:var(--ink2);line-height:1.5}
+.notes .k{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--copper);display:block;margin-bottom:4px}
+body.present{background:#0f1719;overflow:hidden}
+body.present .tkgnav,body.present .wrap>*:not(.layout),body.present .toc,body.present .notes,body.present .meta{display:none}
+body.present .layout{display:block}
+body.present .slide{display:none;margin:0}
+body.present .slide.active{display:block;position:fixed;inset:0}
+body.present .slide.active .frame-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,177.78vh);aspect-ratio:16/9;border-radius:0;box-shadow:none}
+.pbar{position:fixed;left:0;right:0;bottom:0;display:none;justify-content:center;gap:10px;padding:10px;z-index:50;background:linear-gradient(transparent,rgba(0,0,0,.5))}
+body.present .pbar{display:flex}
+.pbar .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.4)}
+.pbar .cnt{color:#fff;font-size:14px;align-self:center;font-family:'Space Mono',monospace}
+</style></head><body><nav class="tkgnav"><div class="in"><a class="brand" href="/">Toxicology Knowledge Garden</a><span class="sep">AI legal landscape</span><a href="/ai-legal-landscape/">Overview</a><a href="/ai-legal-landscape/deck/" aria-current="page">The landscape in 18 slides</a><a href="/ai-legal-landscape/field-guide/">Field guide: real screens</a><a href="/ai-legal-landscape/memo/">Decision memo</a></div></nav><div class="wrap"><p class="eyebrow">The Toxicology Knowledge Garden · Competitive landscape · September 21, 2026</p>
+<h1>They verify the law. We verify the science.</h1>
+<p class="lede">Eighteen slides on what the legal-AI market does today, where the courts have set the bar for expert evidence, and how a Daubert packet built on curated toxicology fits into it. Scroll to read with the notes, or press Present to step through full-screen.</p>
+<div class="tools"><button class="btn primary" id="presentBtn">Present full-screen</button><a class="btn" href="/ai-legal-landscape/field-guide/">Open the field guide</a><a class="btn" href="/ai-legal-landscape/memo/">Read the decision memo</a><span class="hint">Arrow keys move between slides · Esc leaves presentation</span></div>
+<div class="layout"><aside class="toc" id="toc"><a href="#s-cover" data-i="0"><span class="n">01</span>They verify the law. We verify the science.</a><a href="#s-answer" data-i="1"><span class="n">02</span>Nobody sells a Daubert packet builder.</a><a href="#s-map" data-i="2"><span class="n">03</span>Everyone crowds one quadrant. The one a Daubert hearing…</a><a href="#s-incumbents" data-i="3"><span class="n">04</span>Enormous capital, all pointed at legal citations.</a><a href="#s-expert-tools" data-i="4"><span class="n">05</span>All expert history, no science.</a><a href="#s-plaintiff-ai" data-i="5"><span class="n">06</span>About $700M raised. All of it ends at the demand letter…</a><a href="#s-verification" data-i="6"><span class="n">07</span>Five layers of verification. The market stops at two.</a><a href="#s-hallucination" data-i="7"><span class="n">08</span>Courts have started excluding experts for what their…</a><a href="#s-bar" data-i="8"><span class="n">09</span>Judges have written the spec for us. Ten things a…</a><a href="#s-demand" data-i="9"><span class="n">10</span>Causation science is now the whole game, and buyers say…</a><a href="#s-whitespace" data-i="10"><span class="n">11</span>Nine capabilities. Incumbents cover two of them, and we…</a><a href="#s-decisions-product" data-i="11"><span class="n">12</span>An evidence layer under everyone&#x27;s workflow.</a><a href="#s-decisions-model" data-i="12"><span class="n">13</span>Priced like expert work, sold to two buyers, proven on…</a><a href="#s-workflow" data-i="13"><span class="n">14</span>Two new stages, because that is where experts got…</a><a href="#s-advantage" data-i="14"><span class="n">15</span>Six things a well-funded competitor cannot buy this year.</a><a href="#s-risks-partners" data-i="15"><span class="n">16</span>Watch five companies. Call ten.</a><a href="#s-moonshots" data-i="16"><span class="n">17</span>Lead with ground truth, and check the calendar.</a><a href="#s-next" data-i="17"><span class="n">18</span>A packet he would file on his next case, with a receipt…</a></aside><div id="slides"><article class="slide" id="s-cover"><div class="frame-wrap"><div class="frame"><section id="cover" style="background:#17393A; color:#F7F4EE; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; justify-content:space-between">
+  <p style="font-size:24px; color:#C9A84C; letter-spacing:4px; text-transform:uppercase; font-weight:500">The Toxicology Knowledge Garden · Legal lane · Competitive landscape</p>
+  <div style="display:flex; flex-direction:column; gap:40px">
+    <h1 style="font-family:'Libre Baskerville', Georgia, serif; font-size:104px; font-weight:700; line-height:1.08">They verify the law.<br><span style="color:#C9A84C">We verify the science.</span></h1>
+    <p style="font-size:32px; line-height:1.4; color:#BFD8D5; font-weight:300">What ~60 legal-AI, expert-witness, evidence-verification and toxicology-data companies do today, and the global decisions that follow for a Daubert packet builder a plaintiff's lawyer would actually use on a new case.</p>
+  </div>
+  <div style="display:flex; gap:64px; font-size:24px; color:#BFD8D5">
+    <p>September 21, 2026</p>
+    <p>Five parallel research lanes · sources dated in the appendix report</p>
+    <p>For Chilly, John and Sky Valley counsel</p>
+  </div>
+</section></div></div><div class="meta"><span class="num">01 / 18</span><span>They verify the law. We verify the science.</span></div><div class="notes"><span class="k">Notes</span>Open with the one-line thesis. Every legal AI platform, from Harvey to Westlaw, has built its trust layer around legal citations. Nobody has built one around scientific evidence, and that is where a Daubert hearing is won or lost.</div></article><article class="slide" id="s-answer"><div class="frame-wrap"><div class="frame"><section id="answer" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:48px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">The finding that drives everything</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; line-height:1.1">Nobody sells a Daubert packet builder.</h2>
+  <div style="display:flex; gap:32px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FDFBF7; padding:40px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600; letter-spacing:2px; text-transform:uppercase">Incumbents</p>
+      <h3 style="font-size:32px; font-weight:600; line-height:1.25">Verify the law, not the science</h3>
+      <p style="font-size:26px; line-height:1.45; color:#3E4A4F">Harvey ($15.5B), Legora ($5.6B), Clio/vLex ($5B), Westlaw, Lexis. KeyCite, Shepard's Verify and Legora's new citator all check legal citations against legal corpora. None retrieves or version-pins IARC, ATSDR, EPA IRIS or cohort literature.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FDFBF7; padding:40px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600; letter-spacing:2px; text-transform:uppercase">Expert-witness tools</p>
+      <h3 style="font-size:32px; font-weight:600; line-height:1.25">Procedural and defense-tilted</h3>
+      <p style="font-size:26px; line-height:1.45; color:#3E4A4F">Daubert Tracker, Expert Witness Profiler, Lexis Context, Westlaw Profiler, Expert Radar, Pre/Dicta answer "what happened to this expert before." None assesses whether the current opinion's sources are sound.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:16px; background:#FDFBF7; padding:40px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600; letter-spacing:2px; text-transform:uppercase">Plaintiff-side AI</p>
+      <h3 style="font-size:32px; font-weight:600; line-height:1.25">Stops at the demand letter</h3>
+      <p style="font-size:26px; line-height:1.45; color:#3E4A4F">Roughly $700M raised (EvenUp $2B+, Eve $1B+, Supio, Darrow, Finch) and every dollar targets intake, chronology and settlement demand. Supio explicitly does not address Daubert or scientific literature.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: research lanes 01, 02, 04 · valuations as of Sept 9, 2026 (Harvey), Apr 30, 2026 (Legora), Nov 10, 2025 (Clio)</p>
+</section></div></div><div class="meta"><span class="num">02 / 18</span><span>Nobody sells a Daubert packet builder.</span></div><div class="notes"><span class="k">Notes</span>Three buckets, one gap. The dollar figures are there to show how much capital has looked at legal AI without touching the scientific evidence layer.</div></article><article class="slide" id="s-map"><div class="frame-wrap"><div class="frame"><section id="map" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">The landscape on two axes</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; line-height:1.1">Everyone crowds one quadrant. The one a Daubert hearing turns on is empty.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+    <p style="font-size:24px; font-weight:600; color:#6E7A80; letter-spacing:2px; text-transform:uppercase; text-align:center">Verifies legal authority</p>
+    <p style="font-size:24px; font-weight:600; color:#6E7A80; letter-spacing:2px; text-transform:uppercase; text-align:center">Verifies scientific evidence</p>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:28px 32px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600">About the opinion itself</p>
+      <p style="font-size:26px; line-height:1.4; color:#3E4A4F">Harvey · CoCounsel Deep Research · Lexis+ Protégé · Legora (AI-native citator, beta Sept 2026) · Vincent · Callidus · Alexi · Clearbrief · Filevine LOIS (Sept 2, 2026)</p>
+      <p style="font-size:24px; line-height:1.4; color:#6E7A80">Record-grounded: Everlaw Deep Dive · Relativity aiR · DISCO Cecilia. Blind to anything outside the uploaded matter.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#17393A; padding:28px 32px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">About the opinion itself · the empty quadrant</p>
+      <p style="font-size:26px; line-height:1.4; color:#F7F4EE">Nobody ships claim-level, version-pinned, tiered, both-sides scientific evidence for litigation. Adjacent but not it: scite and Consensus (opaque classifiers, not court-grade), OpenEvidence (clinical, licensed-in journals), CompTox and NTP NICE (open data, no claims).</p>
+      <p style="font-size:26px; line-height:1.4; color:#C9A84C; font-weight:600">This is where the TKG Daubert Packet Builder sits.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:28px 32px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600">About the people and past outcomes</p>
+      <p style="font-size:26px; line-height:1.4; color:#3E4A4F">Daubert Tracker (256,642 case records) · Expert Witness Profiler ($35 to $625) · Lexis Context "Daubert scorecard" · Westlaw Profiler Expert Challenge Report · Expert Radar · Exlitem · Pre/Dicta · Lex Machina</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:28px 32px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#B87333; font-weight:600">About the people and past outcomes</p>
+      <p style="font-size:26px; line-height:1.4; color:#3E4A4F">Thin. CaseMark's expert-deposition workflow critiques a report's text to attack the expert. SEAK trains experts to write reports that survive. Justpoint keeps causation inference in-house to originate its own cases. Parambil reviews medical records with live guideline lookup.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: research lanes 01 through 04; counts as published on each vendor's site, Sept 21, 2026</p>
+</section></div></div><div class="meta"><span class="num">03 / 18</span><span>Everyone crowds one quadrant. The one a Daubert hearing turns on is empty.</span></div><div class="notes"><span class="k">Notes</span>Read the grid clockwise from top-left. The top-right cell is the whole strategy. Point out that the incumbents&#x27; verification layers cannot reach it because their corpora and citators are licensed legal content.</div></article><article class="slide" id="s-incumbents"><div class="frame-wrap"><div class="frame"><section id="incumbents" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Functioning and selling · the incumbents</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Enormous capital, all pointed at legal citations.</h2>
+  <table style="font-size:24px; line-height:1.3; color:#3E4A4F; border:1px solid #D9D2C2; padding:9px 12px">
+    <tr style="background:#EFE9DC">
+      <th style="width:16%; text-align:left; color:#1B2A2F">Platform</th>
+      <th style="width:23%; text-align:left; color:#1B2A2F">Scale (date)</th>
+      <th style="width:27%; text-align:left; color:#1B2A2F">Trust layer verifies</th>
+      <th style="width:34%; text-align:left; color:#1B2A2F">Closest thing to Daubert or science</th>
+    </tr>
+    <tr><td><b>Harvey</b></td><td>$15.5B, over $400M ARR (Sept 9, 2026)</td><td>US law + Shepard's via Lexis; client docs via Vault, Everlaw MCP</td><td>"Analyze expert work" in discovery. No Daubert flow, no science corpus</td></tr>
+    <tr><td><b>TR CoCounsel</b></td><td>20,000+ orgs; Casetext retired Apr 1, 2025</td><td>KeyCite; hallucinated-case detector; Deep Research Verify (UK, Jun 2026)</td><td>Westlaw Profiler expert challenge reports: how judges ruled on a named expert before</td></tr>
+    <tr><td><b>Lexis Protégé</b></td><td>Replaced Lexis+ AI Feb 24, 2026; 300+ workflows</td><td>Shepard's Verify: exists, good law, treatment</td><td>Context "Daubert scorecard" by factor, ~380k profiles. Analytics, not evidence</td></tr>
+    <tr><td><b>Legora</b></td><td>$5.6B, over $100M ARR (Apr 30, 2026)</td><td>Editorially governed corpus; AI-native citator, beta Sept 14, 2026</td><td>None. Most extensible architecture, so the one to watch</td></tr>
+    <tr><td><b>Clio + vLex</b></td><td>$1B deal, $5B value (Nov 2025); $500M ARR (May 2026)</td><td>Retrieval from the vLex licensed corpus, cited</td><td>None. Clio Duo reads only the firm's own data</td></tr>
+    <tr><td><b>Everlaw · Relativity · DISCO</b></td><td>eDiscovery; DISCO FY26 guide $169M to $179M</td><td>The client's own record, cited to page and line</td><td>Depo analysis, chronologies. Best cite-to-source UX; zero public science</td></tr>
+  </table>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Pricing is quote-only everywhere but Clio; aggregator seat ranges are unverified. Sources: LawSites, TechCrunch, vendor releases through Sept 2026.</p>
+</section></div></div><div class="meta"><span class="num">04 / 18</span><span>Enormous capital, all pointed at legal citations.</span></div><div class="notes"><span class="k">Notes</span>The third column is the argument: every verification story is about case law. The fourth shows the closest thing that exists, which is analytics about an expert&#x27;s past, not the science under a current opinion.</div></article><article class="slide" id="s-expert-tools"><div class="frame-wrap"><div class="frame"><section id="expert-tools" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Functioning and selling · expert-witness and Daubert tools</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">All expert history, no science.</h2>
+  <table style="font-size:24px; line-height:1.3; color:#3E4A4F; border:1px solid #D9D2C2; padding:9px 12px">
+    <tr style="background:#EFE9DC">
+      <th style="width:20%; text-align:left; color:#1B2A2F">Product</th>
+      <th style="width:35%; text-align:left; color:#1B2A2F">What it does</th>
+      <th style="width:20%; text-align:left; color:#1B2A2F">Price and buyer</th>
+      <th style="width:25%; text-align:left; color:#1B2A2F">Touches the science?</th>
+    </tr>
+    <tr><td><b>Daubert Tracker</b></td><td>256,642 case and 196,241 expert records; in Lexis since 2006</td><td>Undisclosed; litigators</td><td>No. Records that an exclusion happened</td></tr>
+    <tr><td><b>Expert Witness Profiler</b></td><td>Human-researched challenge studies on a named expert</td><td>$35 to $625; 127+ AmLaw 200, DRI</td><td>No. Vets the other side's expert</td></tr>
+    <tr><td><b>Lexis Context · Westlaw Profiler</b></td><td>Daubert scorecard by factor; expert challenge reports</td><td>Bundled</td><td>No. Categorizes outcomes</td></tr>
+    <tr><td><b>Expert Radar</b></td><td>LLM-assisted due diligence, 3 to 5 days; PE-owned since Sept 2024</td><td>Undisclosed; firms</td><td>No. Conflicts and contradictions</td></tr>
+    <tr><td><b>CaseMark expert depo</b></td><td>12-minute outline with "methodology and reliability analysis"</td><td>Credits; litigators</td><td>Superficial. Critiques text, to attack</td></tr>
+    <tr><td><b>Exponent · Gradient · ToxStrategies</b></td><td>Human litigation science, Bradford Hill, "Daubert motion assistance"</td><td>Hourly; mostly defendants</td><td>Yes, as billable hours. No software</td></tr>
+  </table>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: vendor pages read Sept 21, 2026. The FJC Reference Manual on Scientific Evidence, 4th ed. (Dec 31, 2025) is the judges' checklist and has no software wrapper.</p>
+</section></div></div><div class="meta"><span class="num">05 / 18</span><span>All expert history, no science.</span></div><div class="notes"><span class="k">Notes</span>Also in this bucket: Pre/Dicta predicts whether a judge tends to exclude, not why on the science. Say two things: the category is defense-tilted (DRI is the anchor channel), and the consulting firms in the last row are the expensive human version of our product. They are customers or partners, not competitors.</div></article><article class="slide" id="s-plaintiff-ai"><div class="frame-wrap"><div class="frame"><section id="plaintiff-ai" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:28px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Being built · plaintiff, PI and mass-tort AI</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">About $700M raised. All of it ends at the demand letter or "exhibit assembly."</h2>
+  <div style="display:flex; gap:20px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:44px; font-weight:700; color:#1A5C5C">$2B+</p>
+      <h3 style="font-size:28px; font-weight:600">EvenUp</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">$150M Series E, Oct 7, 2025. Demand packages, 2,000+ firms. No science, no experts.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:44px; font-weight:700; color:#1A5C5C">$1B+</p>
+      <h3 style="font-size:28px; font-weight:600">Eve</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">$103M Series B, Sept 30, 2025. 1,400 firms. Reads expert reports as documents; no science layer.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:44px; font-weight:700; color:#1A5C5C">$85M</p>
+      <h3 style="font-size:28px; font-weight:600">Supio</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Mass-tort record layer; powers Litify Demands. Explicitly does not address Daubert or literature.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:44px; font-weight:700; color:#1A5C5C">$63M</p>
+      <h3 style="font-size:28px; font-weight:600">Darrow · Finch</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Case origination and pre-lit admin. Finch $20M Oct 2025. Neither proves the science.</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:20px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#17393A; padding:24px 28px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600; letter-spacing:2px; text-transform:uppercase">Closest in spirit · Justpoint, $95M (Feb 2025)</p>
+      <p style="font-size:25px; line-height:1.4; color:#F7F4EE">The only funded company whose core IP is toxic-exposure causation inference (records + FAERS + literature). Keeps it in-house to originate its own cases through an Arizona ABS law firm (Feb 2026). Not a tool, not admissibility.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#17393A; padding:24px 28px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600; letter-spacing:2px; text-transform:uppercase">Closest neighbor · Parambil, $6M seed (Jan 2026)</p>
+      <p style="font-size:25px; line-height:1.4; color:#F7F4EE">Medical-record review for mass torts with live clinical-guideline retrieval; CMO is the former Chair of Medicine at Yale and Stanford. Record-first, no literature tiers, no Daubert history. Best build-with partner, and the most likely to add a science layer next.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: Crunchbase News Jun 5, 2026; company releases; SignalFire Feb 12, 2025; Parambil release Jan 14, 2026. Supio total is cumulative funding.</p>
+</section></div></div><div class="meta"><span class="num">06 / 18</span><span>About $700M raised. All of it ends at the demand letter or &quot;exhibit assembly.&quot;</span></div><div class="notes"><span class="k">Notes</span>The top row is where the money went. The bottom row is who could become us. Justpoint would be the most dangerous competitor if it ever productized; Parambil is the one to call first.</div></article><article class="slide" id="s-verification"><div class="frame-wrap"><div class="frame"><section id="verification" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Evidence verification · what the market can actually check</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Five layers of verification. The market stops at two.</h2>
+  <table style="font-size:24px; line-height:1.3; color:#3E4A4F; border:1px solid #D9D2C2; padding:10px 12px">
+    <tr style="background:#EFE9DC">
+      <th style="width:22%; text-align:left; color:#1B2A2F">Layer</th>
+      <th style="width:28%; text-align:left; color:#1B2A2F">Legal AI today</th>
+      <th style="width:26%; text-align:left; color:#1B2A2F">Scientific tools today</th>
+      <th style="width:24%; text-align:left; color:#1B2A2F">Daubert Packet Builder</th>
+    </tr>
+    <tr><td><b>1 · Existence</b> does the source exist</td><td>Solved: KeyCite, Shepard's, Clearbrief, free checkers</td><td>Crossref, PubMed, publisher validators</td><td style="color:#1A5C5C">Reuse DOI/PMID/Crossref</td></tr>
+    <tr><td><b>2 · Integrity</b> still good, not retracted</td><td>Citators miss 33 to 72% of negative treatment</td><td>Retraction Watch via Crossref, daily</td><td style="color:#1A5C5C">Reuse; add superseded-edition tracking for IARC, ATSDR, IRIS</td></tr>
+    <tr><td><b>3 · Quotation</b> verbatim match</td><td>Clearbrief, Lexis Document Analysis, Filevine LOIS</td><td>Nothing productized</td><td style="color:#1A5C5C">Build: passage hash plus page and paragraph locator</td></tr>
+    <tr><td><b>4 · Proposition support</b> does it say what it is cited for</td><td>Only Clearbrief (Dec 2025) and Filevine LOIS (Sept 2, 2026), case law only, human review still required</td><td>scite supporting/contrasting: opaque classifier. Consensus: a vote count</td><td style="color:#1A5C5C">Build: human-adjudicated, passage-anchored, per claim</td></tr>
+    <tr><td><b>5 · Strength and contradiction</b> how strong, what disagrees</td><td>Nothing</td><td>Unweighted, not court-grade</td><td style="color:#1A5C5C">Build: T1/T2/T3 tiers plus a mandatory contrary-evidence record</td></tr>
+  </table>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: Magesh et al., J. Empirical Legal Studies 2025; LawSites Dec 16, 2025 and Sept 2026; scite and Consensus product pages; Crossref Retraction Watch docs. Lane 03.</p>
+</section></div></div><div class="meta"><span class="num">07 / 18</span><span>Five layers of verification. The market stops at two.</span></div><div class="notes"><span class="k">Notes</span>Stanford&#x27;s own definition of a hallucination includes a real source cited for a proposition it does not support. That is layer four, and that is the failure a Daubert challenge exploits against an expert&#x27;s literature review. Nobody has productized layers four and five for science.</div></article><article class="slide" id="s-hallucination"><div class="frame-wrap"><div class="frame"><section id="hallucination" style="background:#17393A; color:#F7F4EE; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:40px">
+  <p style="font-size:24px; color:#C9A84C; letter-spacing:4px; text-transform:uppercase; font-weight:500">Why provenance is now the product</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Courts have started excluding experts for what their citations cannot show.</h2>
+  <div style="display:flex; gap:24px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; border-top:2px solid #C9A84C; padding:20px 0 0">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:72px; font-weight:700; color:#C9A84C; line-height:1">2,046</p>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">court decisions identifying AI hallucinations as of Sept 21, 2026, up from 719 in January. Fifteen involve expert witnesses.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; border-top:2px solid #C9A84C; padding:20px 0 0">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:72px; font-weight:700; color:#C9A84C; line-height:1">143</p>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">federal standing orders on AI use plus nine circuit instruments (FJC, May 2026); 34 states with guidance, 16 with statewide rules.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; border-top:2px solid #C9A84C; padding:20px 0 0">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:72px; font-weight:700; color:#C9A84C; line-height:1">1 in 277</p>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">new scientific papers contains a fabricated citation (Lancet, May 2026), up from 1 in 2,828 in 2023. Peer review is no longer a safe tier on its own.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; border-top:2px solid #C9A84C; padding:20px 0 0">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:72px; font-weight:700; color:#C9A84C; line-height:1">17% · 33%</p>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">hallucination rates measured for Lexis+ AI and Westlaw AI-Assisted Research (Stanford RegLab, tested May 2024, peer-reviewed 2025).</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:24px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#1F4849; padding:24px 28px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">Excluded · Kohls v. Ellison (D. Minn., Jan 2025) · Concord v. Anthropic (N.D. Cal., May 2025)</p>
+      <p style="font-size:25px; line-height:1.4">Expert declarations struck for nonexistent or misattributed articles. "Credibility destroyed." Manual cite-check missed it.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#1F4849; padding:24px 28px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">Admitted · Ferlito v. Harbor Freight (E.D.N.Y., Apr 2025)</p>
+      <p style="font-size:25px; line-height:1.4">The expert could show exactly what each source said and that a human verified it. That showing is the packet.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:8px; background:#1F4849; padding:24px 28px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">Discoverable · CLF v. Shell (D. Conn., May 18, 2026) · proposed FRE 707</p>
+      <p style="font-size:25px; line-height:1.4">An expert's AI prompts ordered produced as methodology. FRE 707 would put machine-generated evidence under Rule 702. Build the audit log first.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#BFD8D5">Sources: Charlotin AI Hallucination Cases database (Sept 21, 2026); The Legal Stack judicial response report 2026; STAT May 7, 2026; Magesh et al. 2025; Mayer Brown and Dechert alerts, June 2026.</p>
+</section></div></div><div class="meta"><span class="num">08 / 18</span><span>Courts have started excluding experts for what their citations cannot show.</span></div><div class="notes"><span class="k">Notes</span>The difference between Kohls and Ferlito is the whole design brief. One expert could not show the source; the other could. We make the Ferlito showing automatic, and we log every step because after CLF v. Shell the log will be produced anyway.</div></article><article class="slide" id="s-bar"><div class="frame-wrap"><div class="frame"><section id="bar" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">The chambers-ready bar · what 2023 to 2026 exclusions demanded</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Judges have written the spec for us. Ten things a proponent must show.</h2>
+  <div style="display:flex; gap:40px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:14px; font-size:25px; line-height:1.4; color:#3E4A4F">
+      <p><span style="color:#B87333"><b>01</b></span> &#160; Realistic dose reconstruction tied to the plaintiff's actual pathway, duration and route</p>
+      <p><span style="color:#B87333"><b>02</b></span> &#160; Exposure-to-endpoint fidelity: studies match the exposure window and the diagnosed outcome</p>
+      <p><span style="color:#B87333"><b>03</b></span> &#160; Systematic, not selective, literature review; contrary studies and authors' caveats addressed</p>
+      <p><span style="color:#B87333"><b>04</b></span> &#160; Confounders named study by study</p>
+      <p><span style="color:#B87333"><b>05</b></span> &#160; Bradford Hill applied transparently, temporality treated as mandatory</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:14px; font-size:25px; line-height:1.4; color:#3E4A4F">
+      <p><span style="color:#B87333"><b>06</b></span> &#160; Differential etiology that rules out alternatives with plaintiff-specific facts</p>
+      <p><span style="color:#B87333"><b>07</b></span> &#160; Independent methodology, not a framework handed over by counsel</p>
+      <p><span style="color:#B87333"><b>08</b></span> &#160; Everything disclosed in the report; no new rationales at deposition</p>
+      <p><span style="color:#B87333"><b>09</b></span> &#160; Provenance of tools and inputs, including any AI prompts</p>
+      <p><span style="color:#B87333"><b>10</b></span> &#160; Regulatory classification kept separate from causation at the plaintiff's dose</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:20px">
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#3E4A4F; background:#EFE9DC; padding:16px 20px; border-radius:10px"><b>Acetaminophen MDL</b> (S.D.N.Y., Dec 2023): five experts out for confounding, cherry-picking</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#3E4A4F; background:#EFE9DC; padding:16px 20px; border-radius:10px"><b>Baby Food MDL</b> (N.D. Cal., Feb 27, 2026): seven out; counsel-built exposure model a "black box"</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#3E4A4F; background:#EFE9DC; padding:16px 20px; border-radius:10px"><b>Engilis v. Monsanto</b> (9th Cir., Aug 2025): expert out for undocumented differential etiology</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#3E4A4F; background:#EFE9DC; padding:16px 20px; border-radius:10px"><b>Sommerville</b> (4th Cir., 2025): the outlier stands; cert denied May 26, 2026. The circuit split persists</p>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Amended FRE 702 (Dec 1, 2023): the proponent shows reliability by a preponderance; five circuits now apply it. Washington (Erickson) is Frye, so the packet renders both. Lane 02.</p>
+</section></div></div><div class="meta"><span class="num">09 / 18</span><span>Judges have written the spec for us. Ten things a proponent must show.</span></div><div class="notes"><span class="k">Notes</span>These ten items become the packet&#x27;s table of contents. Every one of them is something a version-pinned, both-sides, passage-anchored evidence record can demonstrate, and something a demand-letter tool or an expert-history database cannot.</div></article><article class="slide" id="s-demand"><div class="frame-wrap"><div class="frame"><section id="demand" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Demand signal and market timing</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Causation science is now the whole game, and buyers say verification is the barrier.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px">
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#1A5C5C; line-height:1">99%</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">of PI attorneys refuse AI output they cannot verify; source-level traceability ties for top want at 71% (Supio survey, Jul 23, 2026, n=207).</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#1A5C5C; line-height:1">198,825</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">actions pending in 158 federal MDLs (Apr 2026). Talc, PFAS, paraquat and Roundup are all toxicology causation fights.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#1A5C5C; line-height:1">7 to 2</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Monsanto v. Durnell (SCOTUS, Jun 25, 2026) preempts failure-to-warn. What is left for Roundup plaintiffs is causation science.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#B87333; line-height:1">$185M</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Erickson verdict reinstated by the Washington Supreme Court, Oct 30, 2025. Sky Valley verdicts exceed $1.74B. A proof case with a public record.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#B87333; line-height:1">$3K to $8K</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">monthly AI budget at mass-tort firms working $5M to $20M dockets; document review costs $150K to $400K per project (Jul 2026).</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-family:'Libre Baskerville', Georgia, serif; font-size:60px; font-weight:700; color:#B87333; line-height:1">$49M</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Wiley's FY2026 revenue licensing curated science to AI. OpenEvidence hit $12B by licensing NEJM and JAMA in. Curation gets paid; raw PDFs do not.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: PR Newswire Jul 23, 2026; MDL Update Apr 1, 2026; Bayer Jun 25, 2026 and Oct 30, 2025; Wash. No. 103,135-1; Mass Tort Ad Agency Jul 15, 2026; Wiley FY2026 results Jun 16, 2026; Fierce Healthcare Jan 2026.</p>
+</section></div></div><div class="meta"><span class="num">10 / 18</span><span>Causation science is now the whole game, and buyers say verification is the barrier.</span></div><div class="notes"><span class="k">Notes</span>Top row is timing, bottom row is money. Durnell is the most useful line for a lawyer: the warning theory is gone at the federal level, so the science packet is what is left to win with.</div></article><article class="slide" id="s-whitespace"><div class="frame-wrap"><div class="frame"><section id="whitespace" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Where the advantage is real</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Nine capabilities. Incumbents cover two of them, and we license those in.</h2>
+  <table style="font-size:24px; line-height:1.3; color:#3E4A4F; border:1px solid #D9D2C2; padding:9px 12px">
+    <tr style="background:#EFE9DC">
+      <th style="width:38%; text-align:left; color:#1B2A2F">Capability</th>
+      <th style="width:34%; text-align:left; color:#1B2A2F">Who has it today</th>
+      <th style="width:28%; text-align:left; color:#1B2A2F">Our move</th>
+    </tr>
+    <tr><td>Prior challenge outcomes for a named expert</td><td>Strong: Daubert Tracker, EWP, Lexis Context, Exlitem</td><td style="color:#6E7A80">License or link out. Never rebuild</td></tr>
+    <tr><td>Judge tendencies on Rule 702 motions</td><td>Strong: Pre/Dicta, Lex Machina, Context</td><td style="color:#6E7A80">Link out</td></tr>
+    <tr><td>Version-pinned citations to IARC, ATSDR, EPA IRIS, cohorts</td><td style="color:#B87333"><b>None</b></td><td style="color:#1A5C5C"><b>Core differentiator</b></td></tr>
+    <tr><td>Source-tier strength badges (T1/T2/T3) with human adjudication</td><td style="color:#B87333"><b>None</b> (only the FJC Manual describes the concepts)</td><td style="color:#1A5C5C"><b>Core differentiator</b></td></tr>
+    <tr><td>Both sides of every contested claim, confounders included</td><td style="color:#B87333"><b>None</b>; every tool is one-sided by design</td><td style="color:#1A5C5C"><b>Core differentiator</b></td></tr>
+    <tr><td>Passage-anchored quotes with build-time retraction re-check</td><td>Clearbrief, Filevine LOIS for case law only</td><td style="color:#1A5C5C"><b>Build for science</b></td></tr>
+    <tr><td>Provenance and AI-disclosure log (CLF v. Shell, FRE 707)</td><td style="color:#B87333"><b>None</b></td><td style="color:#1A5C5C"><b>Build first</b></td></tr>
+    <tr><td>Frye and Rule 702 dual-standard output</td><td>CaseMark, for depo outlines only</td><td style="color:#1A5C5C"><b>Build</b></td></tr>
+    <tr><td>Chambers-ready PDF in the Reference Manual's frame, plus MCP export</td><td style="color:#B87333"><b>None</b></td><td style="color:#1A5C5C"><b>Build; cheap, high value</b></td></tr>
+  </table>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Compiled from lanes 01 to 04. "None" means no product found in this review that offers the capability for scientific evidence in litigation.</p>
+</section></div></div><div class="meta"><span class="num">11 / 18</span><span>Nine capabilities. Incumbents cover two of them, and we license those in.</span></div><div class="notes"><span class="k">Notes</span>Two rows are commodity and we buy them. Seven rows are empty and they are all ours. The pitch line for a lawyer: the packet is what your expert would build with three months and a research assistant, with a receipt for every sentence.</div></article><article class="slide" id="s-decisions-product"><div class="frame-wrap"><div class="frame"><section id="decisions-product" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:28px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Global decisions · product and verification</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">An evidence layer under everyone's workflow.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px">
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D1 · Exhibit object plus MCP server</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Plugs into Word, CoCounsel, Harvey, Everlaw, Supio, Eve, Filevine, Litify, SmartAdvocate. Not another research chat; we never compete for the seat.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D2 · The verification standard is the moat</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Version-pinned source, passage quoted, human-adjudicated tier, contrary evidence recorded, retraction re-checked at build, signed report anyone can re-run.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D3 · Provenance log ships as an export</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Every source, version, decision and generation step, plus a certification mapped to the judge's standing order. After CLF v. Shell it gets produced anyway.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D4 · Structured the way judges read</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Exhibits follow the Reference Manual on Scientific Evidence, 4th ed. and the ten requirements from recent exclusions. Regulatory class labeled apart from causation at dose.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D5 · Frye and Rule 702, both views</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Washington is Frye; federal MDLs are amended 702, and the Fourth Circuit's softer Sommerville rule stands after cert was denied May 26, 2026. Build for the strict bar; flag the circuit.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:20px 26px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D6 · Reuse the commodity layers</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Crossref, Retraction Watch, Semantic Scholar and scite as candidate generators, CompTox and NICE APIs, Perma.cc. Curating IARC and ATSDR prose is the un-done work and the asset.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Full memo: DAUBERT_BUILDER_DECISIONS.md in the project. SmartAdvocate MCP server: Aug 4, 2026. Activant: firms run about 18 live AI tools (Jun 2026).</p>
+</section></div></div><div class="meta"><span class="num">12 / 18</span><span>An evidence layer under everyone&#x27;s workflow.</span></div><div class="notes"><span class="k">Notes</span>D2 is the sentence to memorize. If a competitor can say all six clauses about their product, we have lost the moat. Today none can say more than two.</div></article><article class="slide" id="s-decisions-model"><div class="frame-wrap"><div class="frame"><section id="decisions-model" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Global decisions · buyers, model, beachhead</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Priced like expert work, sold to two buyers, proven on one won case.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D7 · Two buyers, one packet</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">The firm buys per matter. The testifying toxicologist or epidemiologist buys a credential and prior-testimony pack. Nobody sells to the expert today. Testimony history is licensed in from Daubert Tracker, Exlitem, Steno and Lexitas.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D8 · Per-matter fee, expert seat, licensing out</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">A packet is approved as expert cost, not a software line. Anchor above the $35 to $625 procedural-report ladder and far below a six-figure consulting engagement. Third stream: license the versioned claim layer to AI, legal and clinical platforms.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D9 · Beachhead: PCB / Erickson plus one federal MDL</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Sky Valley has a $185M reinstated verdict and a public appellate record. Add PFAS/AFFF (15,222 pending) or Roundup, where Durnell made causation the only path. Density first, then the next substance.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; background:#FDFBF7; padding:24px 28px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">D10 · Outcome pricing stays an option, for funders</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">No surveyed legal AI vendor prices on outcomes. Fee-splitting rules block direct contingency share with firms; litigation funders (Legalist, $415M fund) who must price Daubert risk are the clean route.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: Casefleet pricing survey Jun 6, 2026; Activant Capital Jun 29, 2026; Expert Witness Profiler price list; MDL Update Apr 2026; Law360 on Legalist. Consulting-engagement figure is unverified.</p>
+</section></div></div><div class="meta"><span class="num">13 / 18</span><span>Priced like expert work, sold to two buyers, proven on one won case.</span></div><div class="notes"><span class="k">Notes</span>Per-matter pricing matters because of how plaintiff firms approve spend: an expert cost on a case is routine, a new software subscription is a committee. Sell it the way they already buy expert work.</div></article><article class="slide" id="s-workflow"><div class="frame-wrap"><div class="frame"><section id="workflow" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:36px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">The counsel workflow, revised from five stages to seven</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Two new stages, because that is where experts got excluded.</h2>
+  <div style="display:flex; gap:12px; align-items:stretch">
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 18px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#6E7A80; font-weight:600">01</p>
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">Frame</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Theory of harm, substances, pathway, endpoints, Frye or 702</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#17393A; padding:22px 18px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">02 · new</p>
+      <h3 style="font-size:28px; font-weight:600; color:#F7F4EE">Reconstruct</h3>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">Plaintiff-specific dose model; flags counsel-supplied assumptions</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 18px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#6E7A80; font-weight:600">03</p>
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">Assemble</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Claims from the TKG graph, tier badges, version pins, retraction check</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#17393A; padding:22px 18px; border-radius:12px">
+      <p style="font-size:24px; color:#C9A84C; font-weight:600">04 · new</p>
+      <h3 style="font-size:28px; font-weight:600; color:#F7F4EE">Contest</h3>
+      <p style="font-size:24px; line-height:1.35; color:#BFD8D5">Defense attack and counter-evidence side by side, per claim</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 18px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#6E7A80; font-weight:600">05</p>
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">Witness</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Credentials, prior testimony, reliance list, own-publication check</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 18px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#6E7A80; font-weight:600">06</p>
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">Certify</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Provenance log, standing-order paragraph, verification report</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:22px 18px; border:1px solid #D9D2C2; border-radius:12px">
+      <p style="font-size:24px; color:#6E7A80; font-weight:600">07</p>
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">File</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F">Chambers-ready PDF with exhibit tabs, plus JSON-LD and MCP export</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:20px">
+    <p style="flex:1; font-size:25px; line-height:1.4; color:#3E4A4F; background:#EFE9DC; padding:20px 24px; border-radius:10px"><b>Why Reconstruct:</b> the Baby Food MDL court (Feb 27, 2026) excluded seven experts because the exposure framework was "created by counsel and handed to the expert wholesale."</p>
+    <p style="flex:1; font-size:25px; line-height:1.4; color:#3E4A4F; background:#EFE9DC; padding:20px 24px; border-radius:10px"><b>Why Contest:</b> the Acetaminophen MDL court (Dec 2023) called result-driven, cherry-picked analysis "not a reliable application of scientific methods." Showing the other side first is the defense.</p>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Previous flow (Frame, Assemble, Argue, Witness, File) from tkg-counsel-brief-v1. Stage names are working titles for the build.</p>
+</section></div></div><div class="meta"><span class="num">14 / 18</span><span>Two new stages, because that is where experts got excluded.</span></div><div class="notes"><span class="k">Notes</span>The lawyer will recognize stages one, three, five and seven from the current demo. Two and four are new, and each is named after a specific exclusion order. Six is the certification the standing orders now require.</div></article><article class="slide" id="s-advantage"><div class="frame-wrap"><div class="frame"><section id="advantage" style="background:#17393A; color:#F7F4EE; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:40px">
+  <p style="font-size:24px; color:#C9A84C; letter-spacing:4px; text-transform:uppercase; font-weight:500">Competitive advantage that survives due diligence</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Six things a well-funded competitor cannot buy this year.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px">
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">A cross-examined curator</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">A database can be copied. A named toxicologist with a public testimony record in a won case cannot.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">Claim-level provenance</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Stable claim URIs with version history, pinned sources, passage anchors. Not productized anywhere for science.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">Both-sides neutrality</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">The only packet a judge's chambers would accept as an aid rather than advocacy. Every rival tool is one-sided by design.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">Expert-correction loop</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Every adjudication improves the graph. Activant (Jun 2026): value accrues to "a proprietary data asset" a model cannot manufacture.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">MCP-native distribution</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Harvey, Everlaw and SmartAdvocate already consume evidence over MCP. We ride into every suite instead of fighting for the seat.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">A won proof case</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Erickson: $185M reinstated Oct 30, 2025, with an appellate record showing exactly which methods were contested and which held.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#BFD8D5">Confirm before any external use: Dr. Dahlgren's credential headline (40 vs 50 years), the phrase "survived motions to exclude," and the Hinkley and PCB case lists, all flagged "verify" in the source brief.</p>
+</section></div></div><div class="meta"><span class="num">15 / 18</span><span>Six things a well-funded competitor cannot buy this year.</span></div><div class="notes"><span class="k">Notes</span>Say the caveat in the footer out loud to the team, not to the lawyer. Two of these six rest on Dr. Dahlgren&#x27;s record; the record has to be verified line by line before it goes in a packet or a pitch.</div></article><article class="slide" id="s-risks-partners"><div class="frame-wrap"><div class="frame"><section id="risks-partners" style="background:#F7F4EE; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:36px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">Fast followers and channels</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Watch five companies. Call ten.</h2>
+  <div style="display:flex; gap:32px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:24px 30px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:30px; font-weight:600; color:#B87333">Could build it</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Thomson Reuters and LexisNexis</b> own the expert analytics and the citator; a scientific corpus bolted onto Profiler or Context is the biggest threat.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Legora</b> has the most extensible editorially governed corpus; its citator goes GA Q4 2026.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>CaseMark</b> is one "defend my expert" workflow away, but has no versioned toxicology graph.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Parambil</b> is most likely to add a literature layer next. <b>Justpoint</b> has the science DNA but sells nothing.</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; background:#FDFBF7; padding:24px 30px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:30px; font-weight:600; color:#1A5C5C">Should carry it</h3>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>SmartAdvocate</b> (MCP server, 20,000 users) first. Then <b>Filevine</b> (~6,000 firms, partner directory) and <b>Litify</b>, which already embeds Supio.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Supio</b> and <b>Eve</b> end at exhibit assembly and call themselves complementary; the packet is their missing exhibit.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Daubert Tracker, Exlitem, Courtroom Insight</b> for expert history; <b>Steno, Lexitas</b> for transcripts. License, never rebuild.</p>
+      <p style="font-size:24px; line-height:1.35; color:#3E4A4F"><b>Legalist, Mustang</b> and other funders need to price Daubert risk. <b>Parambil</b> before they build it.</p>
+    </div>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: Legora newsroom Sept 14, 2026; SmartAdvocate release Aug 4, 2026; Litify release Jun 23, 2026; Eve EveOS launch Jun 11, 2026; Parambil Jan 14, 2026; Law360 on Legalist.</p>
+</section></div></div><div class="meta"><span class="num">16 / 18</span><span>Watch five companies. Call ten.</span></div><div class="notes"><span class="k">Notes</span>Left column is what could hurt us in twelve months. Right column is the order of calls. The single highest-leverage call is SmartAdvocate because they already speak MCP and their users are exactly our buyer.</div></article><article class="slide" id="s-moonshots"><div class="frame-wrap"><div class="frame"><section id="moonshots" style="background:#EFE9DC; color:#1B2A2F; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; gap:32px">
+  <p style="font-size:24px; color:#B87333; letter-spacing:4px; text-transform:uppercase; font-weight:500">The Knowledge Gardens plan · Moonshots LIVE this week</p>
+  <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">Lead with ground truth, and check the calendar.</h2>
+  <div style="display:flex; gap:24px">
+    <div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#17393A; padding:26px 30px; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#C9A84C">Event facts, verified Sept 21</h3>
+      <p style="font-size:24px; line-height:1.4; color:#F7F4EE">Main event is <b>Friday, Sept 25</b>, downtown Los Angeles (United Theater on Broadway and the Belasco), XPRIZE, hosted by Peter Diamandis, 1,500 hand-selected attendees.</p>
+      <p style="font-size:24px; line-height:1.4; color:#F7F4EE"><b>Thursday, Sept 24 is the pre-event</b>: Star Trek 60th-anniversary documentary premiere and an 8:15 PM fireside with Peter Diamandis, Rod Roddenberry and Star Trek cast. Thursday pitching is red-carpet and hallway.</p>
+      <p style="font-size:24px; line-height:1.4; color:#F7F4EE">No open attendee pitch slot; both prize competitions have closed finalist slates. Best structured opening: Friday unconference tracks on Moonshot startups and AI investing (Dave Blundin).</p>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:12px; background:#FDFBF7; padding:26px 30px; border:1px solid #D9D2C2; border-radius:12px">
+      <h3 style="font-size:28px; font-weight:600; color:#1A5C5C">What the landscape adds to the pitch</h3>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Every "one architecture, many verticals" winner went deep first: OpenEvidence $12B on one vertical; Harvey deep, then adjacent. TKG is the deep one; the gardens are proof of pattern, in one breath.</p>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Harvey's $550M round (Sept 9) funds its own model and benchmark: the leader is moving toward ground truth. Line: "They are moving toward ground truth. We are the ground truth."</p>
+      <p style="font-size:24px; line-height:1.4; color:#3E4A4F">Investor language to borrow (Activant, Jun 2026): "value accrues to whoever owns what a model cannot manufacture." Room vocabulary: MTP, 6 Ds, 10x, earned hope.</p>
+    </div>
+  </div>
+  <div style="display:flex; gap:16px">
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>198,825</b> MDL actions</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>$185M</b> reinstated</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>2,046</b> hallucination rulings</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>99%</b> refuse unverifiable AI</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>$49M</b> Wiley AI licensing</p>
+    <p style="flex:1; font-size:24px; line-height:1.35; color:#1B2A2F; background:#FDFBF7; padding:14px 18px; border:1px solid #D9D2C2; border-radius:10px; text-align:center"><b>$15.5B</b> Harvey</p>
+  </div>
+  <p style="position:absolute; left:128px; bottom:64px; font-size:24px; color:#6E7A80">Sources: moonshots.com; Diamandis Metatrends Sept 12, 2026; XPRIZE release Aug 19, 2026; Gemini XPRIZE rules; Activant Capital Jun 29, 2026. Draft 60-second and 3-minute pitches are in the lane 05 report.</p>
+</section></div></div><div class="meta"><span class="num">17 / 18</span><span>Lead with ground truth, and check the calendar.</span></div><div class="notes"><span class="k">Notes</span>One number per sentence in that room. The bottom row is the pocket card. If the plan was a Thursday stage slot, re-plan now: Thursday is a film premiere and the pitching is conversational.</div></article><article class="slide" id="s-next"><div class="frame-wrap"><div class="frame"><section id="next" style="background:#17393A; color:#F7F4EE; font-family:'IBM Plex Sans', Arial, sans-serif; padding:128px 128px 160px; display:flex; flex-direction:column; justify-content:space-between">
+  <div style="display:flex; flex-direction:column; gap:28px">
+    <p style="font-size:24px; color:#C9A84C; letter-spacing:4px; text-transform:uppercase; font-weight:500">What we build next, for the lawyer who won Sky Valley</p>
+    <h2 style="font-family:'Libre Baskerville', Georgia, serif; font-size:56px; font-weight:700; line-height:1.1">A packet he would file on his next case, with a receipt for every sentence.</h2>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px">
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">This week</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Build the seven-stage builder on a new-case shell (blank substance, blank plaintiff) with the D2 verification standard visible on every claim: pin, quote, tier, contrary, retraction check.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">Before he sees it</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">Verify Dr. Dahlgren's record line by line. Fix the entity pages so a non-JS crawler sees toxicology content, not a spinner. Dual Frye and 702 view working on the PCB seed case.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; border-top:2px solid #C9A84C; padding:18px 0 0">
+      <h3 style="font-size:30px; font-weight:600; color:#C9A84C">Then</h3>
+      <p style="font-size:25px; line-height:1.4; color:#BFD8D5">SmartAdvocate and Parambil conversations. One MDL substance dossier (PFAS or glyphosate). Per-matter price test with the first three firms.</p>
+    </div>
+  </div>
+  <p style="font-size:28px; line-height:1.4; color:#F7F4EE; font-style:italic">The demo line stays the same and gets truer: ninety seconds for a chambers-ready packet that is forty paralegal hours at the firm rate, and now every citation in it can be re-checked by the other side.</p>
+</section></div></div><div class="meta"><span class="num">18 / 18</span><span>A packet he would file on his next case, with a receipt for every sentence.</span></div><div class="notes"><span class="k">Notes</span>Close on the build. The competitive answer is settled: nobody does this. The remaining risk is execution and the verification of our own expert&#x27;s record, which is exactly the standard we are selling.</div></article></div></div></div>
+<div class="pbar"><button class="btn" id="pPrev">← Previous</button><span class="cnt" id="pCnt"></span><button class="btn" id="pNext">Next →</button><button class="btn" id="pExit">Exit</button></div>
+<script>
+const frames=[...document.querySelectorAll('.frame-wrap')];
+function fit(){frames.forEach(w=>{const f=w.querySelector('.frame');f.style.transform='scale('+(w.clientWidth/1920)+')';});}
+new ResizeObserver(fit).observe(document.body);window.addEventListener('resize',fit);fit();
+const slides=[...document.querySelectorAll('.slide')],toc=[...document.querySelectorAll('.toc a')];let cur=0;
+function setActive(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,j)=>s.classList.toggle('active',j===cur));toc.forEach((a,j)=>a.classList.toggle('on',j===cur));document.getElementById('pCnt').textContent=(cur+1)+' / '+slides.length;fit();}
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&!document.body.classList.contains('present')){setActive(slides.indexOf(e.target));}})},{rootMargin:'-40% 0px -50% 0px'});
+slides.forEach(s=>io.observe(s));
+function present(on){document.body.classList.toggle('present',on);if(on){setActive(cur);document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});}else{document.fullscreenElement&&document.exitFullscreen();slides[cur].scrollIntoView({block:'start'});}fit();}
+document.getElementById('presentBtn').onclick=()=>present(true);document.getElementById('pExit').onclick=()=>present(false);
+document.getElementById('pPrev').onclick=()=>setActive(cur-1);document.getElementById('pNext').onclick=()=>setActive(cur+1);
+document.addEventListener('keydown',e=>{const p=document.body.classList.contains('present');if(e.key==='Escape'&&p)present(false);if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();if(p)setActive(cur+1);else{setActive(cur+1);slides[cur].scrollIntoView({behavior:'smooth',block:'start'});}}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();if(p)setActive(cur-1);else{setActive(cur-1);slides[cur].scrollIntoView({behavior:'smooth',block:'start'});}}});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('present'))present(false);});
+setActive(0);
+</script></body></html>

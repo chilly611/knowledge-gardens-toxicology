@@ -1,8 +1,52 @@
 {
   "rewrites": [
-    { "source": "/health-effects", "destination": "/legacy/health-effects" },
-    { "source": "/health-effects/:slug", "destination": "/legacy/health-effects/:slug" },
-    { "source": "/substances", "destination": "/legacy/substances" },
-    { "source": "/substances/:slug", "destination": "/legacy/substances/:slug" }
+    {
+      "source": "/ai-legal-landscape",
+      "destination": "/ai-legal-landscape/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/",
+      "destination": "/ai-legal-landscape/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/deck",
+      "destination": "/ai-legal-landscape/deck/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/deck/",
+      "destination": "/ai-legal-landscape/deck/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/field-guide",
+      "destination": "/ai-legal-landscape/field-guide/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/field-guide/",
+      "destination": "/ai-legal-landscape/field-guide/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/memo",
+      "destination": "/ai-legal-landscape/memo/index.html"
+    },
+    {
+      "source": "/ai-legal-landscape/memo/",
+      "destination": "/ai-legal-landscape/memo/index.html"
+    },
+    {
+      "source": "/health-effects",
+      "destination": "/legacy/health-effects"
+    },
+    {
+      "source": "/health-effects/:slug",
+      "destination": "/legacy/health-effects/:slug"
+    },
+    {
+      "source": "/substances",
+      "destination": "/legacy/substances"
+    },
+    {
+      "source": "/substances/:slug",
+      "destination": "/legacy/substances/:slug"
+    }
   ]
 }
